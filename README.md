@@ -32,11 +32,11 @@ A multi-agent orchestration system that coordinates 8 specialized AI agents (Orc
 
 ### Option B: Manual Copy
 
-Copy the `.augment/` and `orchestration/` directories to your project root.
+Copy the `.claude/` and `orchestration/` directories to your project root.
 
 ### After Installing
 
-1. **Open the target project** in VS Code with Augment Extension (or use `auggie chat`)
+1. **Open the target project** in VS Code with Claude Extension (or use `auggie chat`)
 
 2. **Type "orchestrator"** to activate:
    ```

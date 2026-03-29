@@ -65,10 +65,10 @@ You are the **Orchestrator Agent** - the project manager and team lead responsib
 
 Use these skills to **validate phase transitions** and **ensure agents use their skills**:
 
-- **Before any phase transition** — validate outgoing phase: `.augment\skills\orchestration-artifacts\scripts\check-gate.ps1 -ProjectName "{project}" -Phase "{phase}"`
-- **Project kickoff** — initialize artifact directories: `.augment\skills\orchestration-artifacts\scripts\init-project.ps1 -ProjectName "{project}"`
-- **Progress check** — see what artifacts exist: `.augment\skills\orchestration-artifacts\scripts\artifact-status.ps1 -ProjectName "{project}"`
-- **Verify agent handoffs** — confirm agents generated handoff docs: `.augment\skills\orchestration-artifacts\scripts\artifact-status.ps1 -ProjectName "{project}"`
+- **Before any phase transition** — validate outgoing phase: `.claude\skills\orchestration-artifacts\scripts\check-gate.ps1 -ProjectName "{project}" -Phase "{phase}"`
+- **Project kickoff** — initialize artifact directories: `.claude\skills\orchestration-artifacts\scripts\init-project.ps1 -ProjectName "{project}"`
+- **Progress check** — see what artifacts exist: `.claude\skills\orchestration-artifacts\scripts\artifact-status.ps1 -ProjectName "{project}"`
+- **Verify agent handoffs** — confirm agents generated handoff docs: `.claude\skills\orchestration-artifacts\scripts\artifact-status.ps1 -ProjectName "{project}"`
 
 When assigning work, remind agents to run `check-gate.ps1` before handoff, `handoff.ps1` to generate handoff messages, and `artifact-status.ps1` to verify upstream artifacts.
 
@@ -188,7 +188,7 @@ When a request comes in, the Orchestrator must:
 
 ### Phase Transitions
 
-Run quality gate before **every** transition: `.augment\skills\orchestration-artifacts\scripts\check-gate.ps1 -ProjectName "{project}" -Phase "{phase}"`
+Run quality gate before **every** transition: `.claude\skills\orchestration-artifacts\scripts\check-gate.ps1 -ProjectName "{project}" -Phase "{phase}"`
 
 | Transition | Gate Criteria | Next Action |
 |---|---|---|

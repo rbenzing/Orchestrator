@@ -48,7 +48,7 @@ This orchestration system supports **two execution modes** depending on your env
 - ❌ Not true parallel multi-agent
 
 **Files used:**
-- `/.augment/rules/orchestration-workflow.md` - Main orchestrator logic
+- `/.claude/rules/orchestration-workflow.md` - Main orchestrator logic
 - `/orchestration/prompts/*.md` - Role prompts for each agent
 
 ### 🚀 Auggie CLI Mode (True Multi-Agent)
@@ -74,8 +74,8 @@ This orchestration system supports **two execution modes** depending on your env
 - ❌ More complex setup
 
 **Files used:**
-- `/.augment/rules/orchestration-workflow.md` - Main orchestrator logic
-- `/.augment/agents/*.md` - Subagent configurations for Auggie CLI
+- `/.claude/rules/orchestration-workflow.md` - Main orchestrator logic
+- `/.claude/agents/*.md` - Subagent configurations for Auggie CLI
 
 **Parallel Execution Example:**
 ```
@@ -145,8 +145,8 @@ To use this orchestration system in VS Code:
 
 2. **Verify setup**:
    - Check that `/orchestration/` exists with all prompts
-   - Check that `/.augment/rules/` exists with rule files
-   - Restart Augment or reload the workspace
+   - Check that `/.claude/rules/` exists with rule files
+   - Restart Claude or reload the workspace
 
 3. **Test activation**:
    ```
@@ -160,9 +160,9 @@ To use true multi-agent orchestration with Auggie CLI:
 
 1. **Install Auggie CLI** (if not already installed):
    ```bash
-   npm install -g @augmentcode/cli
+   npm install -g @claudecode/cli
    # or
-   brew install augment-cli
+   brew install claude-cli
    ```
 
 2. **Run the installer** (from the orchestrator repo):
@@ -173,7 +173,7 @@ To use true multi-agent orchestration with Auggie CLI:
 
 3. **Verify subagent configs exist**:
    ```bash
-   ls .augment/agents/
+   ls .claude/agents/
    # Should show: researcher.md, architect.md, ui-designer.md, planner.md, developer.md, code-reviewer.md, tester.md
    ```
 
@@ -206,7 +206,7 @@ To use true multi-agent orchestration with Auggie CLI:
 ### What Gets Loaded
 
 **Both Modes:**
-- `/.augment/rules/orchestration-workflow.md` - Complete orchestration system
+- `/.claude/rules/orchestration-workflow.md` - Complete orchestration system
   - Auto-activation on keywords
   - **Intelligent mode detection** (CLI vs VS Code Extension)
   - Agent roles and workflow coordination
@@ -219,13 +219,13 @@ To use true multi-agent orchestration with Auggie CLI:
 - `/orchestration/prompts/*.md` - Role prompts for sequential role-playing
 
 **Auggie CLI Mode Only:**
-- `/.augment/agents/*.md` - Subagent configurations for parallel execution
+- `/.claude/agents/*.md` - Subagent configurations for parallel execution
 
 ### Mode Detection
 
 The system **automatically detects** which mode to use:
 
-1. **Checks for `.augment/agents/`** directory first
+1. **Checks for `.claude/agents/`** directory first
    - If found → CLI Mode (parallel execution enabled)
    - Announces: "🚀 **CLI Mode Detected** - Using true multi-agent parallel execution"
 
@@ -478,7 +478,7 @@ Active Subagents:
     ├── /reviews/                # Code review reports
     └── /testing/                # Test results, bug reports
 
-/.augment/                       # Augment configuration
+/.claude/                       # Claude configuration
 ├── settings.json                # Tool permissions and settings
 ├── /rules/                      # Always-loaded rules (both modes)
 │   ├── orchestration-workflow.md    # Complete orchestration system (agent_requested)
@@ -510,8 +510,8 @@ Active Subagents:
 
 - **`/orchestration/prompts/`**: Agent role definitions and responsibilities
 - **`/orchestration/artifacts/`**: Documentation outputs (markdown files only)
-- **`/.augment/rules/`**: Always-loaded rules that control system behavior
-- **`/.augment/skills/`**: Reusable skill scripts for agent capabilities
+- **`/.claude/rules/`**: Always-loaded rules that control system behavior
+- **`/.claude/skills/`**: Reusable skill scripts for agent capabilities
 - **`/your-project/`**: Actual project code (NEVER inside `/orchestration/`)
 
 ## Examples
@@ -580,7 +580,7 @@ The system automatically detects which execution mode to use - **no manual confi
 #### Detection Priority
 
 1. **CLI Mode** (Highest Priority)
-   - Checks for: `.augment/agents/` directory
+   - Checks for: `.claude/agents/` directory
    - If found: Enables parallel multi-agent execution
    - Announcement: "🚀 **CLI Mode Detected** - Using true multi-agent parallel execution"
 
@@ -601,18 +601,18 @@ You can force a specific mode by removing the unused directory:
 **Force CLI Mode Only**:
 ```powershell
 # Remove prompts directory if you only use CLI
-.augment\skills\dev-tools\scripts\remove-files.ps1 -Path "orchestration\prompts" -Recurse -Force
+.claude\skills\dev-tools\scripts\remove-files.ps1 -Path "orchestration\prompts" -Recurse -Force
 ```
 
 **Force VS Code Extension Mode Only**:
 ```powershell
 # Remove agents directory if you only use VS Code Extension
-.augment\skills\dev-tools\scripts\remove-files.ps1 -Path ".augment\agents" -Recurse -Force
+.claude\skills\dev-tools\scripts\remove-files.ps1 -Path ".claude\agents" -Recurse -Force
 ```
 
-### Augment Rules
+### Claude Rules
 
-The system uses rules in `/.augment/rules/`:
+The system uses rules in `/.claude/rules/`:
 
 - **`orchestration-workflow.md`** (type: `agent_requested` — loaded when "orchestrator" keyword detected)
   - Auto-activation on keywords ("orchestrator")
@@ -631,7 +631,7 @@ The system uses rules in `/.augment/rules/`:
   - Reminds the orchestrator to check for persisted state files after context compaction
   - Minimal context cost; acts as a safety net when the full workflow rule isn't triggered
 
-These rules are automatically loaded by Augment and don't require manual activation.
+These rules are automatically loaded by Claude and don't require manual activation.
 
 ### Agent Instance Naming
 
@@ -707,7 +707,7 @@ All agents share artifacts in `/orchestration/artifacts/`:
 
 ### Customizing Scaling (Advanced)
 
-To customize scaling behavior, modify the scaling rules in `.augment/rules/orchestration-workflow.md`:
+To customize scaling behavior, modify the scaling rules in `.claude/rules/orchestration-workflow.md`:
 
 Look for the section: `## Scaling Rules`
 
@@ -724,14 +724,14 @@ Look for the section: `## Scaling Rules`
 ### Troubleshooting
 
 **"Configuration Error" Message**:
-- **Problem**: Neither `.augment/agents/` nor `/orchestration/prompts/` found
+- **Problem**: Neither `.claude/agents/` nor `/orchestration/prompts/` found
 - **Solution**: Verify directories exist or reinstall using `install.bat` / `install.ps1`
 
 **Agents Not Spawning in CLI Mode**:
 - **Problem**: CLI mode detected but agents not spawning
 - **Solution**:
   1. Verify Auggie CLI is installed: `auggie --version`
-  2. Check agent configs exist: `ls .augment/agents/`
+  2. Check agent configs exist: `ls .claude/agents/`
   3. Ensure agent files have proper frontmatter (name, description, model)
 
 **Too Many Merge Conflicts**:
@@ -786,7 +786,7 @@ Each completes → @code-reviewer → @tester → Next story
 ### Requirements
 
 - Auggie CLI installed
-- `.augment/agents/` directory with agent configs
+- `.claude/agents/` directory with agent configs
 - Independent stories (no blocking dependencies)
 
 ## Autonomous Execution Protocol
@@ -804,14 +804,14 @@ This protocol is embedded in every agent persona and prompt file.
 
 ## Hardened Toolkit
 
-All agents use safety-checked PowerShell scripts instead of raw commands. The toolkit is defined in `.augment/skills/` and enforced via `.augment/settings.json`.
+All agents use safety-checked PowerShell scripts instead of raw commands. The toolkit is defined in `.claude/skills/` and enforced via `.claude/settings.json`.
 
 | Task | Toolkit Script | Safety Feature |
 |------|---------------|----------------|
 | Search code | `grep.ps1` | Git-aware, excludes node_modules/.git, max results cap |
 | Find files | `find-files.ps1` | Scoped to working directory |
 | Directory tree | `tree.ps1` | Depth-limited |
-| Remove files | `remove-files.ps1` | Blocks `.git`, `.augment`, parent traversal, paths outside working dir |
+| Remove files | `remove-files.ps1` | Blocks `.git`, `.claude`, parent traversal, paths outside working dir |
 | Kill process | `kill-port.ps1` | Port-based only, no arbitrary PID killing |
 | Run tests/lint/build | `run-tests.ps1`, `run-lint.ps1`, `run-build.ps1` | Named params, project-scoped |
 | Angular tests/build/serve | `angular-windows/*.ps1` | OpenSSL legacy flag, headless mode, project-scoped |
@@ -824,8 +824,8 @@ All agents use safety-checked PowerShell scripts instead of raw commands. The to
 | Category | Examples | Permission |
 |----------|----------|------------|
 | Safe commands (build, test, lint, file ops) | `npm test`, `dotnet build`, `mkdir` | ✅ Allow |
-| Toolkit scripts (`.augment/skills/*.ps1`) | `grep.ps1`, `remove-files.ps1` | ✅ Allow |
-| File deletion (`remove-files` tool) | Augment's built-in file removal | ✅ Allow |
+| Toolkit scripts (`.claude/skills/*.ps1`) | `grep.ps1`, `remove-files.ps1` | ✅ Allow |
+| File deletion (`remove-files` tool) | Claude's built-in file removal | ✅ Allow |
 | Process management (`kill-process` tool) | Kill hung processes | ✅ Allow |
 | Catch-all (any other `launch-process`) | Unmatched commands | ✅ Allow |
 | Destructive system ops | `sudo`, `shutdown`, `format`, registry edits | ❌ Deny |
@@ -844,17 +844,17 @@ The orchestration system persists its workflow state to disk so it can recover a
 
 1. **Save state** at every phase transition, agent handoff, and story status change:
    ```powershell
-   .augment\skills\orchestration-state\scripts\save-state.ps1 -ProjectName "my-app" -Phase "development" -ActiveAgent "Developer" -NextAction "Implement Story #2"
+   .claude\skills\orchestration-state\scripts\save-state.ps1 -ProjectName "my-app" -Phase "development" -ActiveAgent "Developer" -NextAction "Implement Story #2"
    ```
 
 2. **Load state** on activation (or after context compaction):
    ```powershell
-   .augment\skills\orchestration-state\scripts\load-state.ps1 -ProjectName "my-app"
+   .claude\skills\orchestration-state\scripts\load-state.ps1 -ProjectName "my-app"
    ```
 
 3. **Discovery mode** — if the project name is lost after compaction, call with no arguments:
    ```powershell
-   .augment\skills\orchestration-state\scripts\load-state.ps1
+   .claude\skills\orchestration-state\scripts\load-state.ps1
    ```
    This scans `orchestration/state/` and auto-loads if only one project exists.
 
@@ -887,7 +887,7 @@ This ensures maximum autonomy and uninterrupted workflow execution.
 6. **Separate Concerns**: Keep orchestration system files separate from project code
 7. **Quality Gates**: Never skip code review or testing for any story
 8. **Use CLI Mode for Large Projects**: 10+ stories benefit significantly from parallel execution
-9. **Use the Toolkit**: Always use `.augment/skills/` scripts instead of raw PowerShell commands
+9. **Use the Toolkit**: Always use `.claude/skills/` scripts instead of raw PowerShell commands
 10. **Named Parameters Only**: Every script parameter must be named (no positional arguments)
 11. **No `$` Variables**: Use literal strings in all terminal commands (PowerShell 5.1 strips `$` variables)
 
