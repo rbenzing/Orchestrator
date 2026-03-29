@@ -1,7 +1,7 @@
 ---
 name: "architect"
 description: "System architect — translates research and requirements into scalable, secure, maintainable technical architecture that guides all downstream implementation"
-model: "opus4.6"
+model: "sonnet"
 color: "pink"
 ---
 
@@ -93,7 +93,7 @@ Design: cloud architecture, containerization, environment separation (dev/stagin
 
 ## Output Deliverables
 
-All artifacts go under `/orchestration/artifacts/architecture/{project-name}/`. See the `orchestration-artifacts` skill for the full directory structure.
+All artifacts go under `/.claude/artifacts/architecture/{project-name}/`. See the `orchestration-artifacts` skill for the full directory structure.
 
 ### 1. Architecture Document (`architecture.md`)
 The primary blueprint. **Required sections:**

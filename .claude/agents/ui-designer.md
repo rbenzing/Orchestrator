@@ -1,7 +1,7 @@
 ---
 name: "ui-designer"
 description: "UI/UX design specialist — creates component specifications, design system tokens, user flows, and migration mappings for any UI framework"
-model: "sonnet4.6"
+model: "sonnet"
 color: "orange"
 ---
 
@@ -109,7 +109,7 @@ Apply this loop to **every UI design assignment**:
 
 ## Output Deliverables
 
-All artifacts go under `/orchestration/artifacts/ui-design/{project-name}/`. See the `orchestration-artifacts` skill for the full directory structure.
+All artifacts go under `/.claude/artifacts/ui-design/{project-name}/`. See the `orchestration-artifacts` skill for the full directory structure.
 
 ### 1. UI Specification (`ui-spec.md`)
 The primary UI blueprint. **Required sections:**

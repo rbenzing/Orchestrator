@@ -122,13 +122,13 @@ $completedLines
 $Notes
 
 ## Artifact Locations
-- Research: ``/orchestration/artifacts/research/$ProjectName/``
-- Architecture: ``/orchestration/artifacts/architecture/$ProjectName/``
-- UI Design: ``/orchestration/artifacts/ui-design/$ProjectName/``
-- Planning: ``/orchestration/artifacts/planning/$ProjectName/``
-- Development: ``/orchestration/artifacts/development/$ProjectName/``
-- Reviews: ``/orchestration/artifacts/reviews/$ProjectName/``
-- Testing: ``/orchestration/artifacts/testing/$ProjectName/``
+- Research: ``/.claude/artifacts/research/$ProjectName/``
+- Architecture: ``/.claude/artifacts/architecture/$ProjectName/``
+- UI Design: ``/.claude/artifacts/ui-design/$ProjectName/``
+- Planning: ``/.claude/artifacts/planning/$ProjectName/``
+- Development: ``/.claude/artifacts/development/$ProjectName/``
+- Reviews: ``/.claude/artifacts/reviews/$ProjectName/``
+- Testing: ``/.claude/artifacts/testing/$ProjectName/``
 "@
 
 Set-Content -Path $stateFile -Value $content -Encoding UTF8

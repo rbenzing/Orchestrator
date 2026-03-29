@@ -102,7 +102,7 @@ Each completes → Review → Test → Next story
 - OpenSpec Spec Before/After methodology
 - Story-by-story workflow
 - Quality gates
-- Artifact structure (`/orchestration/artifacts/`)
+- Artifact structure (`/.claude/artifacts/`)
 
 **Inspired by [OpenSpec](https://github.com/Fission-AI/OpenSpec)**: We follow spec-driven development principles - agree before you build, stay organized, work fluidly.
 
@@ -119,7 +119,7 @@ Each completes → Review → Test → Next story
 - 🔄 **TDD Workflow**: Research → Architecture → UI Design → Plan → **Test (author)** → Develop → Review → **Test (validate)** → Complete
 - ✅ **Quality Gates**: Each phase must meet standards before proceeding
 - 🔁 **Feedback Loops**: Automatic iteration for quality improvement
-- 📝 **Documentation**: All work documented in `/orchestration/artifacts/`
+- 📝 **Documentation**: All work documented in `/.claude/artifacts/`
 - 🛡️ **Best Practices**: Security, testing, and code quality built-in
 - 📖 **Story-by-Story**: Enforces one story at a time with quality gates between each
 - 🚀 **Parallel Execution** (CLI Mode): Multiple agents working simultaneously
@@ -509,7 +509,7 @@ Active Subagents:
 ### Key Directories
 
 - **`/orchestration/prompts/`**: Agent role definitions and responsibilities
-- **`/orchestration/artifacts/`**: Documentation outputs (markdown files only)
+- **`/.claude/artifacts/`**: Documentation outputs (markdown files only)
 - **`/.claude/rules/`**: Always-loaded rules that control system behavior
 - **`/.claude/skills/`**: Reusable skill scripts for agent capabilities
 - **`/your-project/`**: Actual project code (NEVER inside `/orchestration/`)
@@ -659,11 +659,11 @@ The orchestrator maintains a work queue for story assignment:
 
 ### Artifact Management
 
-All agents share artifacts in `/orchestration/artifacts/`:
+All agents share artifacts in `/.claude/artifacts/`:
 
 **Directory Structure**:
 ```
-/orchestration/artifacts/
+/.claude/artifacts/
 ├── /research/{project-name}/          # Shared research documents
 ├── /architecture/{project-name}/      # Architecture documents & ADRs
 ├── /ui-design/{project-name}/         # UI specifications & design systems
@@ -856,7 +856,7 @@ The orchestration system persists its workflow state to disk so it can recover a
    ```powershell
    .claude\skills\orchestration-state\scripts\load-state.ps1
    ```
-   This scans `orchestration/state/` and auto-loads if only one project exists.
+   This scans `.claude/artifacts/` and auto-loads if only one project exists.
 
 ### Recovery Chain
 
@@ -864,7 +864,7 @@ The orchestration system persists its workflow state to disk so it can recover a
 2. **Step 0 in Activation Protocol** — state loading is the very first action
 3. **Discovery mode** — eliminates the "lost project name" problem
 
-State files are stored at `orchestration/state/{project}/orchestrator-state.md`.
+State files are stored at `.claude/artifacts/{project}/orchestrator-state.md`.
 
 ## Orchestrator-First Escalation
 
@@ -882,7 +882,7 @@ This ensures maximum autonomy and uninterrupted workflow execution.
 1. **Be Specific**: Include tech stack and features in your initial request
 2. **Trust the Process**: Let each phase complete thoroughly
 3. **One Story at a Time**: Complete, review, and test each story before moving to the next (or use parallel execution in CLI mode)
-4. **Review Artifacts**: Check `/orchestration/artifacts/` for documentation
+4. **Review Artifacts**: Check `/.claude/artifacts/` for documentation
 5. **Iterate**: The system automatically loops back when issues are found
 6. **Separate Concerns**: Keep orchestration system files separate from project code
 7. **Quality Gates**: Never skip code review or testing for any story

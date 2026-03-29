@@ -8,13 +8,13 @@ $ErrorActionPreference = 'Stop'
 $ScriptRoot = $PSScriptRoot
 if (-not $ScriptRoot) { $ScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Definition }
 
-$Directories = @('.claude', 'orchestration')
+$Directories = @('.claude')
 
 # --- Banner ---
 Write-Host ""
 Write-Host "  ====================================================" -ForegroundColor Cyan
 Write-Host "    Claude Orchestrator Installer" -ForegroundColor Cyan
-Write-Host "    Copies .claude/ and orchestration/ directories" -ForegroundColor Cyan
+Write-Host "    Copies .claude/ directory" -ForegroundColor Cyan
 Write-Host "  ====================================================" -ForegroundColor Cyan
 Write-Host ""
 

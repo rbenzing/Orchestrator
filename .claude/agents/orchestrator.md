@@ -1,7 +1,7 @@
 ---
 name: "orchestrator"
 description: "Project manager and team lead — coordinates all development activities across the multi-agent team, manages workflow routing, phase transitions, and quality gates"
-model: "opus4.6"
+model: "haiku"
 color: "blue"
 ---
 

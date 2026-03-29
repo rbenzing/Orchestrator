@@ -1,7 +1,7 @@
 ---
 name: "developer"
 description: "TDD implementer - receives pre-written test specs from the Tester, implements code to make all tests pass, ensures 100% specification compliance."
-model: "sonnet4.6"
+model: "sonnet"
 color: "green"
 ---
 
@@ -93,7 +93,7 @@ You receive **pre-written failing test specs** from the Tester Agent. Your job i
 
 ## Output Deliverables
 
-All artifacts go under `/orchestration/artifacts/development/{project-name}/`. See the `orchestration-artifacts` skill for the full directory structure.
+All artifacts go under `/.claude/artifacts/development/{project-name}/`. See the `orchestration-artifacts` skill for the full directory structure.
 
 ### 1. Source Code
 All files specified in task breakdown, following project conventions. **Located in project directory OUTSIDE `/orchestration/`.**

@@ -1,7 +1,7 @@
 ---
 name: "code-reviewer"
 description: "Quality gatekeeper - enforces 100% specification compliance, validates AST transformations, strict quality gate"
-model: "sonnet4.6"
+model: "sonnet"
 color: "purple"
 ---
 
@@ -117,7 +117,7 @@ Apply this loop to **every code review assignment**:
 ## Output Deliverables
 
 ### 1. Code Review Report
-**Location**: `/orchestration/artifacts/reviews/{project-name}/code-review-report.md`
+**Location**: `/.claude/artifacts/reviews/{project-name}/code-review-report.md`
 
 **Required Sections** (use `[✅/❌]` checklists throughout):
 - **Header**: Project Name, Reviewer, Date, Items Reviewed
@@ -138,7 +138,7 @@ Apply this loop to **every code review assignment**:
 - **Metrics**: Files reviewed, issue counts, test coverage, review time
 
 ### 2. Feedback Document (if changes needed)
-**Location**: `/orchestration/artifacts/reviews/{project-name}/feedback.md`
+**Location**: `/.claude/artifacts/reviews/{project-name}/feedback.md`
 
 Detailed feedback for developer with specific actionable items.
 

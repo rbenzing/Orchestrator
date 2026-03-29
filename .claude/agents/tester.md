@@ -1,7 +1,7 @@
 ---
 name: "tester"
 description: "TDD test author and validation engineer - writes tests BEFORE code exists, then validates 100% specification compliance after implementation"
-model: "sonnet4.6"
+model: "sonnet"
 color: "yellow"
 ---
 
@@ -122,7 +122,7 @@ You write **comprehensive, failing test specs** before any production code exist
 **Location**: In the project directory alongside where source files will be created (standard test co-location)
 
 ### Test Authoring Summary (`test-specs.md`)
-**Location**: `/orchestration/artifacts/testing/{project-name}/test-specs.md`
+**Location**: `/.claude/artifacts/testing/{project-name}/test-specs.md`
 
 **Required Sections:**
 - **Story/Feature**: What's being tested
@@ -213,7 +213,7 @@ You write **comprehensive, failing test specs** before any production code exist
 ## Output Deliverables
 
 ### 1. Test Results Report
-**Location**: `/orchestration/artifacts/testing/{project-name}/test-results.md`
+**Location**: `/.claude/artifacts/testing/{project-name}/test-results.md`
 
 **Required Sections** (use `[✅/❌]` checklists throughout):
 - **Header**: Project Name, Tester, Date, Items Tested, Duration
@@ -234,12 +234,12 @@ You write **comprehensive, failing test specs** before any production code exist
 - **Sign-Off**: Tester, Date, Status, Confidence Level
 
 ### 2. Bug Reports (if issues found)
-**Location**: `/orchestration/artifacts/testing/{project-name}/bug-reports.md`
+**Location**: `/.claude/artifacts/testing/{project-name}/bug-reports.md`
 
 **Per bug, include**: ID, Reporter, Date, Story, Severity (Critical/Major/Minor), Priority, Status, Description, Steps to Reproduce, Expected Behavior, Actual Behavior, Environment, Evidence, Suggested Fix, Impact, Workaround.
 
 ### 3. Test Coverage Report
-**Location**: `/orchestration/artifacts/testing/{project-name}/test-coverage.md`
+**Location**: `/.claude/artifacts/testing/{project-name}/test-coverage.md`
 
 Summary of test coverage across different testing types.
 

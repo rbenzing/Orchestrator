@@ -18,11 +18,12 @@ function Deny-Hook {
     param([string]$Reason)
     $output = @{
         hookSpecificOutput = @{
-            hookEventName           = "PreToolUse"
-            permissionDecision      = "deny"
+            hookEventName            = "PreToolUse"
+            permissionDecision       = "deny"
             permissionDecisionReason = $Reason
         }
     } | ConvertTo-Json -Depth 3 -Compress
+
     Write-Output $output
     exit 0
 }
@@ -30,6 +31,7 @@ function Deny-Hook {
 try {
     # Read JSON event data from stdin (Claude hook contract)
     $eventJson = $input | Out-String
+
     if (-not $eventJson -or $eventJson.Trim().Length -eq 0) {
         # No input — nothing to validate, allow
         exit 0
@@ -46,7 +48,7 @@ try {
 
     # Rule 1: Orchestration scripts must include a -ProjectName parameter
     # Exception: load-state.ps1 supports discovery mode without -ProjectName
-    if ($command -match '\.claude[/\\]skills[/\\]orchestration') {
+    if ($command -match 'load-state\.ps1') {
         if ($command -notmatch 'load-state\.ps1' -and $command -notmatch '-ProjectName\s+') {
             Deny-Hook "Orchestration scripts require a -ProjectName parameter"
         }
@@ -86,4 +88,3 @@ catch {
     Write-Error "Hook validation error: $_" 2>&1 | Out-Null
     exit 0
 }
-

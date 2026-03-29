@@ -5,12 +5,12 @@ description: Artifact directory structure, project initialization, completion da
 
 # Orchestration Artifacts
 
-Canonical directory layout for all orchestration artifacts. Every agent stores deliverables under `/orchestration/artifacts/` using this structure.
+Canonical directory layout for all orchestration artifacts. Every agent stores deliverables under `/.claude/artifacts/` using this structure.
 
 ## Directory Structure
 
 ```
-orchestration/artifacts/
+.claude/artifacts/
 +-- research/{project-name}/
 |   +-- proposal.md, requirements.md, technical-constraints.md
 |   +-- specs/ (scenarios.md, spec-before.md for migrations)

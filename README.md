@@ -11,7 +11,7 @@ A multi-agent orchestration system that coordinates 8 specialized AI agents (Orc
 - 🔄 TDD workflow: Research → Architecture → UI Design → Plan → **Test (author)** → Develop → Review → **Test (validate)** → Complete
 - ⚡ Autonomous parallel execution: every agent follows **Decompose → Parallel → Verify → Iterate**
 - ✅ Quality gates between each phase
-- 📝 Complete documentation in `/orchestration/artifacts/`
+- 📝 Complete documentation in `/.claude/artifacts/`
 - 🛡️ Hardened PowerShell toolkit with safety checks (path validation, protected directories)
 - 🔒 Dangerous commands denied — safe operations fully autonomous (no user prompts)
 - 💾 State persistence — survives LLM context compaction with automatic recovery

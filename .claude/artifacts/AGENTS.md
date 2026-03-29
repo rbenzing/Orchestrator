@@ -1,15 +1,13 @@
 # Orchestration Module Rules
 
 ## Scope
-These rules apply to all files within the `/orchestration/` directory tree.
+These rules apply to all files within the `.claude/.claude/artifacts/` directory tree.
 
 ## Agent Permissions
 
 ### Orchestrator Agent
-- **Full access** to all orchestration artifacts and prompts
-- Can create, modify, and delete project artifacts under `artifacts/`
-- Can read all prompt definitions under `prompts/`
-- Must use `check-gate.ps1` before phase transitions
+- **Full access** to all orchestration artifacts
+- Can only CRUD project artifacts within `artifacts/` directory tree.
 
 ### Researcher Agent
 - **Write access** to `artifacts/{project}/research/`

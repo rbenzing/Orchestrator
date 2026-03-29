@@ -10,7 +10,7 @@ File-based state persistence for the orchestrator. After Claude compacts context
 ## State File Location
 
 ```
-orchestration/state/{project-name}/orchestrator-state.md
+.claude/artifacts/{project-name}.json
 ```
 
 ## When to Save State

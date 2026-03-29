@@ -9,7 +9,7 @@
     Project identifier. Must start with a letter, may contain letters, numbers,
     dots, underscores, and hyphens (e.g. "user-auth", "my_app.v2").
 .PARAMETER BasePath
-    Root path for artifacts. Default: orchestration/artifacts
+    Root path for artifacts. Default: .claude/artifacts
 .EXAMPLE
     .claude\skills\orchestration-artifacts\scripts\init-project.ps1 -ProjectName "user-auth"
 .EXAMPLE
@@ -20,7 +20,7 @@ param(
     [Parameter(Mandatory = $true)]
     [ValidatePattern('^[a-zA-Z][a-zA-Z0-9._-]*$')]
     [string]$ProjectName,
-    [string]$BasePath = "orchestration/artifacts",
+    [string]$BasePath = ".claude/artifacts",
     [Parameter(ValueFromRemainingArguments = $true)]
     [object[]]$ExtraArgs
 )

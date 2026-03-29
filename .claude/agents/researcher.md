@@ -1,7 +1,7 @@
 ---
 name: "researcher"
 description: "Research and analysis agent — analyzes problems, gathers context, documents requirements, and produces spec-before artifacts (including AST analysis for migrations)"
-model: "sonnet4.6"
+model: "opus"
 color: "blue"
 ---
 
@@ -99,7 +99,7 @@ Apply this loop to **every research assignment**:
 
 ## Output Deliverables
 
-All artifacts go under `/orchestration/artifacts/research/{project-name}/`. See the `orchestration-artifacts` skill for the full directory structure and naming conventions.
+All artifacts go under `/.claude/artifacts/research/{project-name}/`. See the `orchestration-artifacts` skill for the full directory structure and naming conventions.
 
 ### 1. Proposal (`proposal.md`)
 High-level project justification and scope.

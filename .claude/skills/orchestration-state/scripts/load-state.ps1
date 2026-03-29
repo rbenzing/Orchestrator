@@ -34,20 +34,20 @@ $stateRoot = Join-Path $Root (Join-Path "orchestration" "state")
 if (-not $ProjectName) {
     Write-Host ""
     if (-not (Test-Path $stateRoot)) {
-        Write-Host "  No orchestration/state/ directory found. No projects have saved state." -ForegroundColor Yellow
+        Write-Host "  No .claude/artifacts/ directory found. No projects have saved state." -ForegroundColor Yellow
         exit 1
     }
     $projects = Get-ChildItem -Path $stateRoot -Directory -ErrorAction SilentlyContinue
     $found = @()
     foreach ($dir in $projects) {
-        $sf = Join-Path $dir.FullName "orchestrator-state.md"
+        $sf = Join-Path $dir.FullName $ProjectName + ".json"
         if (Test-Path $sf) {
             $lastWrite = (Get-Item $sf).LastWriteTime.ToString("yyyy-MM-dd HH:mm")
             $found += [PSCustomObject]@{ Name = $dir.Name; LastSaved = $lastWrite; Path = $sf }
         }
     }
     if ($found.Count -eq 0) {
-        Write-Host "  No state files found in orchestration/state/." -ForegroundColor Yellow
+        Write-Host "  No state files found in .claude/artifacts/." -ForegroundColor Yellow
         exit 1
     }
     Write-Host "  Discovered $($found.Count) project(s) with saved state:" -ForegroundColor Cyan
@@ -66,7 +66,7 @@ if (-not $ProjectName) {
     }
 }
 
-$stateFile = Join-Path $stateRoot (Join-Path $ProjectName "orchestrator-state.md")
+$stateFile = Join-Path $stateRoot (Join-Path $ProjectName $ProjectName + ".json")
 
 if (-not (Test-Path $stateFile)) {
     Write-Host ""

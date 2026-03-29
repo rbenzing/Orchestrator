@@ -112,7 +112,7 @@ If context feels incomplete or you're unsure where you are:
 
 ### State File Location
 ```
-orchestration/state/{project-name}/orchestrator-state.md
+.claude/artifacts/{project-name}/orchestrator-state.md
 ```
 
 See `.claude/skills/orchestration-state/SKILL.md` for full script documentation.
@@ -230,7 +230,7 @@ Artifacts are where our agents store documents and files to use in a hand-off to
 
 Create artifacts in these directories:
 
-**Inside `/orchestration/artifacts/`**: Documentation and Script results dumps only (`.md`, `.txt`, `.log` files)
+**Inside `/.claude/artifacts/`**: Documentation and Script results dumps only (`.md`, `.txt`, `.log` files)
 - Context documents
 - Technical plans
 - Specification sheets
@@ -241,13 +241,13 @@ Create artifacts in these directories:
 - Script outputs
 - Test results
 
-- `/orchestration/artifacts/research/{project-name}/` - Context documents, requirements, etc.
-- `/orchestration/artifacts/architecture/{project-name}/` - Architecture documents, ADRs, diagrams, etc.
-- `/orchestration/artifacts/ui-design/{project-name}/` - UI specifications, design systems, accessibility specs, etc.
-- `/orchestration/artifacts/planning/{project-name}/` - Stories, technical plans, etc.
-- `/orchestration/artifacts/development/{project-name}/` - Implementation notes, build logs, etc.
-- `/orchestration/artifacts/reviews/{project-name}/` - Code review reports, feedback, etc.
-- `/orchestration/artifacts/testing/{project-name}/` - Test results, bug reports, etc.
+- `/.claude/artifacts/research/{project-name}/` - Context documents, requirements, etc.
+- `/.claude/artifacts/architecture/{project-name}/` - Architecture documents, ADRs, diagrams, etc.
+- `/.claude/artifacts/ui-design/{project-name}/` - UI specifications, design systems, accessibility specs, etc.
+- `/.claude/artifacts/planning/{project-name}/` - Stories, technical plans, etc.
+- `/.claude/artifacts/development/{project-name}/` - Implementation notes, build logs, etc.
+- `/.claude/artifacts/reviews/{project-name}/` - Code review reports, feedback, etc.
+- `/.claude/artifacts/testing/{project-name}/` - Test results, bug reports, etc.
 
 ### Artifact Size Guidelines
 
@@ -347,7 +347,7 @@ Before running ANY npm/npx/node command, read `.claude/skills/nodejs-windows/SKI
 ## CRITICAL RULES
 
 - **NEVER create project code in the `/orchestration/` directory.**
-- **ONLY artifacts are created in `/orchestration/artifacts/` and nowhere else
+- **ONLY artifacts are created in `/.claude/artifacts/` and nowhere else
 
 ### Agent Selection Rules
 - **Document agent assessment** in project brief with reasoning for each
@@ -679,7 +679,7 @@ When spawning multiple instances, use numbered suffixes:
 ## Communication Between Agents
 
 **Shared Artifacts**:
-- All agents read from `/orchestration/artifacts/*`
+- All agents read from `/.claude/artifacts/*`
 - Each agent writes to their own subdirectory
 - Each agent coordinates handoff to the next agent
 

@@ -58,7 +58,7 @@ $agentArtifacts = @{
 
 $phase = $agentPhase[$From]
 $label = ($phase -replace '-',' ').ToUpper()
-$base = "/orchestration/artifacts/$phase/$ProjectName"
+$base = "/.claude/artifacts/$phase/$ProjectName"
 
 if ($IsFeedback) {
     $msg = "FEEDBACK FOR $($To.ToUpper())`n`n$label STATUS: Changes Required`n`nISSUES:"
@@ -77,7 +77,7 @@ if ($IsFeedback) {
 }
 
 # Persist to disk so the message survives context compaction
-$artifactDir = Join-Path (Get-Location).Path "orchestration/artifacts/$phase/$ProjectName"
+$artifactDir = Join-Path (Get-Location).Path ".claude/artifacts/$phase/$ProjectName"
 if (Test-Path $artifactDir) {
     $tag = if ($IsFeedback) { "feedback" } else { "handoff" }
     $file = Join-Path $artifactDir "$tag-to-$($To -replace ' ','-').md"

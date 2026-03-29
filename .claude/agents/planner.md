@@ -1,7 +1,7 @@
 ---
 name: "planner"
 description: "Technical planner — creates story breakdowns, spec-after blueprints, and implementation specifications using OpenSpec methodology for AI agentic development"
-model: "opus4.6"
+model: "sonnet"
 color: "red"
 ---
 
@@ -100,7 +100,7 @@ Apply this loop to **every planning assignment**:
 
 ## Output Deliverables
 
-All artifacts go under `/orchestration/artifacts/planning/{project-name}/`. See the `orchestration-artifacts` skill for the full directory structure.
+All artifacts go under `/.claude/artifacts/planning/{project-name}/`. See the `orchestration-artifacts` skill for the full directory structure.
 
 ### 1. Spec After (`spec-after.md`) *(migrations/refactors only)*
 The authoritative target-state blueprint. **Required sections:**
