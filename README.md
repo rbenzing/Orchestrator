@@ -32,7 +32,7 @@ A multi-agent orchestration system that coordinates 8 specialized AI agents (Orc
 
 ### Option B: Manual Copy
 
-Copy the `.claude/` and `orchestration/` directories to your project root.
+Copy the `.claude/` directory to your project root.
 
 ### After Installing
 
@@ -69,7 +69,7 @@ After typing "orchestrator" to activate the system, you can request:
 
 ## Documentation
 
-For detailed documentation, see [`/orchestration/README.md`](./orchestration/README.md)
+For detailed documentation, see [`/.claude/orchestration/README.md`](./.claude/orchestration/README.md)
 
 **Topics covered:**
 - Dual-mode architecture (VS Code Extension vs Auggie CLI)
@@ -84,4 +84,4 @@ For detailed documentation, see [`/orchestration/README.md`](./orchestration/REA
 
 ---
 
-**Version**: 1.4
+**Version**: 1.5

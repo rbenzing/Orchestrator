@@ -49,7 +49,7 @@ This orchestration system supports **two execution modes** depending on your env
 
 **Files used:**
 - `/.claude/rules/orchestration-workflow.md` - Main orchestrator logic
-- `/orchestration/prompts/*.md` - Role prompts for each agent
+- `/.claude/agents/*.md` - Role prompts for each agent
 
 ### 🚀 Auggie CLI Mode (True Multi-Agent)
 
@@ -144,7 +144,7 @@ To use this orchestration system in VS Code:
    ```
 
 2. **Verify setup**:
-   - Check that `/orchestration/` exists with all prompts
+   - Check that `/.claude/agents/` exists with all prompts
    - Check that `/.claude/rules/` exists with rule files
    - Restart Claude or reload the workspace
 
@@ -206,7 +206,6 @@ To use true multi-agent orchestration with Auggie CLI:
 ### What Gets Loaded
 
 **Both Modes:**
-- `/.claude/rules/orchestration-workflow.md` - Complete orchestration system
   - Auto-activation on keywords
   - **Intelligent mode detection** (CLI vs VS Code Extension)
   - Agent roles and workflow coordination
@@ -214,12 +213,7 @@ To use true multi-agent orchestration with Auggie CLI:
   - Quality gates and best practices
   - **Parallel execution strategy** (CLI mode)
   - **Dynamic agent scaling rules**
-
-**VS Code Extension Mode Only:**
-- `/orchestration/prompts/*.md` - Role prompts for sequential role-playing
-
-**Auggie CLI Mode Only:**
-- `/.claude/agents/*.md` - Subagent configurations for parallel execution
+  - `/.claude/agents/*.md` - Subagent configurations for parallel execution
 
 ### Mode Detection
 
@@ -229,11 +223,7 @@ The system **automatically detects** which mode to use:
    - If found → CLI Mode (parallel execution enabled)
    - Announces: "🚀 **CLI Mode Detected** - Using true multi-agent parallel execution"
 
-2. **Falls back to `/orchestration/prompts/`** directory
-   - If found → VS Code Extension Mode (sequential execution)
-   - Announces: "🖥️ **VS Code Extension Mode Detected** - Using sequential role-playing"
-
-3. **If neither found** → Configuration error
+2. **If none found** → Configuration error
    - Announces: "⚠️ **Configuration Error** - Missing agent configs"
    - Provides setup instructions
 
