@@ -1,45 +1,13 @@
 {
   "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": ".claude/hooks/load-core-context.ps1"
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": ".claude/hooks/context-router.ps1"
-          },
-          {
-            "type": "command",
-            "command": ".claude/hooks/state-summary-injector.ps1"
-          }
-        ]
-      }
-    ],
     "PreToolUse": [
       {
+        "matcher": "launch-process",
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/pretool-validation.ps1"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": ".claude/hooks/posttool-feedback.ps1"
+            "command": ".claude/hooks/validate-orchestration-command.sh",
+            "timeout": 5000
           }
         ]
       }

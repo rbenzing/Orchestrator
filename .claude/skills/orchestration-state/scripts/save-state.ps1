@@ -1,139 +1,63 @@
 <#
 .SYNOPSIS
     Persist orchestrator workflow state to disk.
-.DESCRIPTION
-    Saves the current orchestration state (phase, agent, story progress, etc.)
-    to a structured markdown file. This enables recovery after context compaction.
-    Called at every phase transition and story status change.
-.PARAMETER ProjectName
-    Project identifier (e.g. "user-auth").
-.PARAMETER Phase
-    Current workflow phase: research, architecture, ui-design, planning, test-authoring, development, reviews, testing, complete.
-.PARAMETER ActiveAgent
-    The agent currently executing (e.g. "Developer", "Tester").
-.PARAMETER CurrentStory
-    The story ID or name currently being worked on (e.g. "Story #1: User Login").
-.PARAMETER StoryStatus
-    Status of current story: not-started, in-progress, authoring-tests, validating, review, testing, complete, blocked.
-.PARAMETER StoryQueue
-    Comma-separated list of remaining stories (e.g. "Story #2,Story #3,Story #4").
-.PARAMETER CompletedStories
-    Comma-separated list of completed stories.
-.PARAMETER NextAction
-    Description of the next action the orchestrator should take.
-.PARAMETER Notes
-    Optional freeform notes about current state.
-.PARAMETER Mode
-    Execution mode: cli or roleplay. Default: roleplay.
+.PARAMETER ProjectName  Project identifier.
+.PARAMETER Phase        research|architecture|ui-design|planning|test-authoring|development|reviews|testing|complete
+.PARAMETER ActiveAgent  Agent currently executing.
+.PARAMETER NextAction   Next action the orchestrator should take.
+.PARAMETER ActiveContractID  Open contract ID (Contract-Router mode).
+.PARAMETER RouterPhase  intake|dispatch|waiting|gate|complete
+.PARAMETER CurrentStory Story being worked on.
+.PARAMETER StoryStatus  not-started|in-progress|authoring-tests|validating|review|testing|complete|blocked
+.PARAMETER StoryQueue   Remaining stories.
+.PARAMETER CompletedStories Completed stories.
+.PARAMETER Notes        Optional freeform notes.
 .EXAMPLE
-    .claude\skills\orchestration-state\scripts\save-state.ps1 -ProjectName "user-auth" -Phase "development" -ActiveAgent "Developer" -CurrentStory "Story #1: User Login" -StoryStatus "in-progress" -NextAction "Developer implementing acceptance criteria for Story #1"
+    save-state.ps1 -ProjectName "user-auth" -Phase "development" -ActiveAgent "Developer" -ActiveContractID "TSK-003" -RouterPhase "waiting" -NextAction "Waiting for Developer to close TSK-003"
 #>
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory = $true)]
-    [string]$ProjectName,
-    [Parameter(Mandatory = $true)]
-    [ValidateSet("research","architecture","ui-design","planning","test-authoring","development","reviews","testing","complete")]
-    [string]$Phase,
-    [Parameter(Mandatory = $true)]
-    [ValidateSet("Orchestrator","Researcher","Architect","UI Designer","Planner","Developer","Code Reviewer","Tester")]
-    [string]$ActiveAgent,
+    [Parameter(Mandatory)][string]$ProjectName,
+    [Parameter(Mandatory)][ValidateSet("research","architecture","ui-design","planning","test-authoring","development","reviews","testing","complete")][string]$Phase,
+    [Parameter(Mandatory)][ValidateSet("Orchestrator","Researcher","Architect","UI Designer","Planner","Developer","Code Reviewer","Tester")][string]$ActiveAgent,
+    [Parameter(Mandatory)][string]$NextAction,
+    [string]$ActiveContractID = "",
+    [ValidateSet("","intake","dispatch","waiting","gate","complete")][string]$RouterPhase = "",
     [string]$CurrentStory = "",
-    [ValidateSet("not-started","in-progress","authoring-tests","validating","review","testing","complete","blocked")]
-    [string]$StoryStatus = "not-started",
+    [ValidateSet("not-started","in-progress","authoring-tests","validating","review","testing","complete","blocked")][string]$StoryStatus = "not-started",
     [string[]]$StoryQueue = @(),
     [string[]]$CompletedStories = @(),
-    [Parameter(Mandatory = $true)]
-    [string]$NextAction,
     [string]$Notes = "",
-    [ValidateSet("cli","roleplay")]
-    [string]$Mode = "roleplay",
-    [Parameter(ValueFromRemainingArguments = $true)]
-    [object[]]$ExtraArgs
+    [Parameter(ValueFromRemainingArguments)][object[]]$ExtraArgs
 )
 $ErrorActionPreference = "Stop"
-if ($ExtraArgs) {
-    Write-Host "  WARNING: Stray arguments ignored: $($ExtraArgs -join ', ')" -ForegroundColor Yellow
+if ($ExtraArgs) { Write-Host "  WARNING: Stray arguments ignored: $($ExtraArgs -join ', ')" -ForegroundColor Yellow }
+
+$stateDir = Join-Path ".claude\state" $ProjectName
+if (-not (Test-Path $stateDir)) { New-Item -Path $stateDir -ItemType Directory -Force | Out-Null }
+
+function Format-YamlList([string[]]$items) {
+    if ($items.Count -eq 0) { return "[]" }
+    return ("`n" + (($items | ForEach-Object { "  - `"$($_.Trim())`"" }) -join "`n"))
 }
 
-$stateDir = Join-Path "orchestration" (Join-Path "state" $ProjectName)
-if (-not (Test-Path $stateDir)) {
-    New-Item -Path $stateDir -ItemType Directory -Force | Out-Null
-    Write-Host "  [+] Created state directory: $stateDir" -ForegroundColor Green
-}
-
-$timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-$stateFile = Join-Path $stateDir "orchestrator-state.md"
-
-# Build story queue section
-$queueLines = ""
-if ($StoryQueue.Count -gt 0) {
-    $i = 1
-    foreach ($s in $StoryQueue) {
-        $queueLines += "| $i | $($s.Trim()) | pending |`n"
-        $i++
-    }
-} else {
-    $queueLines = "| - | (none) | - |`n"
-}
-
-# Build completed stories section
-$completedLines = ""
-if ($CompletedStories.Count -gt 0) {
-    $i = 1
-    foreach ($s in $CompletedStories) {
-        $completedLines += "- [x] $($s.Trim())`n"
-        $i++
-    }
-} else {
-    $completedLines = "- (none yet)`n"
-}
-
+$stateFile = Join-Path $stateDir "orchestrator-state.yml"
 $content = @"
-# Orchestrator State — $ProjectName
-
-> **AUTO-GENERATED** — Do not edit manually. Updated by save-state.ps1.
-> Read this file FIRST after context compaction to restore workflow position.
-
-## Last Updated
-$timestamp
-
-## Execution Mode
-$Mode
-
-## Current Position
-| Field | Value |
-|-------|-------|
-| **Phase** | $Phase |
-| **Active Agent** | $ActiveAgent |
-| **Current Story** | $CurrentStory |
-| **Story Status** | $StoryStatus |
-
-## Next Action
-> $NextAction
-
-## Story Queue
-| # | Story | Status |
-|---|-------|--------|
-$queueLines
-## Completed Stories
-$completedLines
-## Notes
-$Notes
-
-## Artifact Locations
-- Research: ``/.claude/artifacts/research/$ProjectName/``
-- Architecture: ``/.claude/artifacts/architecture/$ProjectName/``
-- UI Design: ``/.claude/artifacts/ui-design/$ProjectName/``
-- Planning: ``/.claude/artifacts/planning/$ProjectName/``
-- Development: ``/.claude/artifacts/development/$ProjectName/``
-- Reviews: ``/.claude/artifacts/reviews/$ProjectName/``
-- Testing: ``/.claude/artifacts/testing/$ProjectName/``
+project: $ProjectName
+saved: "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+phase: $Phase
+agent: $ActiveAgent
+contract: $ActiveContractID
+router_phase: $RouterPhase
+next: "$NextAction"
+story: "$CurrentStory"
+story_status: $StoryStatus
+queue: $(Format-YamlList $StoryQueue)
+completed: $(Format-YamlList $CompletedStories)
+notes: "$Notes"
 "@
 
 Set-Content -Path $stateFile -Value $content -Encoding UTF8
-Write-Host ""
 Write-Host "  State saved: $stateFile" -ForegroundColor Cyan
-Write-Host "  Phase: $Phase | Agent: $ActiveAgent | Story: $CurrentStory ($StoryStatus)" -ForegroundColor White
-Write-Host "  Next: $NextAction" -ForegroundColor DarkGray
+Write-Host "  $Phase | $ActiveAgent | $NextAction" -ForegroundColor DarkGray
 

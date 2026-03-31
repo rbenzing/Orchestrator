@@ -18,12 +18,11 @@ function Deny-Hook {
     param([string]$Reason)
     $output = @{
         hookSpecificOutput = @{
-            hookEventName            = "PreToolUse"
-            permissionDecision       = "deny"
+            hookEventName           = "PreToolUse"
+            permissionDecision      = "deny"
             permissionDecisionReason = $Reason
         }
     } | ConvertTo-Json -Depth 3 -Compress
-
     Write-Output $output
     exit 0
 }
@@ -31,7 +30,6 @@ function Deny-Hook {
 try {
     # Read JSON event data from stdin (Claude hook contract)
     $eventJson = $input | Out-String
-
     if (-not $eventJson -or $eventJson.Trim().Length -eq 0) {
         # No input — nothing to validate, allow
         exit 0
@@ -48,7 +46,7 @@ try {
 
     # Rule 1: Orchestration scripts must include a -ProjectName parameter
     # Exception: load-state.ps1 supports discovery mode without -ProjectName
-    if ($command -match 'load-state\.ps1') {
+    if ($command -match '\.claude[/\\]skills[/\\]orchestration') {
         if ($command -notmatch 'load-state\.ps1' -and $command -notmatch '-ProjectName\s+') {
             Deny-Hook "Orchestration scripts require a -ProjectName parameter"
         }
@@ -68,15 +66,23 @@ try {
         }
     }
 
-    # Rule 4: Prevent writing to orchestration/prompts/ (read-only)
-    if ($command -match '(New-Item|Set-Content|Out-File|Add-Content|Copy-Item|Move-Item).*orchestration[/\\]prompts') {
-        Deny-Hook "Orchestration prompts are read-only and must not be modified during execution"
+    # Rule 4: Prevent writing to .claude/agents/ (read-only agent definitions)
+    if ($command -match '(New-Item|Set-Content|Out-File|Add-Content|Copy-Item|Move-Item).*\.claude[/\\]agents') {
+        Deny-Hook "Agent definitions in .claude/agents/ are read-only and must not be modified during execution"
     }
 
     # Rule 5: Prevent deleting orchestration state files outside of scripts
     if ($command -match '(Remove-Item|del |rm ).*orchestration-state') {
         if ($command -notmatch 'orchestration-state[/\\]scripts[/\\]') {
             Deny-Hook "Orchestration state files must only be managed through state scripts"
+        }
+    }
+
+    # Rule 6: Block reading or manipulating banned cache/vendor directories to prevent context bloat
+    $blacklist = @('node_modules', '\.cache', '\.pytest_cache', '__pycache__', 'coverage[/\\]')
+    foreach ($item in $blacklist) {
+        if ($command -match $item) {
+            Deny-Hook "Access to blocked directory/file ($item) is prohibited to prevent context bloat and token waste."
         }
     }
 
@@ -88,3 +94,4 @@ catch {
     Write-Error "Hook validation error: $_" 2>&1 | Out-Null
     exit 0
 }
+

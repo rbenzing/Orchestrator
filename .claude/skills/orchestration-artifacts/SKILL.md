@@ -1,38 +1,39 @@
 ---
 name: orchestration-artifacts
-description: Artifact directory structure, project initialization, completion dashboard, and quality gate validation for the 8-phase orchestration pipeline.
+description: Artifact directory structure, project initialization, completion dashboard, and quality gate validation for the Contract-Router orchestration pipeline.
 ---
 
 # Orchestration Artifacts
 
-Canonical directory layout for all orchestration artifacts. Every agent stores deliverables under `/.claude/artifacts/` using this structure.
+Canonical directory layout for all orchestration artifacts. Every agent stores deliverables under `.claude/artifacts/{project}/{agent}/` using this structure.
 
 ## Directory Structure
 
 ```
 .claude/artifacts/
-+-- research/{project-name}/
-|   +-- proposal.md, requirements.md, technical-constraints.md
-|   +-- specs/ (scenarios.md, spec-before.md for migrations)
-+-- architecture/{project-name}/
-|   +-- architecture.md, decisions/, diagrams/
-+-- ui-design/{project-name}/
-|   +-- ui-spec.md, design-system.md, accessibility.md, flows/
-+-- planning/{project-name}/
-|   +-- design.md, implementation-spec.md, story-breakdown.md
-+-- development/{project-name}/
-|   +-- implementation-notes.md, build-logs.txt
-+-- reviews/{project-name}/
-|   +-- code-review-report.md
-+-- testing/{project-name}/
-    +-- test-results.md, test-coverage.md
++-- {project-name}/
+|   +-- researcher/
+|   |   +-- proposal.md, requirements.md, technical-constraints.md
+|   |   +-- specs/ (scenarios.md, spec-before.md for migrations)
+|   +-- architect/
+|   |   +-- architecture.md, decisions/, diagrams/
+|   +-- ui-designer/
+|   |   +-- ui-spec.md, design-system.md, accessibility.md, flows/
+|   +-- planner/
+|   |   +-- design.md, implementation-spec.md, story-breakdown.md
+|   +-- developer/
+|   |   +-- implementation-notes.md, build-logs.txt
+|   +-- code-reviewer/
+|   |   +-- code-review-report.md
+|   +-- tester/
+|       +-- test-results.md, test-coverage.md
 ```
 
 ## Rules
 
-1. Source code goes OUTSIDE `/orchestration/` -- only planning artifacts live here
-2. Each phase owns its subdirectory -- agents must not write into another phase's directory
-3. `{project-name}` must be consistent across all phases
+1. Source code goes OUTSIDE `.claude/` — only planning artifacts live here
+2. Each agent owns its subdirectory — agents must not write into another agent's directory
+3. `{project-name}` must be consistent across all agent directories
 
 ## Scripts
 

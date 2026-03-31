@@ -3,8 +3,9 @@
     Initialize the artifact directory tree for a project.
 .DESCRIPTION
     Creates the standard orchestration artifact directory structure for a named
-    project. Includes research, architecture, ui-design, planning, development,
-    reviews, and testing phase directories.
+    project. Artifacts are stored per-agent under .claude/artifacts/{project}/{agent}/.
+    Includes directories for researcher, architect, ui-designer, planner,
+    developer, code-reviewer, and tester agents.
 .PARAMETER ProjectName
     Project identifier. Must start with a letter, may contain letters, numbers,
     dots, underscores, and hyphens (e.g. "user-auth", "my_app.v2").
@@ -13,7 +14,7 @@
 .EXAMPLE
     .claude\skills\orchestration-artifacts\scripts\init-project.ps1 -ProjectName "user-auth"
 .EXAMPLE
-    .claude\skills\orchestration-artifacts\scripts\init-project.ps1 -ProjectName "dashboard.v2" -BasePath "artifacts"
+    .claude\skills\orchestration-artifacts\scripts\init-project.ps1 -ProjectName "dashboard.v2" -BasePath ".claude/artifacts"
 #>
 [CmdletBinding()]
 param(
@@ -30,33 +31,34 @@ if ($ExtraArgs) {
     Write-Host "  Usage: .claude\skills\orchestration-artifacts\scripts\init-project.ps1 -ProjectName ""my-project""" -ForegroundColor Yellow
 }
 
-$phases = @(
-    @{ Dir = "research";     Files = @("proposal.md","requirements.md","technical-constraints.md","specs") }
-    @{ Dir = "architecture"; Files = @("architecture.md","decisions") }
-    @{ Dir = "ui-design";    Files = @("ui-spec.md","design-system.md","accessibility.md","flows") }
-    @{ Dir = "planning";     Files = @("design.md","implementation-spec.md","story-breakdown.md") }
-    @{ Dir = "development";  Files = @("implementation-notes.md","build-logs.txt") }
-    @{ Dir = "reviews";      Files = @("code-review-report.md") }
-    @{ Dir = "testing";      Files = @("test-results.md","test-coverage.md") }
+# Agent directories — artifacts/{project}/{agent}/
+$agents = @(
+    @{ Dir = "researcher";     Files = @("proposal.md","requirements.md","technical-constraints.md","specs") }
+    @{ Dir = "architect";      Files = @("architecture.md","decisions") }
+    @{ Dir = "ui-designer";    Files = @("ui-spec.md","design-system.md","accessibility.md","flows") }
+    @{ Dir = "planner";        Files = @("design.md","implementation-spec.md","story-breakdown.md") }
+    @{ Dir = "developer";      Files = @("implementation-notes.md","build-logs.txt") }
+    @{ Dir = "code-reviewer";  Files = @("code-review-report.md") }
+    @{ Dir = "tester";         Files = @("test-results.md","test-coverage.md") }
 )
 
 Write-Host "  Initializing artifacts for: $ProjectName" -ForegroundColor Cyan
-Write-Host "  Base path: $BasePath" -ForegroundColor DarkGray
+Write-Host "  Base path: $BasePath\$ProjectName\{agent}\" -ForegroundColor DarkGray
 Write-Host ""
 
 $created = 0
-foreach ($phase in $phases) {
-    $phaseDir = Join-Path $BasePath (Join-Path $phase.Dir $ProjectName)
-    if (-not (Test-Path $phaseDir)) {
-        New-Item -Path $phaseDir -ItemType Directory -Force | Out-Null
+foreach ($agent in $agents) {
+    $agentDir = Join-Path $BasePath (Join-Path $ProjectName $agent.Dir)
+    if (-not (Test-Path $agentDir)) {
+        New-Item -Path $agentDir -ItemType Directory -Force | Out-Null
         $created++
-        Write-Host "  [+] $phaseDir" -ForegroundColor Green
+        Write-Host "  [+] $agentDir" -ForegroundColor Green
     } else {
-        Write-Host "  [=] $phaseDir (exists)" -ForegroundColor DarkGray
+        Write-Host "  [=] $agentDir (exists)" -ForegroundColor DarkGray
     }
 
-    foreach ($file in $phase.Files) {
-        $filePath = Join-Path $phaseDir $file
+    foreach ($file in $agent.Files) {
+        $filePath = Join-Path $agentDir $file
         # If it looks like a directory (no extension), create as directory
         if ($file -notmatch '\.') {
             if (-not (Test-Path $filePath)) {
@@ -75,7 +77,7 @@ foreach ($phase in $phases) {
 }
 
 # Create state directory
-$stateDir = Join-Path "orchestration" (Join-Path "state" $ProjectName)
+$stateDir = Join-Path ".claude\state" $ProjectName
 if (-not (Test-Path $stateDir)) {
     New-Item -Path $stateDir -ItemType Directory -Force | Out-Null
     $created++

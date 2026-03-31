@@ -4,14 +4,17 @@
 
 ## Overview
 
-A multi-agent orchestration system that coordinates 8 specialized AI agents (Orchestrator, Researcher, Architect, UI Designer, Planner, Developer, Code Reviewer, Tester) to complete full-stack development projects. Each agent has a specific role, working together through a structured workflow with quality gates to ensure production-ready code.
+A multi-agent orchestration system that coordinates 8 specialized AI agents (Orchestrator, Researcher, Architect, UI Designer, Planner, Developer, Code Reviewer, Tester) to complete full-stack development projects. Each agent has a specific role, dispatched by a **Contract Router** through structured YAML task contracts with quality gates to ensure production-ready code.
 
 **Key Features:**
 - 🎯 Auto-triggered by typing "orchestrator"
+- 📋 **Contract-Router architecture** — every unit of work has a compact YAML contract (objective, required reads, acceptance criteria, next route)
 - 🔄 TDD workflow: Research → Architecture → UI Design → Plan → **Test (author)** → Develop → Review → **Test (validate)** → Complete
-- ⚡ Autonomous parallel execution: every agent follows **Decompose → Parallel → Verify → Iterate**
-- ✅ Quality gates between each phase
-- 📝 Complete documentation in `/.claude/artifacts/`
+- 🛤️ **Smart routing** — Orchestrator selects the smallest valid route (Minimal Fix, Feature Backend, Feature UI, Research-Heavy)
+- 💰 **Model tiering** — haiku/sonnet/opus assigned per contract to minimize cost
+- ⚡ Autonomous parallel execution: independent contracts dispatched concurrently
+- ✅ Quality gates between each phase, validated against contract acceptance criteria
+- 📝 Artifacts stored at `.claude/artifacts/{project}/{agent}/`
 - 🛡️ Hardened PowerShell toolkit with safety checks (path validation, protected directories)
 - 🔒 Dangerous commands denied — safe operations fully autonomous (no user prompts)
 - 💾 State persistence — survives LLM context compaction with automatic recovery
@@ -69,19 +72,19 @@ After typing "orchestrator" to activate the system, you can request:
 
 ## Documentation
 
-For detailed documentation, see [`/.claude/orchestration/README.md`](./.claude/orchestration/README.md)
+For detailed documentation, see [`.claude/orchestrator/README.md`](./.claude/orchestrator/README.md)
 
 **Topics covered:**
-- Dual-mode architecture (VS Code Extension vs Auggie CLI)
+- CLI-only Contract-Router architecture
 - The 8 agents and their roles
-- Autonomous execution protocol (Decompose → Parallel → Verify → Iterate)
+- Contract lifecycle (new → open → review → closed → archived)
+- Route selection profiles (Minimal Fix, Feature Backend, Feature UI, Research-Heavy)
+- Model tiering and cost optimization
 - State persistence and context recovery
 - Orchestrator-first escalation protocol
 - Hardened toolkit and security model
-- Complete workflow details
-- Project structure
-- Examples and best practices
+- Complete workflow details and examples
 
 ---
 
-**Version**: 1.5
+**Version**: 2.0

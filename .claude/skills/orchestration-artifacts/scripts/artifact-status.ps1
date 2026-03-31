@@ -24,16 +24,17 @@ if ($ExtraArgs) {
     Write-Host "  WARNING: Stray arguments ignored: $($ExtraArgs -join ', ')" -ForegroundColor Yellow
 }
 
-$base = Join-Path $Root (Join-Path "orchestration" "artifacts")
+$base = Join-Path $Root ".claude\artifacts"
 
-$phases = [ordered]@{
-    "research"     = @("proposal.md","requirements.md","technical-constraints.md","specs/scenarios.md")
-    "architecture" = @("architecture.md")
-    "ui-design"    = @("ui-spec.md","design-system.md","accessibility.md")
-    "planning"     = @("design.md","implementation-spec.md","story-breakdown.md")
-    "development"  = @("implementation-notes.md","build-logs.txt")
-    "reviews"      = @("code-review-report.md")
-    "testing"      = @("test-results.md","test-coverage.md")
+# Phase label → agent directory name under .claude/artifacts/{project}/{agent}/
+$phaseToAgent = [ordered]@{
+    "researcher"    = @("proposal.md","requirements.md","technical-constraints.md","specs/scenarios.md")
+    "architect"     = @("architecture.md")
+    "ui-designer"   = @("ui-spec.md","design-system.md","accessibility.md")
+    "planner"       = @("design.md","implementation-spec.md","story-breakdown.md")
+    "developer"     = @("implementation-notes.md","build-logs.txt")
+    "code-reviewer" = @("code-review-report.md")
+    "tester"        = @("test-results.md","test-coverage.md")
 }
 
 Write-Host "`n  Project: $ProjectName" -ForegroundColor White
@@ -41,9 +42,9 @@ Write-Host "  $("-" * 30)" -ForegroundColor DarkGray
 
 $totalFound = 0; $totalExpected = 0
 
-foreach ($phase in $phases.Keys) {
-    $phaseDir = Join-Path $base (Join-Path $phase $ProjectName)
-    $files = $phases[$phase]
+foreach ($phase in $phaseToAgent.Keys) {
+    $phaseDir = Join-Path $base (Join-Path $ProjectName $phase)
+    $files = $phaseToAgent[$phase]
     $total = $files.Count; $totalExpected += $total
     $found = 0
     foreach ($f in $files) { if (Test-Path (Join-Path $phaseDir $f)) { $found++ } }

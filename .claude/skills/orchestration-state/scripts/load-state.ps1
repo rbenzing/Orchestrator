@@ -30,24 +30,24 @@ if ($ExtraArgs) {
 }
 
 # --- Discovery mode: no ProjectName given ---
-$stateRoot = Join-Path $Root (Join-Path "orchestration" "state")
+$stateRoot = Join-Path $Root ".claude\state"
 if (-not $ProjectName) {
     Write-Host ""
     if (-not (Test-Path $stateRoot)) {
-        Write-Host "  No .claude/artifacts/ directory found. No projects have saved state." -ForegroundColor Yellow
+        Write-Host "  No .claude/state/ directory found. No projects have saved state." -ForegroundColor Yellow
         exit 1
     }
     $projects = Get-ChildItem -Path $stateRoot -Directory -ErrorAction SilentlyContinue
     $found = @()
     foreach ($dir in $projects) {
-        $sf = Join-Path $dir.FullName $ProjectName + ".json"
+        $sf = Join-Path $dir.FullName "orchestrator-state.yml"
         if (Test-Path $sf) {
             $lastWrite = (Get-Item $sf).LastWriteTime.ToString("yyyy-MM-dd HH:mm")
             $found += [PSCustomObject]@{ Name = $dir.Name; LastSaved = $lastWrite; Path = $sf }
         }
     }
     if ($found.Count -eq 0) {
-        Write-Host "  No state files found in .claude/artifacts/." -ForegroundColor Yellow
+        Write-Host "  No state files found in .claude/state/." -ForegroundColor Yellow
         exit 1
     }
     Write-Host "  Discovered $($found.Count) project(s) with saved state:" -ForegroundColor Cyan
@@ -66,7 +66,7 @@ if (-not $ProjectName) {
     }
 }
 
-$stateFile = Join-Path $stateRoot (Join-Path $ProjectName $ProjectName + ".json")
+$stateFile = Join-Path $stateRoot (Join-Path $ProjectName "orchestrator-state.yml")
 
 if (-not (Test-Path $stateFile)) {
     Write-Host ""
@@ -81,14 +81,14 @@ if (-not (Test-Path $stateFile)) {
     Write-Host "    .claude\skills\orchestration-state\scripts\save-state.ps1 -ProjectName ""$ProjectName"" -Phase ""research"" -ActiveAgent ""Orchestrator"" -NextAction ""Begin project orchestration""" -ForegroundColor Cyan
 
     # Check if artifacts exist to give more context
-    $artifactBase = Join-Path $Root (Join-Path "orchestration" "artifacts")
-    $phases = @("research","architecture","ui-design","planning","development","reviews","testing")
+    $artifactBase = Join-Path $Root ".claude\artifacts"
+    $agents = @("researcher","architect","ui-designer","planner","developer","code-reviewer","tester")
     $foundPhases = @()
-    foreach ($phase in $phases) {
-        $phaseDir = Join-Path $artifactBase (Join-Path $phase $ProjectName)
-        if (Test-Path $phaseDir) {
-            $fileCount = (Get-ChildItem -Path $phaseDir -File -Recurse -ErrorAction SilentlyContinue | Measure-Object).Count
-            if ($fileCount -gt 0) { $foundPhases += "$phase ($fileCount files)" }
+    foreach ($agent in $agents) {
+        $agentDir = Join-Path $artifactBase (Join-Path $ProjectName $agent)
+        if (Test-Path $agentDir) {
+            $fileCount = (Get-ChildItem -Path $agentDir -File -Recurse -ErrorAction SilentlyContinue | Measure-Object).Count
+            if ($fileCount -gt 0) { $foundPhases += "$agent ($fileCount files)" }
         }
     }
     if ($foundPhases.Count -gt 0) {
@@ -106,7 +106,25 @@ Write-Host "  Loading state for: $ProjectName" -ForegroundColor Cyan
 Write-Host "  File: $stateFile" -ForegroundColor DarkGray
 Write-Host "  $("-" * 50)" -ForegroundColor DarkGray
 Write-Host ""
-Get-Content -Path $stateFile -Encoding UTF8 | Write-Host
+
+$stateContent = Get-Content -Path $stateFile -Encoding UTF8 -Raw
+$stateContent -split "`n" | Write-Host
+
+# --- Highlight Contract-Router fields ---
+$cid = ([regex]::Match($stateContent, '(?m)^contract:\s*"?([^"\r\n]+)"?')).Groups[1].Value.Trim()
+$rp  = ([regex]::Match($stateContent, '(?m)^router_phase:\s*"?([^"\r\n]+)"?')).Groups[1].Value.Trim()
+
+if ($cid -or $rp) {
+    Write-Host "  --- Contract-Router State ---" -ForegroundColor Cyan
+    if ($cid) {
+        Write-Host "  Active Contract : $cid" -ForegroundColor Yellow
+        $contractFile = ".claude\contracts\$ProjectName\$cid.yml"
+        $exists = Test-Path $contractFile
+        Write-Host "  Contract file   : $contractFile  $(if ($exists) { '[EXISTS]' } else { '[NOT FOUND]' })" -ForegroundColor $(if ($exists) { 'Green' } else { 'Red' })
+    }
+    if ($rp) { Write-Host "  Router Phase    : $rp" -ForegroundColor White }
+}
+
 Write-Host ""
 Write-Host "  $("-" * 50)" -ForegroundColor DarkGray
 Write-Host "  State loaded successfully. Resume workflow from the position above." -ForegroundColor Cyan

@@ -1,7 +1,9 @@
 [CmdletBinding()]
 param(
     [Parameter(Position = 0)]
-    [string]$Target
+    [string]$Target,
+    [switch]$SetupOnly,   # Only scaffold local dirs; do not copy to a target project
+    [switch]$Force        # Overwrite existing .augmentignore
 )
 
 $ErrorActionPreference = 'Stop'
@@ -13,9 +15,68 @@ $Directories = @('.claude')
 # --- Banner ---
 Write-Host ""
 Write-Host "  ====================================================" -ForegroundColor Cyan
-Write-Host "    Claude Orchestrator Installer" -ForegroundColor Cyan
-Write-Host "    Copies .claude/ directory" -ForegroundColor Cyan
+Write-Host "    Claude Contract-Router Installer" -ForegroundColor Cyan
+Write-Host "    Scaffolds .claude/ & distributes to projects" -ForegroundColor Cyan
 Write-Host "  ====================================================" -ForegroundColor Cyan
+Write-Host ""
+
+# ============================================================
+# PHASE 1 — Local scaffold (always runs)
+# Creates new Contract-Router directories and .augmentignore
+# ============================================================
+Write-Host "  [Phase 1] Scaffolding local .claude/ directories..." -ForegroundColor Yellow
+
+function Initialize-Dir {
+    param([string]$Path)
+    if (-not (Test-Path $Path)) {
+        New-Item -Path $Path -ItemType Directory -Force | Out-Null
+        Write-Host "    [+] Created: $Path" -ForegroundColor Green
+    } else {
+        Write-Host "    [=] Exists:  $Path" -ForegroundColor DarkGray
+    }
+}
+
+Initialize-Dir (Join-Path $ScriptRoot ".claude\contracts")
+Initialize-Dir (Join-Path $ScriptRoot ".claude\artifacts")
+Initialize-Dir (Join-Path $ScriptRoot ".claude\orchestrator")
+Initialize-Dir (Join-Path $ScriptRoot ".claude\skills\orchestration-contracts\scripts")
+Initialize-Dir (Join-Path $ScriptRoot ".claude\skills\utility-tools\scripts")
+
+# Write / refresh .augmentignore
+$ignorePath = Join-Path $ScriptRoot ".augmentignore"
+if (-not (Test-Path $ignorePath) -or $Force) {
+    $ignoreContent = @"
+# Claude Context Engine Ignore List
+# Prevents the AI from reading these directories with built-in view/retrieval tools.
+# The PreToolUse hook also blocks terminal access to these paths.
+node_modules/
+.cache/
+.pytest_cache/
+__pycache__/
+coverage/
+dist/
+build/
+*.log
+.claude/contracts/*/archive/
+"@
+    Set-Content -Path $ignorePath -Value $ignoreContent -Encoding UTF8
+    Write-Host "    [+] Written: .augmentignore" -ForegroundColor Green
+} else {
+    Write-Host "    [=] Exists (use -Force to overwrite): .augmentignore" -ForegroundColor DarkGray
+}
+
+
+
+Write-Host ""
+if ($SetupOnly) {
+    Write-Host "  ====================================================" -ForegroundColor Green
+    Write-Host "  Setup complete (local scaffold only)." -ForegroundColor Green
+    Write-Host "  ====================================================" -ForegroundColor Green
+    Write-Host ""
+    exit 0
+}
+
+Write-Host "  [Phase 2] Copying harness to target project..." -ForegroundColor Yellow
 Write-Host ""
 
 # --- Validate source directories exist ---

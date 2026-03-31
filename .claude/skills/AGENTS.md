@@ -1,39 +1,57 @@
 # Skills Module Rules
 
-## Scope
-These rules apply to all files within the `.claude/skills/` directory tree.
+All agents run in **Contract-Router** mode. Stateless. No shared context. Every task = one YAML contract.
 
-## Agent Permissions
+## Contract Startup Protocol (all non-orchestrator agents)
 
-### All Agents
-- **Read access** to SKILL.md files for understanding available capabilities
-- **Execute access** to scripts relevant to their role
-- Must not modify skill definitions or scripts during project execution
+1. `get-contract.ps1 -ProjectName "{project}" -AssignedAgent "@{role}"`
+2. Parse: `objective`, `required_reads`, `acceptance_criteria`, `deliverables`
+3. Read ONLY files in `required_reads`
+4. Execute the `objective` — no scope expansion
+5. Validate all `acceptance_criteria`
+6. Close: `update-contract.ps1 -ProjectName "{project}" -ContractId "{id}" -Status "Closed"` (or `"Blocked" -ErrorTrace "..."`)
+7. Summarize: `summarize-artifact.ps1 -Path ".claude/artifacts/{project}/{role}/primary-deliverable.md"`
+8. **Stop** — do not proceed, do not create contracts, do not hand off
 
-### Orchestrator Agent
-- **Execute access** to all orchestration skill scripts:
-  - `orchestration-artifacts/scripts/` — artifact management and gate checks
-  - `orchestration-handoffs/scripts/` — agent handoff management
-  - `orchestration-state/scripts/` — state persistence and recovery
+## Execution Loop — DPVI
 
-### Developer Agent
-- **Execute access** to development skill scripts:
-  - `angular-windows/scripts/` — Angular project scaffolding and builds
-  - `nodejs-windows/scripts/` — Node.js environment management
-  - `dotnet-windows/scripts/` — .NET CLI operations (build, test, run, restore, format)
-  - `polyglot-tools/scripts/` — Multi-language toolchains (Python, Rust, Go, Ruby)
-  - `dev-tools/scripts/` — Development tooling utilities
-  - `windows-environment/` — Windows environment guide and filesystem operations (mkdir, copy, move, rename)
+Every unit of work follows: **Decompose** (smallest independent sub-tasks) → **Parallel** (execute independent tasks concurrently) → **Verify** (run `check-gate.ps1`, cross-check acceptance criteria) → **Iterate** (fix failures, re-verify, max 3 cycles then escalate).
 
-### Tester Agent
-- **Execute access** to testing-related skill scripts:
-  - `dev-tools/scripts/` — Test runner utilities
-  - `angular-windows/scripts/` — Angular test execution
-  - `nodejs-windows/scripts/` — Node.js test execution
-  - `dotnet-windows/scripts/` — .NET test execution
+## Escalation Protocol
+
+Never ask the user. Escalate blockers to Orchestrator:
+```
+handoff.ps1 -From "{role}" -To "Orchestrator" -ProjectName "{project}" -IsFeedback -Issues "blocker: ..."
+```
+
+## Skills Reference
+
+| Skill | Scripts |
+|-------|---------|
+| orchestration-contracts | new, get, update, archive, run-orchestrator |
+| orchestration-artifacts | init-project, artifact-status, check-gate |
+| orchestration-handoffs | handoff |
+| orchestration-state | save-state, load-state |
+| utility-tools | extract-symbols, summarize-artifact, format-and-lint, cleanup-workspace, get-compact-diff, truncate-error-log |
+| dev-tools | grep, find-files, tree, git-summary, git-diff, kill-port, remove-files |
+| nodejs-windows | run-tests, run-lint, run-build |
+| angular-windows | run-tests, run-build, run-serve |
+| dotnet-windows | dotnet-build, dotnet-test, dotnet-run, dotnet-restore, dotnet-format |
+| polyglot-tools | python-run, pip-install, poetry-run, cargo-run, go-run, ruby-run |
+| windows-environment | mkdir, copy-item, move-item, rename-item |
+
+## Permissions
+
+- **Orchestrator**: all orchestration-* scripts
+- **Developer**: dev-tools, utility-tools, nodejs/angular/dotnet-windows, polyglot-tools, windows-environment
+- **Tester**: dev-tools, nodejs/angular/dotnet-windows, utility-tools (truncate-error-log)
+- **Code Reviewer**: dev-tools (git-diff, grep), utility-tools (get-compact-diff, summarize-artifact)
+- **All agents**: read SKILL.md files; use `summarize-artifact.ps1` for files >300 lines; never modify scripts
 
 ## Conventions
-- Skills are self-contained modules with a SKILL.md descriptor and a scripts/ directory
-- Never modify skill scripts during project execution — they are infrastructure
-- Report skill script failures to the Orchestrator for resolution
+
+- Artifacts go in `.claude/artifacts/{project}/{role}/` — keep each file <500 lines
+- Use bullet points/tables over prose. Reference file paths instead of inlining code.
+- Never create project code inside `.claude/`
+- Prefer toolkit scripts over raw PowerShell (see `powershell-rules.md`)
 

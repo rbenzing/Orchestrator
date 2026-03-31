@@ -1,21 +1,27 @@
 <#
 .SYNOPSIS
-    Generate a standardized handoff or feedback message between agents.
+    Create a YAML task contract for the next agent in the workflow.
 .DESCRIPTION
-    Creates a formatted handoff message with auto-populated artifact paths.
-    Supports forward handoffs and feedback loops (rejections/bug reports).
+    Wraps new-contract.ps1 to generate a structured handoff between agents.
+    Forward handoffs create Task or Validation contracts; feedback loops create
+    Feedback contracts that include issue traces so agents never lose retry context.
+    A human-readable summary is also persisted as a legacy artifact.
 .PARAMETER From
     The agent completing its phase.
 .PARAMETER To
     The agent receiving the handoff.
 .PARAMETER ProjectName
     The project identifier (e.g. "user-auth").
+.PARAMETER ContractId
+    Override the auto-generated contract ID (default: auto-incremented TSK-NNN).
 .PARAMETER Findings
-    Key findings or decisions to include. Comma-separated strings.
+    Key findings or decisions to include in the contract objective.
 .PARAMETER IsFeedback
-    Generate a feedback/rejection message instead of a forward handoff.
+    Generate a Feedback contract instead of a forward handoff.
 .PARAMETER Issues
-    Issues for feedback messages. Format: "Description - Severity"
+    Issues for feedback contracts. Format: "Description - Severity"
+.PARAMETER ModelTier
+    LLM tier for the receiving agent: haiku | sonnet | opus. Default: sonnet.
 .EXAMPLE
     .claude\skills\orchestration-handoffs\scripts\handoff.ps1 -From "Researcher" -To "Architect" -ProjectName "user-auth" -Findings "OAuth 2.0 recommended"
 .EXAMPLE
@@ -31,9 +37,12 @@ param(
     [string]$To,
     [Parameter(Mandatory = $true)]
     [string]$ProjectName,
+    [string]$ContractId = "",
     [string[]]$Findings = @(),
     [switch]$IsFeedback,
     [string[]]$Issues = @(),
+    [ValidateSet("haiku","sonnet","opus")]
+    [string]$ModelTier = "sonnet",
     [Parameter(ValueFromRemainingArguments = $true)]
     [object[]]$ExtraArgs
 )
@@ -42,49 +51,98 @@ if ($ExtraArgs) {
     Write-Host "  WARNING: Stray arguments ignored: $($ExtraArgs -join ', ')" -ForegroundColor Yellow
 }
 
+# --- Agent metadata maps ---
 $agentPhase = @{
     "Researcher"="research"; "Architect"="architecture"; "UI Designer"="ui-design"
     "Planner"="planning"; "Developer"="development"; "Code Reviewer"="reviews"; "Tester"="testing"
 }
+$agentHandle = @{
+    "Orchestrator"="@orchestrator"; "Researcher"="@researcher"; "Architect"="@architect"
+    "UI Designer"="@ui-designer"; "Planner"="@planner"; "Developer"="@developer"
+    "Code Reviewer"="@code-reviewer"; "Tester"="@tester"
+}
 $agentArtifacts = @{
-    "Researcher"=@("proposal.md","requirements.md","technical-constraints.md","specs/scenarios.md")
-    "Architect"=@("architecture.md","decisions/")
-    "UI Designer"=@("ui-spec.md","design-system.md","accessibility.md","flows/")
-    "Planner"=@("design.md","implementation-spec.md","story-breakdown.md")
-    "Developer"=@("implementation-notes.md","build-logs.txt")
-    "Code Reviewer"=@("code-review-report.md")
-    "Tester"=@("test-results.md","test-coverage.md")
+    "Researcher"=@(".claude/artifacts/$ProjectName/researcher/proposal.md",".claude/artifacts/$ProjectName/researcher/requirements.md")
+    "Architect"=@(".claude/artifacts/$ProjectName/architect/architecture.md")
+    "UI Designer"=@(".claude/artifacts/$ProjectName/ui-designer/ui-spec.md",".claude/artifacts/$ProjectName/ui-designer/design-system.md")
+    "Planner"=@(".claude/artifacts/$ProjectName/planner/story-breakdown.md",".claude/artifacts/$ProjectName/planner/implementation-spec.md")
+    "Developer"=@(".claude/artifacts/$ProjectName/developer/implementation-notes.md")
+    "Code Reviewer"=@(".claude/artifacts/$ProjectName/code-reviewer/code-review-report.md")
+    "Tester"=@(".claude/artifacts/$ProjectName/tester/test-results.md")
+    "Orchestrator"=@()
 }
 
-$phase = $agentPhase[$From]
-$label = ($phase -replace '-',' ').ToUpper()
-$base = "/.claude/artifacts/$phase/$ProjectName"
+# --- Auto-generate ContractId if not supplied ---
+if (-not $ContractId) {
+    $contractDir = Join-Path ".claude\contracts" $ProjectName
+    $existing = 0
+    if (Test-Path $contractDir) {
+        $existing = (Get-ChildItem $contractDir -Filter "*.yml" | Measure-Object).Count
+    }
+    $next = $existing + 1
+    $ContractId = "TSK-{0:D3}" -f $next
+}
 
+# --- Build contract parameters ---
+$fromPhase = $agentPhase[$From]
+$toHandle  = $agentHandle[$To]
+$contractType = if ($IsFeedback) { "Feedback" } else { "Validation" }
+
+# Build objective text
 if ($IsFeedback) {
-    $msg = "FEEDBACK FOR $($To.ToUpper())`n`n$label STATUS: Changes Required`n`nISSUES:"
-    $i = 1; foreach ($issue in $Issues) { $msg += "`n$i. $issue"; $i++ }
-    $msg += "`n`nARTIFACTS:"
-    foreach ($f in $agentArtifacts[$From]) { $msg += "`n- $base/$f" }
-    $msg += "`n`nPLEASE ADDRESS:`n- All critical issues before re-submission`n- All major issues before re-submission`n- Minor notes do NOT block approval`n`nREADY FOR RE-REVIEW: After fixes applied"
+    $issueList = ($Issues | ForEach-Object { "  - $_" }) -join "`n"
+    $objective = "$From phase returned issues. $To must address all issues and resubmit.`nIssues:`n$issueList"
+    $ifPass    = "Return to $From for re-review"
+    $ifFail    = "Escalate to Orchestrator after 3 attempts"
 } else {
-    $msg = "HANDOFF TO $($To.ToUpper())`n`n$label COMPLETE: $ProjectName`n`nARTIFACTS:"
-    foreach ($f in $agentArtifacts[$From]) { $msg += "`n- $base/$f" }
-    $msg += "`n`nKEY FINDINGS / DECISIONS:"
-    if ($Findings.Count -eq 0) { $msg += "`n- (none specified)" }
-    else { foreach ($f in $Findings) { $msg += "`n- $f" } }
-    $next = ($agentPhase[$To] -replace '-',' ').ToUpper()
-    $msg += "`n`nREADY FOR ${next}: Yes"
+    $findingsList = if ($Findings.Count -gt 0) { ($Findings | ForEach-Object { "  - $_" }) -join "`n" } else { "  (none specified)" }
+    $objective = "$From phase complete for $ProjectName. $To to proceed with next phase.`nFindings:`n$findingsList"
+    $ifPass    = "Advance to next phase per Router"
+    $ifFail    = "Return to Router with Feedback Contract"
 }
 
-# Persist to disk so the message survives context compaction
-$artifactDir = Join-Path (Get-Location).Path ".claude/artifacts/$phase/$ProjectName"
+# Required reads for the receiving agent
+$reads = $agentArtifacts[$From]
+
+# --- Invoke new-contract.ps1 ---
+$newContractScript = ".claude\skills\orchestration-contracts\scripts\new-contract.ps1"
+$contractFile = & $newContractScript `
+    -ProjectName       $ProjectName `
+    -ContractId        $ContractId `
+    -Type              $contractType `
+    -AssignedAgent     $toHandle `
+    -ModelTier         $ModelTier `
+    -Objective         $objective `
+    -RequiredReads     $reads `
+    -IfPass            $ifPass `
+    -IfFail            $ifFail
+
+# --- Persist a human-readable handoff summary to the sender's artifact directory ---
+$agentDir = @{
+    "Researcher"="researcher"; "Architect"="architect"; "UI Designer"="ui-designer"
+    "Planner"="planner"; "Developer"="developer"; "Code Reviewer"="code-reviewer"
+    "Tester"="tester"; "Orchestrator"="orchestrator"
+}
+$senderDir = if ($agentDir.ContainsKey($From)) { $agentDir[$From] } else { "orchestrator" }
+$artifactDir = Join-Path (Get-Location).Path ".claude\artifacts\$ProjectName\$senderDir"
 if (Test-Path $artifactDir) {
-    $tag = if ($IsFeedback) { "feedback" } else { "handoff" }
+    $tag  = if ($IsFeedback) { "feedback" } else { "handoff" }
     $file = Join-Path $artifactDir "$tag-to-$($To -replace ' ','-').md"
-    $msg | Out-File -FilePath $file -Encoding utf8 -Force
-    Write-Host "  Persisted to: $file" -ForegroundColor DarkGray
+    $summary = if ($IsFeedback) {
+        "# Feedback to $To`n`nFrom: $From`nProject: $ProjectName`nContract: $ContractId`n`n## Issues`n" + ($Issues | ForEach-Object { "- $_" } | Out-String)
+    } else {
+        "# Handoff to $To`n`nFrom: $From`nProject: $ProjectName`nContract: $ContractId`n`n## Key Findings`n" + ($Findings | ForEach-Object { "- $_" } | Out-String)
+    }
+    $summary | Out-File -FilePath $file -Encoding utf8 -Force
+    Write-Host "  Artifact persisted: $file" -ForegroundColor DarkGray
 }
 
-Write-Host $msg
-Write-Host "`n--- Handoff message generated ---" -ForegroundColor DarkGray
+Write-Host ""
+$color = if ($IsFeedback) { "Yellow" } else { "Cyan" }
+Write-Host "  [$contractType] $From -> $To  |  Contract: $ContractId  |  Project: $ProjectName" -ForegroundColor $color
+Write-Host "  Contract file: $contractFile" -ForegroundColor DarkGray
+Write-Host ""
+
+# Return contract ID for callers
+Write-Output $ContractId
 
