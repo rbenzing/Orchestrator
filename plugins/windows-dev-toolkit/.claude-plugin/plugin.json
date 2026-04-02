@@ -1,0 +1,11 @@
+{
+  "name": "windows-dev-toolkit",
+  "version": "1.0.0",
+  "description": "PowerShell dev tool wrappers for Windows — file search, git ops, Node.js, Angular, .NET, Python, Rust, Go, Ruby. Hardened for non-interactive AI agent execution with named parameters and stray-argument catching.",
+  "author": {
+    "name": "rbenzing"
+  },
+  "repository": "https://github.com/rbenzing/orchestrator",
+  "license": "MIT",
+  "keywords": ["windows", "powershell", "nodejs", "dotnet", "angular", "python", "rust", "tools"]
+}

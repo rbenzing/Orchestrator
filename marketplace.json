@@ -1,0 +1,20 @@
+{
+  "name": "Orchestrator Internal Marketplace",
+  "description": "Internal plugin marketplace for the orchestrator repo. Provides the Contract-Router orchestration pipeline and Windows dev toolkit.",
+  "plugins": [
+    {
+      "name": "orchestrator",
+      "description": "Contract-Router multi-agent orchestration pipeline. Coordinates 8 specialized agents across the full development lifecycle using YAML task contracts.",
+      "path": "./plugins/orchestrator",
+      "version": "1.0.0",
+      "keywords": ["orchestration", "agents", "contracts", "tdd", "workflow", "windows"]
+    },
+    {
+      "name": "windows-dev-toolkit",
+      "description": "PowerShell dev tool wrappers for Windows — file search, git ops, Node.js, Angular, .NET, Python, Rust, Go, Ruby. Hardened for non-interactive AI agent execution.",
+      "path": "./plugins/windows-dev-toolkit",
+      "version": "1.0.0",
+      "keywords": ["windows", "powershell", "nodejs", "dotnet", "angular", "python", "rust", "tools"]
+    }
+  ]
+}

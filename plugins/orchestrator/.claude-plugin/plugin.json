@@ -1,0 +1,11 @@
+{
+  "name": "orchestrator",
+  "version": "1.0.0",
+  "description": "Contract-Router multi-agent orchestration pipeline. Coordinates 8 specialized agents across research, architecture, planning, development, review, and testing phases using YAML task contracts.",
+  "author": {
+    "name": "rbenzing"
+  },
+  "repository": "https://github.com/rbenzing/orchestrator",
+  "license": "MIT",
+  "keywords": ["orchestration", "agents", "contracts", "tdd", "workflow", "windows"]
+}
