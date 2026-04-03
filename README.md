@@ -1,4 +1,9 @@
-# Multi-Agent Orchestration System
+# Orchestrator :: Multi-Agent Orchestration System
+
+![Version](https://img.shields.io/github/v/release/rbenzing/Orchestrator?include_prereleases)
+![License](https://img.shields.io/github/license/rbenzing/Orchestrator)
+![Issues](https://img.shields.io/github/issues/rbenzing/Orchestrator)
+![Last Commit](https://img.shields.io/github/last-commit/rbenzing/Orchestrator)
 
 > Coordinate 8 specialized AI agents to deliver high-quality, tested code through structured development phases.
 
@@ -85,6 +90,11 @@ For detailed documentation, see [`.claude/orchestrator/README.md`](./.claude/orc
 - Hardened toolkit and security model
 - Complete workflow details and examples
 
----
+## Contributing
 
-**Version**: 2.0
+See `CONTRIBUTING.md` for guidelines.
+
+## License
+
+This project is licensed under the Apache License 2.0.  
+See the `LICENSE` file for details.

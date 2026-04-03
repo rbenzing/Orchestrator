@@ -44,9 +44,6 @@ function Initialize-Dir {
 Initialize-Dir (Join-Path $ScriptRoot ".claude\orchestrator\contracts")
 Initialize-Dir (Join-Path $ScriptRoot ".claude\orchestrator\artifacts")
 Initialize-Dir (Join-Path $ScriptRoot ".claude\orchestrator\state")
-Initialize-Dir (Join-Path $ScriptRoot ".claude\orchestrator")
-Initialize-Dir (Join-Path $ScriptRoot ".claude\skills\orchestration-contracts\scripts")
-Initialize-Dir (Join-Path $ScriptRoot ".claude\skills\utility-tools\scripts")
 
 # Verify .claudeignore exists in the repo (it is a source file, not generated)
 $claudeIgnoreSrc = Join-Path $ScriptRoot '.claudeignore'

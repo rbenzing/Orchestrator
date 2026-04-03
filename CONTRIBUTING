@@ -1,0 +1,155 @@
+# Contributing to Orchestrator
+
+Thank you for your interest in contributing to Orchestrator. This project is designed as a structured, agent-driven development framework, so contributions should align with its architecture and workflow principles.
+
+---
+
+## 🧭 Philosophy
+
+Orchestrator follows a **Test-Driven Development (TDD)** and **multi-agent workflow model**:
+
+* Tests are written **before implementation**
+* Agents operate in **clearly defined roles**
+* Changes should be **deterministic and reproducible**
+
+---
+
+## 🚀 Getting Started
+
+1. Fork the repository
+2. Clone your fork:
+
+```bash
+git clone https://github.com/<your-username>/Orchestrator.git
+cd Orchestrator
+```
+
+3. Create a new branch:
+
+```bash
+git checkout -b feature/your-feature-name
+```
+
+---
+
+## 🧪 Development Workflow (Required)
+
+All contributions must follow this sequence:
+
+### 1. Define Behavior (Tester Agent Mindset)
+
+* Write tests that describe the expected behavior
+* Ensure tests fail initially
+
+### 2. Implement (Developer Agent)
+
+* Write the minimal code required to pass tests
+* Avoid over-engineering
+
+### 3. Validate (Tester + Code Reviewer)
+
+* All tests must pass
+* Code should meet project standards
+
+### 4. Review
+
+* Ensure alignment with architecture and agent model
+* Refactor if necessary
+
+---
+
+## 🧱 Project Structure Guidelines
+
+* Keep agents **modular and isolated**
+* Avoid tight coupling between components
+* Prefer configuration-driven behavior over hardcoding
+* Maintain clear separation between:
+
+  * orchestration logic
+  * agent logic
+  * execution/runtime scripts
+
+---
+
+## 🧼 Code Standards
+
+* Write clean, readable, and maintainable code
+* Use descriptive naming
+* Keep functions small and focused
+* Document public interfaces where appropriate
+
+---
+
+## 🔐 Security Considerations
+
+Given the nature of this project:
+
+* Do not introduce insecure patterns
+* Validate all external inputs
+* Avoid unsafe memory or cryptographic practices
+* Be mindful of concurrency and state handling
+
+---
+
+## 🧾 Commit Guidelines
+
+Use clear, structured commit messages:
+
+```text
+type(scope): short description
+
+Examples:
+feat(agent): add tester validation hook
+fix(runtime): resolve race condition in pipeline
+docs(readme): update usage section
+```
+
+---
+
+## 📥 Pull Requests
+
+Before submitting a PR:
+
+* ✅ Tests are written and passing
+* ✅ Code follows project structure
+* ✅ No unnecessary dependencies introduced
+* ✅ Changes are scoped and focused
+
+PRs should include:
+
+* Description of the change
+* Reason for the change
+* Any relevant context or tradeoffs
+
+---
+
+## 🐛 Reporting Issues
+
+When reporting bugs, include:
+
+* Steps to reproduce
+* Expected behavior
+* Actual behavior
+* Environment details
+
+---
+
+## 💡 Feature Requests
+
+Feature requests should:
+
+* Align with the orchestration model
+* Avoid unnecessary complexity
+* Include a clear use case
+
+---
+
+## 🤝 Code of Conduct
+
+Be respectful and constructive. Collaboration is key to building a high-quality system.
+
+---
+
+## 📜 License
+
+By contributing, you agree that your contributions will be licensed under the Apache License 2.0.
