@@ -40,8 +40,6 @@ ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-handoffs\scripts\handoff.ps1 -From "{
 | polyglot-tools | python-run, pip-install, poetry-run, cargo-run, go-run, ruby-run |
 | windows-environment | mkdir, copy-item, move-item, rename-item |
 
-All scripts are at `${CLAUDE_PLUGIN_ROOT}\skills\{skill-name}\scripts\`.
-
 ## Permissions
 
 - **Orchestrator**: all orchestration-* scripts

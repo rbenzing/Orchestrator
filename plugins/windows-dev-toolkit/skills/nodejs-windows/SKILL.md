@@ -3,13 +3,9 @@ name: nodejs-windows
 description: Guides AI agents on correctly running Node.js, npm, and npx commands on Windows PowerShell — avoiding command chaining errors, npx cache mismatches, and package.json resolution failures common in monorepos and subdirectory projects.
 ---
 
-# Node.js on Windows PowerShell
-
-Common pitfalls when AI agents run Node.js tooling on Windows. **Read this before running any npm/npx commands.**
-
 ## Rule 1: Never Use `&&` to Chain Commands
 
-PowerShell 5.1 (the default Windows shell) does NOT support `&&`.
+PowerShell 5.1 does NOT support `&&`.
 
 | ❌ Wrong | ✅ Correct |
 |----------|-----------|
@@ -17,11 +13,7 @@ PowerShell 5.1 (the default Windows shell) does NOT support `&&`.
 | `cd ClientApp && npx react-scripts test` | `Set-Location ClientApp; npm test` |
 | `npm install && npm run build` | `npm install; if ($LASTEXITCODE -eq 0) { npm run build }` |
 
-**Best practice:** Use `Set-Location` on a separate line, then run the command.
-
 ## Rule 2: Prefer `npm run` / `npm test` Over `npx`
-
-**`npx` is dangerous in subdirectories.** Use the npm script aliases defined in `package.json` instead:
 
 | ❌ Avoid | ✅ Prefer |
 |----------|----------|
@@ -31,11 +23,7 @@ PowerShell 5.1 (the default Windows shell) does NOT support `&&`.
 | `npx jest --coverage` | `npm test -- --coverage` |
 | `npx eslint .` | `npm run lint` (if defined) |
 
-## Rule 3: Always `cd` First, Then Run
-
-Node.js tools resolve `package.json` relative to the **current working directory**. Always change directory BEFORE running commands.
-
-## Rule 4: Pass Extra Args with `--`
+## Rule 3: Pass Extra Args with `--`
 
 ```powershell
 npm test -- --watchAll=false --verbose

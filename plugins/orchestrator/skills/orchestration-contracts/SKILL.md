@@ -1,7 +1,7 @@
-# Skill: orchestration-contracts
-
-## Purpose
-Manages the full lifecycle of YAML task contracts — creation, status transitions, retrieval, and archival. This is the core routing primitive for the Contract-Router architecture.
+---
+name: orchestration-contracts
+description: Manages the full lifecycle of YAML task contracts — creation, status transitions, retrieval, and archival. Core routing primitive for the Contract-Router architecture.
+---
 
 ## Scripts
 
@@ -22,11 +22,8 @@ ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scripts\new-contract.ps1 `
   -IfPass "Route to @code-reviewer" `
   -IfFail "Return to Router with Feedback Contract"
 ```
-
 **Types**: `Project` | `Story` | `Task` | `TDD-Red` | `TDD-Green` | `TDD-Refactor` | `Feedback` | `Validation`
 **ModelTier**: `haiku` (lint/typos) | `sonnet` (standard) | `opus` (complex/retry)
-
----
 
 ### `update-contract.ps1`
 Transitions a contract's status and appends an execution history entry.
@@ -42,56 +39,31 @@ ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scripts\update-contract.ps1
   -ErrorTrace  "check-gate: 3/4 tests passed" `
   -FailedRef   "src/auth/login.ts"
 ```
-
 **Statuses**: `Open` | `Review` | `Blocked` | `Closed`
-
----
 
 ### `get-contract.ps1`
 Reads the active Open contract for an agent. Outputs the YAML file path.
 
 ```powershell
-# Find active contract for an agent
 ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scripts\get-contract.ps1 `
   -ProjectName "user-auth" -AssignedAgent "@developer"
 
-# Read a specific contract (raw YAML)
 ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scripts\get-contract.ps1 `
   -ProjectName "user-auth" -ContractId "TSK-001" -Raw
 ```
-
----
 
 ### `archive-contracts.ps1`
 Moves all Closed contracts into `.claude/orchestrator/contracts/{project}/archive/{date}/`.
 
 ```powershell
-# Archive one project
 ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scripts\archive-contracts.ps1 -ProjectName "user-auth"
-
-# Archive all projects (dry run first)
 ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scripts\archive-contracts.ps1 -ProjectName "all" -DryRun
 ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scripts\archive-contracts.ps1 -ProjectName "all"
 ```
 
----
-
 ### `run-orchestrator.ps1`
-Dependency-aware dispatch loop. Reads all Open contracts, resolves dependencies, and outputs dispatch order.
+Dependency-aware dispatch loop. Reads all Open contracts, resolves dependencies, outputs dispatch order.
 
 ```powershell
 ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scripts\run-orchestrator.ps1 -ProjectName "user-auth"
-```
-
----
-
-## Contract File Layout
-```
-.claude/orchestrator/contracts/
-  {project-name}/
-    TSK-001.yml      # Open/Active
-    TSK-002.yml      # Open/Active
-    archive/
-      2025-01-15/
-        TSK-000.yml  # Closed
 ```

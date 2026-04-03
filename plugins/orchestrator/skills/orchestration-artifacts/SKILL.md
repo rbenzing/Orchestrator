@@ -1,7 +1,7 @@
-# Skill: orchestration-artifacts
-
-## Purpose
-Artifact directory structure, project initialization, completion dashboard, and quality gate validation for the Contract-Router orchestration pipeline.
+---
+name: orchestration-artifacts
+description: Artifact directory structure, project initialization, completion dashboard, and quality gate validation for the Contract-Router orchestration pipeline.
+---
 
 ## Directory Structure
 

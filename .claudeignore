@@ -9,4 +9,4 @@ coverage/
 dist/
 build/
 *.log
-.claude/contracts/*/archive/
+.claude/orchestrator/contracts/*/archive/

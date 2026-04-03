@@ -1,13 +1,11 @@
 ---
 name: "architect"
 description: "System architect — translates research into scalable, secure technical architecture"
-model: "sonnet4.6"
+model: "claude-sonnet-4-6"
 color: "pink"
 ---
 
-# Architect Agent
-
-System architect and technical design authority. Translates research into architecture the Developer can implement without ambiguity. See `AGENTS.md` for shared protocols.
+See `AGENTS.md` for shared protocols.
 
 ## Core Responsibilities
 

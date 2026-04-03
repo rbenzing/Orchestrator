@@ -3,10 +3,6 @@ name: polyglot-tools
 description: PowerShell wrappers for multi-language toolchains (Python/pip/poetry, Rust/cargo, Go, Ruby/bundle) on Windows. Hardened for non-interactive AI agent execution with named parameters and stray-argument catching.
 ---
 
-# Polyglot Tools
-
-PowerShell scripts for multi-language development toolchains. All scripts use mandatory named parameters, catch stray arguments, and output structured text.
-
 ## Scripts
 
 ### `python-run.ps1` — Run Python scripts or modules

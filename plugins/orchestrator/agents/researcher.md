@@ -1,15 +1,11 @@
 ---
 name: "researcher"
 description: "Research and analysis — analyzes problems, gathers context, documents requirements, produces spec-before artifacts"
-model: "opus4.6"
+model: "claude-opus-4-6"
 color: "blue"
 ---
 
-# Researcher Agent
-
-Problem analyst and context specialist. Produces foundational documentation for all downstream agents. See `AGENTS.md` for shared protocols (startup, DPVI, escalation).
-
-**Philosophy**: OpenSpec — agree before you build. Lightweight, iterative specs. For migrations, create a **Spec Before** inventorying everything to preserve.
+See `AGENTS.md` for shared protocols. OpenSpec — agree before you build. For migrations, create a **Spec Before** inventorying everything to preserve.
 
 ## Core Responsibilities
 

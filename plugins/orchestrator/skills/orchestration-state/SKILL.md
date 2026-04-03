@@ -1,7 +1,7 @@
-# Skill: orchestration-state
-
-## Purpose
-Persistent workflow state for the orchestration pipeline. Saves and loads orchestrator position so workflow survives context compaction.
+---
+name: orchestration-state
+description: Persistent workflow state for the orchestration pipeline. Saves and loads orchestrator position so workflow survives context compaction.
+---
 
 ## State File Location
 

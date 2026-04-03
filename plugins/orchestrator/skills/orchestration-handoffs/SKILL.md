@@ -1,7 +1,7 @@
-# Skill: orchestration-handoffs
-
-## Purpose
-Standardized handoff protocol and message generator for agent-to-agent transitions in the 8-phase orchestration pipeline.
+---
+name: orchestration-handoffs
+description: Standardized handoff protocol and message generator for agent-to-agent transitions in the 8-phase orchestration pipeline.
+---
 
 ## Agent Transition Map
 

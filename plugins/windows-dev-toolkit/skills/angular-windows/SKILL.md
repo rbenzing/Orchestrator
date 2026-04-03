@@ -3,23 +3,18 @@ name: angular-windows
 description: Guides AI agents on correctly running Angular CLI (ng) commands on Windows PowerShell — handling NODE_OPTIONS, ChromeHeadless testing, legacy OpenSSL, .cmd file execution, and command chaining errors.
 ---
 
-# Angular on Windows PowerShell
-
-Common pitfalls when AI agents run Angular CLI tooling on Windows. **Read this before running any ng/Angular commands.**
-
 ## Rule 1: NEVER Use `cmd /c` — PowerShell Is the Shell
 
 | ❌ Wrong | ✅ Correct |
 |----------|-----------|
 | `cmd /c "cd /d C:\app && ng test"` | `${CLAUDE_PLUGIN_ROOT}\skills\angular-windows\scripts\run-tests.ps1 -ProjectPath "C:\app"` |
 | `cmd /c "set NODE_OPTIONS=--openssl-legacy-provider && ng build"` | `${CLAUDE_PLUGIN_ROOT}\skills\angular-windows\scripts\run-build.ps1 -ProjectPath "." -LegacyOpenSSL` |
-| `cmd /c "run-tests.cmd"` | `.\run-tests.cmd` (runs directly in PowerShell) |
+| `cmd /c "run-tests.cmd"` | `.\run-tests.cmd` |
 | `cmd /c "ng serve --port 4200"` | `${CLAUDE_PLUGIN_ROOT}\skills\angular-windows\scripts\run-serve.ps1 -ProjectPath "." -Port 4200` |
 
 ## Rule 2: Use `-LegacyOpenSSL` for Older Angular Projects
 
 ```powershell
-# ✅ RIGHT — script handles NODE_OPTIONS internally
 ${CLAUDE_PLUGIN_ROOT}\skills\angular-windows\scripts\run-tests.ps1 -ProjectPath "ClientApp" -LegacyOpenSSL
 ${CLAUDE_PLUGIN_ROOT}\skills\angular-windows\scripts\run-build.ps1 -ProjectPath "ClientApp" -LegacyOpenSSL
 ```
@@ -34,7 +29,7 @@ ${CLAUDE_PLUGIN_ROOT}\skills\angular-windows\scripts\run-build.ps1 -ProjectPath 
 
 ## Rule 4: Running `.cmd` / `.bat` Files
 
-PowerShell runs `.cmd` and `.bat` files natively. No `cmd /c` needed:
+PowerShell runs `.cmd` and `.bat` files natively — no `cmd /c` needed:
 ```powershell
 .\run-tests.cmd
 .\build.bat
@@ -69,15 +64,3 @@ ${CLAUDE_PLUGIN_ROOT}\skills\angular-windows\scripts\run-serve.ps1 -ProjectPath 
 ${CLAUDE_PLUGIN_ROOT}\skills\angular-windows\scripts\run-serve.ps1 -ProjectPath "." -LegacyOpenSSL -Port 4200 -Open
 ```
 Params: `-ProjectPath` (required), `-LegacyOpenSSL`, `-Port`, `-Open`, `-Configuration`, `-PassThruArgs`
-
-## Quick Reference
-
-| Task | Command |
-|------|---------|
-| Run tests (headless) | `run-tests.ps1 -ProjectPath "ClientApp" -Headless -NoWatch` |
-| Run tests (legacy SSL) | `run-tests.ps1 -ProjectPath "ClientApp" -LegacyOpenSSL -Headless` |
-| Build production | `run-build.ps1 -ProjectPath "ClientApp" -Configuration "production"` |
-| Build (legacy SSL) | `run-build.ps1 -ProjectPath "ClientApp" -LegacyOpenSSL` |
-| Dev server | `run-serve.ps1 -ProjectPath "ClientApp" -Port 4200` |
-| Lint | `${CLAUDE_PLUGIN_ROOT}\skills\nodejs-windows\scripts\run-lint.ps1 -ProjectPath "ClientApp"` |
-| Run .cmd file | `.\run-tests.cmd` |

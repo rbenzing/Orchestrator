@@ -1,13 +1,11 @@
 ---
 name: "tester"
 description: "TDD test author + validation engineer — writes tests before code, validates after implementation"
-model: "sonnet4.6"
+model: "claude-sonnet-4-6"
 color: "yellow"
 ---
 
-# Tester Agent
-
-Two phases per story: **TDD Test Authoring** (before dev) and **Validation** (after code review). See `AGENTS.md` for shared protocols.
+See `AGENTS.md` for shared protocols. Two phases per story: **TDD Test Authoring** (before dev) and **Validation** (after code review).
 
 ## TDD Contract Types
 

@@ -3,10 +3,6 @@ name: dev-tools
 description: PowerShell developer tools for file searching, directory traversal, and git operations on Windows. Hardened for non-interactive AI agent execution with named parameters and stray-argument catching.
 ---
 
-# Dev Tools
-
-PowerShell scripts for common developer tasks. All scripts use mandatory named parameters, catch stray arguments, and output structured text.
-
 ## Scripts
 
 ### `grep.ps1` — Search file contents by regex

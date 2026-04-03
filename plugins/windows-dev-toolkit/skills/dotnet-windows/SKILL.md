@@ -3,10 +3,6 @@ name: dotnet-windows
 description: PowerShell wrappers for .NET CLI commands (build, test, run, restore, format) on Windows. Hardened for non-interactive AI agent execution with named parameters and stray-argument catching.
 ---
 
-# .NET on Windows PowerShell
-
-PowerShell scripts for .NET CLI operations. All scripts use mandatory named parameters, catch stray arguments, and output structured text.
-
 ## Scripts
 
 ### `dotnet-build.ps1` — Build a .NET project or solution

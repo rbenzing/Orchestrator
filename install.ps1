@@ -158,6 +158,58 @@ if (-not $SkipPlugins) {
         Write-Host "    [+] Enabled plugin: $ref" -ForegroundColor Green
     }
 
+    # Add toolPermissions if not already present
+    if (-not ($settings.PSObject.Properties.Name -contains 'toolPermissions')) {
+        $toolPermissions = @(
+            [PSCustomObject]@{ toolName = "view";                permission = [PSCustomObject]@{ type = "allow" } }
+            [PSCustomObject]@{ toolName = "codebase-retrieval";  permission = [PSCustomObject]@{ type = "allow" } }
+            [PSCustomObject]@{ toolName = "grep-search";         permission = [PSCustomObject]@{ type = "allow" } }
+            [PSCustomObject]@{ toolName = "str-replace-editor";  permission = [PSCustomObject]@{ type = "allow" } }
+            [PSCustomObject]@{ toolName = "save-file";           permission = [PSCustomObject]@{ type = "allow" } }
+            [PSCustomObject]@{ toolName = "read-process";        permission = [PSCustomObject]@{ type = "allow" } }
+            [PSCustomObject]@{ toolName = "list-processes";      permission = [PSCustomObject]@{ type = "allow" } }
+            [PSCustomObject]@{ toolName = "write-process";       permission = [PSCustomObject]@{ type = "allow" } }
+            [PSCustomObject]@{ toolName = "web-search";          permission = [PSCustomObject]@{ type = "allow" } }
+            [PSCustomObject]@{ toolName = "web-fetch";           permission = [PSCustomObject]@{ type = "allow" } }
+            [PSCustomObject]@{ toolName = "launch-process"; shellInputRegex = "\.claude[/\\]skills[/\\]"; permission = [PSCustomObject]@{ type = "allow" } }
+            [PSCustomObject]@{ toolName = "launch-process"; shellInputRegex = "(cmd\s+/[ck]|powershell\s+-[Cc]ommand|powershell\.exe\s+-[Cc]ommand|pwsh\s+-[Cc]ommand|bash\s+-c|sh\s+-c)"; permission = [PSCustomObject]@{ type = "deny" } }
+            [PSCustomObject]@{ toolName = "launch-process"; shellInputRegex = "(dotnet build|dotnet test|dotnet run|dotnet restore|dotnet format)"; permission = [PSCustomObject]@{ type = "deny" } }
+            [PSCustomObject]@{ toolName = "launch-process"; shellInputRegex = "(python |pip |poetry |cargo |go |ruby |bundle )"; permission = [PSCustomObject]@{ type = "deny" } }
+            [PSCustomObject]@{ toolName = "launch-process"; shellInputRegex = "(mkdir|New-Item|Copy-Item|Move-Item|Rename-Item)"; permission = [PSCustomObject]@{ type = "deny" } }
+            [PSCustomObject]@{ toolName = "launch-process"; shellInputRegex = "(git status|git diff|git log|git branch|git show|git stash)"; permission = [PSCustomObject]@{ type = "deny" } }
+            [PSCustomObject]@{ toolName = "launch-process"; shellInputRegex = "(ls |dir |pwd|echo |cat |type |Get-Content|Get-ChildItem|Get-Location|Write-Output)"; permission = [PSCustomObject]@{ type = "deny" } }
+            [PSCustomObject]@{ toolName = "launch-process"; shellInputRegex = "(npm test|npm run|npx |yarn |pnpm |node |tsc |jest |vitest |prettier |eslint )"; permission = [PSCustomObject]@{ type = "deny" } }
+            [PSCustomObject]@{ toolName = "launch-process"; shellInputRegex = "(cd |Set-Location|Push-Location|Pop-Location)"; permission = [PSCustomObject]@{ type = "deny" } }
+            [PSCustomObject]@{ toolName = "launch-process"; shellInputRegex = "(Test-Path|Resolve-Path|Split-Path|Join-Path)"; permission = [PSCustomObject]@{ type = "deny" } }
+            [PSCustomObject]@{ toolName = "launch-process"; shellInputRegex = "Get-Process"; permission = [PSCustomObject]@{ type = "deny" } }
+            [PSCustomObject]@{ toolName = "launch-process"; shellInputRegex = "(Remove-Item |rm |ri |del )"; permission = [PSCustomObject]@{ type = "deny" } }
+            [PSCustomObject]@{ toolName = "launch-process"; shellInputRegex = "(Stop-Process|Get-NetTCPConnection)"; permission = [PSCustomObject]@{ type = "deny" } }
+            [PSCustomObject]@{ toolName = "launch-process"; shellInputRegex = "Select-String"; permission = [PSCustomObject]@{ type = "deny" } }
+            [PSCustomObject]@{ toolName = "launch-process"; shellInputRegex = '(rm -rf /|Remove-Item.*-Recurse.*C:\\|Remove-Item.*-Recurse.*\$env:)'; permission = [PSCustomObject]@{ type = "deny" } }
+            [PSCustomObject]@{ toolName = "launch-process"; shellInputRegex = "(sudo|runas|Start-Process.*-Verb RunAs)"; permission = [PSCustomObject]@{ type = "deny" } }
+            [PSCustomObject]@{ toolName = "launch-process"; shellInputRegex = "(shutdown|restart|Restart-Computer|Stop-Computer|reboot)"; permission = [PSCustomObject]@{ type = "deny" } }
+            [PSCustomObject]@{ toolName = "launch-process"; shellInputRegex = "(chmod 777|icacls.*/grant.*Everyone)"; permission = [PSCustomObject]@{ type = "deny" } }
+            [PSCustomObject]@{ toolName = "launch-process"; shellInputRegex = "(curl.*\|.*sh|curl.*\|.*bash|iex.*\(.*Net\.WebClient|Invoke-Expression.*Download)"; permission = [PSCustomObject]@{ type = "deny" } }
+            [PSCustomObject]@{ toolName = "launch-process"; shellInputRegex = "(Set-ExecutionPolicy|reg add|reg delete|New-Service|Stop-Service|Remove-Service)"; permission = [PSCustomObject]@{ type = "deny" } }
+            [PSCustomObject]@{ toolName = "launch-process"; shellInputRegex = "(format |diskpart|fdisk|mkfs|dd if=)"; permission = [PSCustomObject]@{ type = "deny" } }
+            [PSCustomObject]@{ toolName = "launch-process"; shellInputRegex = "(net user|net localgroup|Add-LocalGroupMember|passwd)"; permission = [PSCustomObject]@{ type = "deny" } }
+            [PSCustomObject]@{ toolName = "launch-process"; shellInputRegex = "(git push|git merge|git rebase|git reset --hard|git clean -fd)"; permission = [PSCustomObject]@{ type = "deny" } }
+            [PSCustomObject]@{ toolName = "launch-process"; shellInputRegex = "(npm publish|npm unpublish|dotnet nuget push|dotnet publish)"; permission = [PSCustomObject]@{ type = "deny" } }
+            [PSCustomObject]@{ toolName = "launch-process"; shellInputRegex = '(env |\$env:|ConvertTo-SecureString|Get-Credential).*([Pp]assword|[Ss]ecret|[Tt]oken|[Kk]ey|[Cc]redential)'; permission = [PSCustomObject]@{ type = "deny" } }
+            [PSCustomObject]@{ toolName = "launch-process"; shellInputRegex = '\$[a-zA-Z_][a-zA-Z0-9_]* *='; permission = [PSCustomObject]@{ type = "deny" } }
+            [PSCustomObject]@{ toolName = "launch-process"; permission = [PSCustomObject]@{ type = "allow" } }
+            [PSCustomObject]@{ toolName = "remove-files"; permission = [PSCustomObject]@{ type = "allow" } }
+            [PSCustomObject]@{ toolName = "kill-process";  permission = [PSCustomObject]@{ type = "allow" } }
+            [PSCustomObject]@{ toolName = "github-api";    permission = [PSCustomObject]@{ type = "allow" } }
+            [PSCustomObject]@{ toolName = "linear";        permission = [PSCustomObject]@{ type = "allow" } }
+            [PSCustomObject]@{ toolName = "notion";        permission = [PSCustomObject]@{ type = "allow" } }
+        )
+        $settings | Add-Member -NotePropertyName 'toolPermissions' -NotePropertyValue $toolPermissions
+        Write-Host "    [+] Written toolPermissions security block" -ForegroundColor Green
+    } else {
+        Write-Host "    [=] toolPermissions already present — skipping" -ForegroundColor DarkGray
+    }
+
     # Write updated settings.json
     $settings | ConvertTo-Json -Depth 10 | Set-Content -Path $targetSettingsPath -Encoding UTF8
     Write-Host "    [+] Written: $targetSettingsPath" -ForegroundColor Green
@@ -289,6 +341,8 @@ foreach ($dir in $Directories) {
                 New-Item -Path $destItem -ItemType Directory -Force | Out-Null
             }
         } else {
+            # Skip README.md files — they are repo documentation, not runtime files
+            if ($item.Name -eq 'README.md') { continue }
             $destDir = Split-Path -Parent $destItem
             if (-not (Test-Path $destDir)) {
                 New-Item -Path $destDir -ItemType Directory -Force | Out-Null
@@ -304,4 +358,9 @@ Write-Host ""
 Write-Host "  ====================================================" -ForegroundColor Green
 Write-Host "  Done! Copied $copiedCount files to $Target" -ForegroundColor Green
 Write-Host "  ====================================================" -ForegroundColor Green
+Write-Host ""
+Write-Host "  Next steps:" -ForegroundColor Cyan
+Write-Host "    1. Open $Target in Claude Code" -ForegroundColor White
+Write-Host "    2. Plugins will activate automatically from .claude/settings.json" -ForegroundColor White
+Write-Host "    3. Type 'orchestrator' or run /orchestrator:start <project-name>" -ForegroundColor White
 Write-Host ""

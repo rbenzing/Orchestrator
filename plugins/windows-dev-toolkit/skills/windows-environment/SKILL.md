@@ -3,10 +3,6 @@ name: windows-environment
 description: Windows environment guide and PowerShell filesystem operation scripts (mkdir, copy, move, rename). Hardened for non-interactive AI agent execution with named parameters, safety guards, and stray-argument catching.
 ---
 
-# Windows Environment Guide
-
-You are operating on a **Windows** machine. This guide prevents common mistakes AI agents make when assuming Linux or macOS.
-
 ## Filesystem Scripts
 
 PowerShell scripts for safe filesystem operations. All scripts block writes to protected directories (`.git`, `.claude`).
@@ -39,15 +35,12 @@ ${CLAUDE_PLUGIN_ROOT}\skills\windows-environment\scripts\rename-item.ps1 -Path "
 ```
 Params: `-Path` (required), `-NewName` (required)
 
-### Filesystem Script Rules
+### Rules
 - Always use **named parameters** — no positional binding
 - Every value must be a **literal string** — never use `$` variables
 - **Never use mkdir/New-Item/Copy-Item/Move-Item/Rename-Item directly** — use these scripts instead
-- All scripts block paths into protected directories (.git, .claude)
 
 ## Shell: PowerShell (not bash)
-
-The default shell is **PowerShell**. Do NOT use bash syntax.
 
 | Task | ❌ Bash (wrong) | ✅ Correct |
 |------|----------------|------------------------|
@@ -65,11 +58,9 @@ The default shell is **PowerShell**. Do NOT use bash syntax.
 | Null device | `/dev/null` | `$null` or `NUL` |
 | Which/where | `which git` | `Get-Command git` or `where.exe git` |
 
-> **IMPORTANT**: For tasks with **bold** entries above, ALWAYS use the toolkit script instead of raw PowerShell commands.
+For tasks with **bold** entries above, ALWAYS use the toolkit script instead of raw PowerShell commands.
 
-## CRITICAL: Forbidden Patterns — Use Toolkit Scripts Instead
-
-**The shell is PowerShell. NEVER use cmd.exe, batch syntax, or bash/Unix commands.**
+## CRITICAL: Forbidden Patterns
 
 ```
 ❌ cmd /c "anything"                         — NEVER shell out to cmd.exe
@@ -82,83 +73,20 @@ The default shell is **PowerShell**. Do NOT use bash syntax.
 ❌ Get-NetTCPConnection + Stop-Process        — Use kill-port.ps1
 ```
 
-### Correct Replacements
-
-```powershell
-# Find files
-${CLAUDE_PLUGIN_ROOT}\skills\dev-tools\scripts\find-files.ps1 -Name "*.test.ts"
-${CLAUDE_PLUGIN_ROOT}\skills\dev-tools\scripts\find-files.ps1 -Name "*.js" -Path "src\__tests__"
-
-# Search file contents
-${CLAUDE_PLUGIN_ROOT}\skills\dev-tools\scripts\grep.ps1 -Pattern "import" -Path "src" -Include "*.js"
-
-# Directory listing
-${CLAUDE_PLUGIN_ROOT}\skills\dev-tools\scripts\tree.ps1 -Path "." -ShowFiles
-
-# Run Node.js tests
-${CLAUDE_PLUGIN_ROOT}\skills\nodejs-windows\scripts\run-tests.ps1 -ProjectPath "ClientApp"
-
-# Run Angular tests (headless, legacy SSL)
-${CLAUDE_PLUGIN_ROOT}\skills\angular-windows\scripts\run-tests.ps1 -ProjectPath "ClientApp" -LegacyOpenSSL -Headless
-
-# Angular build
-${CLAUDE_PLUGIN_ROOT}\skills\angular-windows\scripts\run-build.ps1 -ProjectPath "ClientApp" -Configuration "production"
-
-# Kill process on port
-${CLAUDE_PLUGIN_ROOT}\skills\dev-tools\scripts\kill-port.ps1 -Port 3000 -Force
-```
-
-### CRITICAL: Never Use PowerShell Variables in Terminal Commands
+## CRITICAL: Never Use PowerShell Variables in Terminal Commands
 
 The `launch-process` tool wraps commands with `powershell -NoLogo -NonInteractive -Command ...`.
 `$` variables are interpolated by the outer shell and become empty strings before your script sees them.
 
 ```
-❌ WRONG — variable is stripped to empty string:
-$name = "user-auth"; someScript.ps1 -ProjectName $name
-
-✅ RIGHT — always use literal values directly:
-someScript.ps1 -ProjectName "user-auth"
+❌ $name = "user-auth"; someScript.ps1 -ProjectName $name
+✅ someScript.ps1 -ProjectName "user-auth"
 ```
 
 **Rule: Every parameter value in a terminal command MUST be a literal string.**
 
-### PowerShell Syntax (no toolkit script needed)
-
-```powershell
-# Chain commands (replaces: command1 && command2)
-command1; if ($?) { command2 }
-
-# Redirect stderr to null (replaces: 2>nul)
-command 2>$null
-
-# Read file contents
-Get-Content "file.txt"
-Get-Content "file.txt" -TotalCount 20
-```
-
-## Path Separators
+## Path / Encoding
 
 - Windows uses **backslashes**: `C:\Users\dev\project\src\file.cs`
-- Forward slashes work in most contexts but not all
-- Use `Join-Path` to build paths safely
-
-## Line Endings
-
-- Windows uses `\r\n` (CRLF), Linux/Mac uses `\n` (LF)
-- When writing files, use `-Encoding utf8` or `-Encoding utf8NoBOM`
-
-## Case Sensitivity
-
-- Windows file system is **case-insensitive** (but case-preserving)
-- Do NOT create files that differ only by case
-
-## Common Gotchas
-
-1. **`ls` is an alias for `Get-ChildItem`** — returns objects, not text
-2. **`rm` is an alias for `Remove-Item`** — use `-Recurse -Force` (not `-rf`)
-3. **`cat` is an alias for `Get-Content`** — returns an array of lines
-4. **Semicolons, not `&&`** — PowerShell uses `;` to chain. `&&` works in PowerShell 7+ but not 5.1
-5. **Single vs double quotes** — PowerShell only interpolates variables in double quotes
-6. **NEVER use `cmd /c`** — all commands must be native PowerShell
-7. **NEVER use `$` variables in terminal commands** — they get stripped by launch-process
+- Line endings: `\r\n` (CRLF). When writing files use `-Encoding utf8` or `-Encoding utf8NoBOM`
+- File system is **case-insensitive** — do NOT create files that differ only by case
