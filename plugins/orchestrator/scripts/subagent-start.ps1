@@ -7,7 +7,7 @@
 $ErrorActionPreference = "SilentlyContinue"
 
 try {
-    $stateRoot = Join-Path (Get-Location).Path ".claude\state"
+    $stateRoot = Join-Path (Get-Location).Path ".claude\orchestrator\state"
     if (-not (Test-Path $stateRoot)) { exit 0 }
 
     $stateFile = Get-ChildItem -Path $stateRoot -Filter "orchestrator-state.yml" -Recurse -ErrorAction SilentlyContinue |
@@ -36,7 +36,7 @@ try {
     Write-Output "Dispatching  : $agent"
     if ($contract -and $contract -ne '""' -and $contract -ne '') {
         Write-Output "Contract     : $contract"
-        Write-Output "Contract path: .claude\contracts\$project\$contract.yml"
+        Write-Output "Contract path: .claude\orchestrator\contracts\$project\$contract.yml"
     }
     if ($story -and $story -ne '""' -and $story -ne '') {
         Write-Output "Story        : $story"
@@ -44,7 +44,7 @@ try {
     Write-Output "Context      : $next"
     Write-Output ""
     Write-Output "Read your assigned contract before starting work."
-    Write-Output "Write all output artifacts to .claude\artifacts\$project\<agent-role>\"
+    Write-Output "Write all output artifacts to .claude\orchestrator\artifacts\$project\<agent-role>\"
     Write-Output "=== END SUBAGENT CONTEXT ==="
     exit 0
 }

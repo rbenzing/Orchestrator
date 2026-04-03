@@ -6,7 +6,7 @@ Manages the full lifecycle of YAML task contracts — creation, status transitio
 ## Scripts
 
 ### `new-contract.ps1`
-Creates a new YAML contract file under `.claude/contracts/{ProjectName}/`.
+Creates a new YAML contract file under `.claude/orchestrator/contracts/{ProjectName}/`.
 
 ```powershell
 ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scripts\new-contract.ps1 `
@@ -18,7 +18,7 @@ ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scripts\new-contract.ps1 `
   -Objective   "Implement the JWT login endpoint." `
   -Deliverables "src/auth/login.ts","tests/auth/login.test.ts" `
   -AcceptanceCriteria "All unit tests pass","check-gate passes" `
-  -RequiredReads ".claude/artifacts/user-auth/planning/stories.md" `
+  -RequiredReads ".claude/orchestrator/artifacts/user-auth/planning/stories.md" `
   -IfPass "Route to @code-reviewer" `
   -IfFail "Return to Router with Feedback Contract"
 ```
@@ -63,7 +63,7 @@ ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scripts\get-contract.ps1 `
 ---
 
 ### `archive-contracts.ps1`
-Moves all Closed contracts into `.claude/contracts/{project}/archive/{date}/`.
+Moves all Closed contracts into `.claude/orchestrator/contracts/{project}/archive/{date}/`.
 
 ```powershell
 # Archive one project
@@ -87,7 +87,7 @@ ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scripts\run-orchestrator.ps
 
 ## Contract File Layout
 ```
-.claude/contracts/
+.claude/orchestrator/contracts/
   {project-name}/
     TSK-001.yml      # Open/Active
     TSK-002.yml      # Open/Active

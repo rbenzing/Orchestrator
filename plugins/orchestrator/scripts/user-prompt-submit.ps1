@@ -6,7 +6,7 @@
 $ErrorActionPreference = "SilentlyContinue"
 
 try {
-    $stateRoot = Join-Path (Get-Location).Path ".claude\state"
+    $stateRoot = Join-Path (Get-Location).Path ".claude\orchestrator\state"
     if (-not (Test-Path $stateRoot)) { exit 0 }
 
     # Find the most recently modified active state file

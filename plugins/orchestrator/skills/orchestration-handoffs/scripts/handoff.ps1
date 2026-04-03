@@ -62,19 +62,19 @@ $agentHandle = @{
     "Code Reviewer"="@code-reviewer"; "Tester"="@tester"
 }
 $agentArtifacts = @{
-    "Researcher"=@(".claude/artifacts/$ProjectName/researcher/proposal.md",".claude/artifacts/$ProjectName/researcher/requirements.md")
-    "Architect"=@(".claude/artifacts/$ProjectName/architect/architecture.md")
-    "UI Designer"=@(".claude/artifacts/$ProjectName/ui-designer/ui-spec.md",".claude/artifacts/$ProjectName/ui-designer/design-system.md")
-    "Planner"=@(".claude/artifacts/$ProjectName/planner/story-breakdown.md",".claude/artifacts/$ProjectName/planner/implementation-spec.md")
-    "Developer"=@(".claude/artifacts/$ProjectName/developer/implementation-notes.md")
-    "Code Reviewer"=@(".claude/artifacts/$ProjectName/code-reviewer/code-review-report.md")
-    "Tester"=@(".claude/artifacts/$ProjectName/tester/test-results.md")
+    "Researcher"=@(".claude/orchestrator/artifacts/$ProjectName/researcher/proposal.md",".claude/orchestrator/artifacts/$ProjectName/researcher/requirements.md")
+    "Architect"=@(".claude/orchestrator/artifacts/$ProjectName/architect/architecture.md")
+    "UI Designer"=@(".claude/orchestrator/artifacts/$ProjectName/ui-designer/ui-spec.md",".claude/orchestrator/artifacts/$ProjectName/ui-designer/design-system.md")
+    "Planner"=@(".claude/orchestrator/artifacts/$ProjectName/planner/story-breakdown.md",".claude/orchestrator/artifacts/$ProjectName/planner/implementation-spec.md")
+    "Developer"=@(".claude/orchestrator/artifacts/$ProjectName/developer/implementation-notes.md")
+    "Code Reviewer"=@(".claude/orchestrator/artifacts/$ProjectName/code-reviewer/code-review-report.md")
+    "Tester"=@(".claude/orchestrator/artifacts/$ProjectName/tester/test-results.md")
     "Orchestrator"=@()
 }
 
 # --- Auto-generate ContractId if not supplied ---
 if (-not $ContractId) {
-    $contractDir = Join-Path ".claude\contracts" $ProjectName
+    $contractDir = Join-Path ".claude\orchestrator\contracts" $ProjectName
     $existing = 0
     if (Test-Path $contractDir) {
         $existing = (Get-ChildItem $contractDir -Filter "*.yml" | Measure-Object).Count
@@ -105,7 +105,11 @@ if ($IsFeedback) {
 $reads = $agentArtifacts[$From]
 
 # --- Invoke new-contract.ps1 ---
-$newContractScript = ".claude\skills\orchestration-contracts\scripts\new-contract.ps1"
+$newContractScript = if ($env:CLAUDE_PLUGIN_ROOT) {
+    Join-Path $env:CLAUDE_PLUGIN_ROOT "skills\orchestration-contracts\scripts\new-contract.ps1"
+} else {
+    Join-Path $PSScriptRoot "..\..\..\orchestration-contracts\scripts\new-contract.ps1"
+}
 $contractFile = & $newContractScript `
     -ProjectName       $ProjectName `
     -ContractId        $ContractId `
@@ -124,7 +128,7 @@ $agentDir = @{
     "Tester"="tester"; "Orchestrator"="orchestrator"
 }
 $senderDir = if ($agentDir.ContainsKey($From)) { $agentDir[$From] } else { "orchestrator" }
-$artifactDir = Join-Path (Get-Location).Path ".claude\artifacts\$ProjectName\$senderDir"
+$artifactDir = Join-Path (Get-Location).Path ".claude\orchestrator\artifacts\$ProjectName\$senderDir"
 if (Test-Path $artifactDir) {
     $tag  = if ($IsFeedback) { "feedback" } else { "handoff" }
     $file = Join-Path $artifactDir "$tag-to-$($To -replace ' ','-').md"

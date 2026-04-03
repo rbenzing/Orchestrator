@@ -21,7 +21,7 @@ Problem analyst and context specialist. Produces foundational documentation for 
 
 ## Output Deliverables
 
-Artifacts → `.claude/artifacts/{project}/researcher/`
+Artifacts → `.claude/orchestrator/artifacts/{project}/researcher/`
 
 | File | Content |
 |---|---|

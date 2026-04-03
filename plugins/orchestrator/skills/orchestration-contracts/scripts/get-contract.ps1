@@ -3,7 +3,7 @@
     Reads and displays the active contract for a given project and agent.
 .DESCRIPTION
     Finds the most recent Open contract assigned to the specified agent
-    under .claude/contracts/{ProjectName}/. Outputs the YAML content
+    under .claude/orchestrator/contracts/{ProjectName}/. Outputs the YAML content
     to stdout so the agent can parse its objective and required_reads.
 .PARAMETER ProjectName
     Project identifier.
@@ -30,7 +30,7 @@ param(
 )
 $ErrorActionPreference = "Stop"
 
-$contractDir = Join-Path ".claude\contracts" $ProjectName
+$contractDir = Join-Path ".claude\orchestrator\contracts" $ProjectName
 if (-not (Test-Path $contractDir)) {
     Write-Host "  [!] No contracts directory found for project: $ProjectName" -ForegroundColor Yellow
     exit 0

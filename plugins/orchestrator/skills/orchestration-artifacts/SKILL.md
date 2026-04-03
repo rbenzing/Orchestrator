@@ -6,7 +6,7 @@ Artifact directory structure, project initialization, completion dashboard, and 
 ## Directory Structure
 
 ```
-.claude/artifacts/
+.claude/orchestrator/artifacts/
 +-- {project-name}/
 |   +-- researcher/
 |   |   +-- proposal.md, requirements.md, technical-constraints.md

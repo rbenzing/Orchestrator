@@ -6,7 +6,7 @@ Persistent workflow state for the orchestration pipeline. Saves and loads orches
 ## State File Location
 
 ```
-.claude/state/{project-name}/orchestrator-state.yml
+.claude/orchestrator/state/{project-name}/orchestrator-state.yml
 ```
 
 ## When to Save State

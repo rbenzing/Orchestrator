@@ -30,11 +30,11 @@ if ($ExtraArgs) {
 }
 
 # --- Discovery mode: no ProjectName given ---
-$stateRoot = Join-Path $Root ".claude\state"
+$stateRoot = Join-Path $Root ".claude\orchestrator\state"
 if (-not $ProjectName) {
     Write-Host ""
     if (-not (Test-Path $stateRoot)) {
-        Write-Host "  No .claude/state/ directory found. No projects have saved state." -ForegroundColor Yellow
+        Write-Host "  No .claude/orchestrator/state/ directory found. No projects have saved state." -ForegroundColor Yellow
         exit 1
     }
     $projects = Get-ChildItem -Path $stateRoot -Directory -ErrorAction SilentlyContinue
@@ -47,7 +47,7 @@ if (-not $ProjectName) {
         }
     }
     if ($found.Count -eq 0) {
-        Write-Host "  No state files found in .claude/state/." -ForegroundColor Yellow
+        Write-Host "  No state files found in .claude/orchestrator/state/." -ForegroundColor Yellow
         exit 1
     }
     Write-Host "  Discovered $($found.Count) project(s) with saved state:" -ForegroundColor Cyan
@@ -81,7 +81,7 @@ if (-not (Test-Path $stateFile)) {
     Write-Host "    .claude\skills\orchestration-state\scripts\save-state.ps1 -ProjectName ""$ProjectName"" -Phase ""research"" -ActiveAgent ""Orchestrator"" -NextAction ""Begin project orchestration""" -ForegroundColor Cyan
 
     # Check if artifacts exist to give more context
-    $artifactBase = Join-Path $Root ".claude\artifacts"
+    $artifactBase = Join-Path $Root ".claude\orchestrator\artifacts"
     $agents = @("researcher","architect","ui-designer","planner","developer","code-reviewer","tester")
     $foundPhases = @()
     foreach ($agent in $agents) {
@@ -118,7 +118,7 @@ if ($cid -or $rp) {
     Write-Host "  --- Contract-Router State ---" -ForegroundColor Cyan
     if ($cid) {
         Write-Host "  Active Contract : $cid" -ForegroundColor Yellow
-        $contractFile = ".claude\contracts\$ProjectName\$cid.yml"
+        $contractFile = ".claude\orchestrator\contracts\$ProjectName\$cid.yml"
         $exists = Test-Path $contractFile
         Write-Host "  Contract file   : $contractFile  $(if ($exists) { '[EXISTS]' } else { '[NOT FOUND]' })" -ForegroundColor $(if ($exists) { 'Green' } else { 'Red' })
     }

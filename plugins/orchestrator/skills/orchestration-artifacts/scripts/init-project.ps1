@@ -3,25 +3,25 @@
     Initialize the artifact directory tree for a project.
 .DESCRIPTION
     Creates the standard orchestration artifact directory structure for a named
-    project. Artifacts are stored per-agent under .claude/artifacts/{project}/{agent}/.
+    project. Artifacts are stored per-agent under .claude/orchestrator/artifacts/{project}/{agent}/.
     Includes directories for researcher, architect, ui-designer, planner,
     developer, code-reviewer, and tester agents.
 .PARAMETER ProjectName
     Project identifier. Must start with a letter, may contain letters, numbers,
     dots, underscores, and hyphens (e.g. "user-auth", "my_app.v2").
 .PARAMETER BasePath
-    Root path for artifacts. Default: .claude/artifacts
+    Root path for artifacts. Default: .claude/orchestrator/artifacts
 .EXAMPLE
     .claude\skills\orchestration-artifacts\scripts\init-project.ps1 -ProjectName "user-auth"
 .EXAMPLE
-    .claude\skills\orchestration-artifacts\scripts\init-project.ps1 -ProjectName "dashboard.v2" -BasePath ".claude/artifacts"
+    .claude\skills\orchestration-artifacts\scripts\init-project.ps1 -ProjectName "dashboard.v2" -BasePath ".claude/orchestrator/artifacts"
 #>
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
     [ValidatePattern('^[a-zA-Z][a-zA-Z0-9._-]*$')]
     [string]$ProjectName,
-    [string]$BasePath = ".claude/artifacts",
+    [string]$BasePath = ".claude/orchestrator/artifacts",
     [Parameter(ValueFromRemainingArguments = $true)]
     [object[]]$ExtraArgs
 )
@@ -77,7 +77,7 @@ foreach ($agent in $agents) {
 }
 
 # Create state directory
-$stateDir = Join-Path ".claude\state" $ProjectName
+$stateDir = Join-Path ".claude\orchestrator\state" $ProjectName
 if (-not (Test-Path $stateDir)) {
     New-Item -Path $stateDir -ItemType Directory -Force | Out-Null
     $created++

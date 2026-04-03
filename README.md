@@ -14,7 +14,7 @@ A multi-agent orchestration system that coordinates 8 specialized AI agents (Orc
 - 💰 **Model tiering** — haiku/sonnet/opus assigned per contract to minimize cost
 - ⚡ Autonomous parallel execution: independent contracts dispatched concurrently
 - ✅ Quality gates between each phase, validated against contract acceptance criteria
-- 📝 Artifacts stored at `.claude/artifacts/{project}/{agent}/`
+- 📝 Artifacts stored at `.claude/orchestrator/artifacts/{project}/{agent}/`
 - 🛡️ Hardened PowerShell toolkit with safety checks (path validation, protected directories)
 - 🔒 Dangerous commands denied — safe operations fully autonomous (no user prompts)
 - 💾 State persistence — survives LLM context compaction with automatic recovery

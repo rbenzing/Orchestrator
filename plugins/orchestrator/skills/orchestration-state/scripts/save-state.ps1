@@ -33,7 +33,7 @@ param(
 $ErrorActionPreference = "Stop"
 if ($ExtraArgs) { Write-Host "  WARNING: Stray arguments ignored: $($ExtraArgs -join ', ')" -ForegroundColor Yellow }
 
-$stateDir = Join-Path ".claude\state" $ProjectName
+$stateDir = Join-Path ".claude\orchestrator\state" $ProjectName
 if (-not (Test-Path $stateDir)) { New-Item -Path $stateDir -ItemType Directory -Force | Out-Null }
 
 function Format-YamlList([string[]]$items) {

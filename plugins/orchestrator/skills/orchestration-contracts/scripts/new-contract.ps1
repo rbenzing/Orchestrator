@@ -2,7 +2,7 @@
 .SYNOPSIS
     Creates a new YAML contract file for a task assignment.
 .DESCRIPTION
-    Generates a structured YAML contract under .claude/contracts/{ProjectName}/
+    Generates a structured YAML contract under .claude/orchestrator/contracts/{ProjectName}/
     following the Contract-Router YAML schema.
 .PARAMETER ProjectName
     Project identifier (e.g. "user-auth").
@@ -55,7 +55,7 @@ param(
 )
 $ErrorActionPreference = "Stop"
 
-$contractDir = Join-Path ".claude\contracts" $ProjectName
+$contractDir = Join-Path ".claude\orchestrator\contracts" $ProjectName
 if (-not (Test-Path $contractDir)) {
     New-Item -Path $contractDir -ItemType Directory -Force | Out-Null
 }

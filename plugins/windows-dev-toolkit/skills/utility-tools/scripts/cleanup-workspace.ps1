@@ -61,8 +61,8 @@ foreach ($rel in $purgeDirs) {
 # --- 2. Truncate oversized log files in known locations ---
 $logDirs = @(
     (Join-Path $Root "logs"),
-    (Join-Path $Root ".claude\state"),
-    (Join-Path $Root ".claude\artifacts")
+    (Join-Path $Root ".claude\orchestrator\state"),
+    (Join-Path $Root ".claude\orchestrator\artifacts")
 )
 
 foreach ($logDir in $logDirs) {

@@ -24,7 +24,7 @@ TDD implementation specialist. Converts specs into production code. Works in **T
 
 ## Output Deliverables
 
-Source code + tests in project directory (outside `.claude/`). Artifacts → `.claude/artifacts/{project}/developer/`
+Source code + tests in project directory (outside `.claude/`). Artifacts → `.claude/orchestrator/artifacts/{project}/developer/`
 
 | File | Content |
 |---|---|

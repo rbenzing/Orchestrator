@@ -24,9 +24,9 @@ if ($ExtraArgs) {
     Write-Host "  WARNING: Stray arguments ignored: $($ExtraArgs -join ', ')" -ForegroundColor Yellow
 }
 
-$base = Join-Path $Root ".claude\artifacts"
+$base = Join-Path $Root ".claude\orchestrator\artifacts"
 
-# Phase label → agent directory name under .claude/artifacts/{project}/{agent}/
+# Phase label → agent directory name under .claude/orchestrator/artifacts/{project}/{agent}/
 $phaseToAgent = [ordered]@{
     "researcher"    = @("proposal.md","requirements.md","technical-constraints.md","specs/scenarios.md")
     "architect"     = @("architecture.md")

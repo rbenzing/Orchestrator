@@ -16,8 +16,8 @@ Extracts headings, bullets, key:value pairs — skips prose and code bodies.
 Use this **before** loading a full artifact so you can decide if the full version is needed.
 
 ```powershell
-${CLAUDE_PLUGIN_ROOT}\skills\utility-tools\scripts\summarize-artifact.ps1 -Path ".claude\artifacts\{project}\architect\architecture.md"
-${CLAUDE_PLUGIN_ROOT}\skills\utility-tools\scripts\summarize-artifact.ps1 -Path ".claude\artifacts\{project}\planner\story-breakdown.md" -MaxLines 80
+${CLAUDE_PLUGIN_ROOT}\skills\utility-tools\scripts\summarize-artifact.ps1 -Path ".claude\orchestrator\artifacts\{project}\architect\architecture.md"
+${CLAUDE_PLUGIN_ROOT}\skills\utility-tools\scripts\summarize-artifact.ps1 -Path ".claude\orchestrator\artifacts\{project}\planner\story-breakdown.md" -MaxLines 80
 ```
 
 **Parameters**: `-Path` (required), `-MaxLines` (default 60), `-IncludeBody` (include 3 body lines per heading)

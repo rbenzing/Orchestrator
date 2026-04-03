@@ -3,7 +3,7 @@
     Archives Closed contracts to prevent file system and context bloat.
 .DESCRIPTION
     Moves all Closed contracts for a project into an archive subfolder
-    (.claude/contracts/{ProjectName}/archive/{date}/) so active contract
+    (.claude/orchestrator/contracts/{ProjectName}/archive/{date}/) so active contract
     directories stay small and readable.
 .PARAMETER ProjectName
     Project identifier. Use "all" to archive across all projects.
@@ -21,7 +21,7 @@ param(
 )
 $ErrorActionPreference = "Stop"
 
-$baseDir = ".claude\contracts"
+$baseDir = ".claude\orchestrator\contracts"
 if (-not (Test-Path $baseDir)) {
     Write-Host "  [!] No contracts directory found." -ForegroundColor Yellow
     exit 0

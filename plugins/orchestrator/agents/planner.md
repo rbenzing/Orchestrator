@@ -21,7 +21,7 @@ Technical planner using OpenSpec methodology. Transforms research + architecture
 
 ## Output Deliverables
 
-Artifacts → `.claude/artifacts/{project}/planner/`
+Artifacts → `.claude/orchestrator/artifacts/{project}/planner/`
 
 | File | Content |
 |---|---|

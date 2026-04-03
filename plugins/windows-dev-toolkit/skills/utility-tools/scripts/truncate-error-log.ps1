@@ -18,7 +18,7 @@
     .claude\skills\utility-tools\scripts\truncate-error-log.ps1 -Command "dotnet test"
 .EXAMPLE
     .claude\skills\utility-tools\scripts\truncate-error-log.ps1 `
-      -Command "npm test" -OutputFile ".claude\artifacts\project\testing\error-summary.md"
+      -Command "npm test" -OutputFile ".claude\orchestrator\artifacts\project\testing\error-summary.md"
 #>
 [CmdletBinding()]
 param(

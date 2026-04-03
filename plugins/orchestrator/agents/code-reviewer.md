@@ -25,7 +25,7 @@ Strict quality gate. Only 100% specification-compliant code proceeds to testing.
 
 ## Output Deliverables
 
-Artifacts → `.claude/artifacts/{project}/code-reviewer/`
+Artifacts → `.claude/orchestrator/artifacts/{project}/code-reviewer/`
 
 | File | Content |
 |---|---|

@@ -6,7 +6,7 @@
     or Feedback, increments attempt_count. Appends an execution_history entry
     with the error trace so agents never lose retry context.
 .PARAMETER ProjectName
-    Project identifier matching the directory under .claude/contracts/.
+    Project identifier matching the directory under .claude/orchestrator/contracts/.
 .PARAMETER ContractId
     ID of the contract to update (e.g. "TSK-001").
 .PARAMETER Status
@@ -36,7 +36,7 @@ param(
 )
 $ErrorActionPreference = "Stop"
 
-$contractFile = Join-Path ".claude\contracts" (Join-Path $ProjectName "$ContractId.yml")
+$contractFile = Join-Path ".claude\orchestrator\contracts" (Join-Path $ProjectName "$ContractId.yml")
 if (-not (Test-Path $contractFile)) {
     Write-Error "Contract not found: $contractFile"
     exit 1

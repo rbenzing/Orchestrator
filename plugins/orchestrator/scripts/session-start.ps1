@@ -6,7 +6,7 @@
 $ErrorActionPreference = "SilentlyContinue"
 
 try {
-    $stateRoot = Join-Path (Get-Location).Path ".claude\state"
+    $stateRoot = Join-Path (Get-Location).Path ".claude\orchestrator\state"
     if (-not (Test-Path $stateRoot)) { exit 0 }
 
     $stateFiles = Get-ChildItem -Path $stateRoot -Filter "orchestrator-state.yml" -Recurse -ErrorAction SilentlyContinue |

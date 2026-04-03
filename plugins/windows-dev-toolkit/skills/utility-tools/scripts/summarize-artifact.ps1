@@ -19,10 +19,10 @@
     Include up to 3 lines of body text after each heading. Default: $false.
 .EXAMPLE
     .claude\skills\utility-tools\scripts\summarize-artifact.ps1 `
-      -Path ".claude\artifacts\user-auth\architect\architecture.md"
+      -Path ".claude\orchestrator\artifacts\user-auth\architect\architecture.md"
 .EXAMPLE
     .claude\skills\utility-tools\scripts\summarize-artifact.ps1 `
-      -Path ".claude\artifacts\user-auth\planner\story-breakdown.md" -MaxLines 80
+      -Path ".claude\orchestrator\artifacts\user-auth\planner\story-breakdown.md" -MaxLines 80
 #>
 [CmdletBinding()]
 param(

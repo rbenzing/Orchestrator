@@ -7,7 +7,7 @@
 $ErrorActionPreference = "SilentlyContinue"
 
 try {
-    $stateRoot = Join-Path (Get-Location).Path ".claude\state"
+    $stateRoot = Join-Path (Get-Location).Path ".claude\orchestrator\state"
     if (-not (Test-Path $stateRoot)) { exit 0 }
 
     $stateFile = Get-ChildItem -Path $stateRoot -Filter "orchestrator-state.yml" -Recurse -ErrorAction SilentlyContinue |
@@ -33,7 +33,7 @@ try {
         Write-Output "Contract: $contract"
         Write-Output ""
         Write-Output "ORCHESTRATOR ACTION REQUIRED:"
-        Write-Output "  1. Review subagent output and artifacts in .claude\artifacts\$project\"
+        Write-Output "  1. Review subagent output and artifacts in .claude\orchestrator\artifacts\$project\"
         Write-Output "  2. Update contract status: update-contract.ps1 -ProjectName ""$project"" -ContractId ""$contract"" -Status ""Closed"""
         Write-Output "  3. Save state and dispatch next contract per the routing table."
     }

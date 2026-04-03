@@ -30,7 +30,7 @@ Write comprehensive failing test specs before code exists. Tests = the contract 
 
 **Output**:
 - Test files in project directory (co-located with source)
-- `test-specs.md` → `.claude/artifacts/{project}/tester/` — coverage map (criterion → test), edge cases, contract tests, developer notes
+- `test-specs.md` → `.claude/orchestrator/artifacts/{project}/tester/` — coverage map (criterion → test), edge cases, contract tests, developer notes
 
 ## Phase 2: Validation (After Code Review)
 
@@ -42,7 +42,7 @@ Write comprehensive failing test specs before code exists. Tests = the contract 
 - Regression: existing features unbroken, no unintended side effects
 - Bug reporting: severity (Critical/Major/Minor), repro steps, spec reference, suggested cause
 
-**Output** → `.claude/artifacts/{project}/tester/`:
+**Output** → `.claude/orchestrator/artifacts/{project}/tester/`:
 
 | File | Content |
 |---|---|

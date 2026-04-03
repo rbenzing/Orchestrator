@@ -49,13 +49,13 @@ if (-not $Phase -and -not $ContractID) {
     exit 1
 }
 
-$base = Join-Path $Root ".claude\artifacts"
+$base = Join-Path $Root ".claude\orchestrator\artifacts"
 
 # ============================================================
 # CONTRACT-BASED GATE — reads criteria from YAML contract
 # ============================================================
 if ($ContractID) {
-    $contractFile = Join-Path ".claude\contracts" (Join-Path $ProjectName "$ContractID.yml")
+    $contractFile = Join-Path ".claude\orchestrator\contracts" (Join-Path $ProjectName "$ContractID.yml")
     if (-not (Test-Path $contractFile)) {
         Write-Error "Contract not found: $contractFile"
         exit 1
@@ -149,7 +149,7 @@ function Test-FileWithSections {
     return $r
 }
 
-# Phase → agent directory mapping (.claude/artifacts/{project}/{agent}/)
+# Phase → agent directory mapping (.claude/orchestrator/artifacts/{project}/{agent}/)
 $phaseToAgent = @{
     "research"     = "researcher"
     "architecture" = "architect"

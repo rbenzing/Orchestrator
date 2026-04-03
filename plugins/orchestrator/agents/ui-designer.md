@@ -22,7 +22,7 @@ UI/UX specification specialist. Translates requirements + architecture into prec
 
 ## Output Deliverables
 
-Artifacts → `.claude/artifacts/{project}/ui-designer/`
+Artifacts → `.claude/orchestrator/artifacts/{project}/ui-designer/`
 
 | File | Content |
 |---|---|

@@ -13,7 +13,7 @@ User request
 Orchestrator Agent  (.claude/agents/orchestrator.md)
     │  creates YAML contracts
     ▼
-.claude/contracts/{project}/TSK-NNN.yml
+.claude/orchestrator/contracts/{project}/TSK-NNN.yml
     │  polled by
     ▼
 run-orchestrator.ps1  (dependency-aware dispatch loop)
@@ -21,7 +21,7 @@ run-orchestrator.ps1  (dependency-aware dispatch loop)
     ▼
 Specialist Agent  (.claude/agents/{agent}.md)
     │  reads contract + required_reads only
-    │  writes artifacts to .claude/artifacts/{project}/{agent}/
+    │  writes artifacts to .claude/orchestrator/artifacts/{project}/{agent}/
     │  closes contract → stops
     ▼
 cleanup-workspace.ps1  (post-task hook)
@@ -65,7 +65,7 @@ new-contract.ps1 → status: Open
 `required_reads`, `deliverables`, `acceptance_criteria`, `dependencies`, `attempt_count`,
 `max_attempts`, `next_routing`, `execution_history`
 
-**Contract location**: `.claude/contracts/{project}/TSK-NNN.yml`
+**Contract location**: `.claude/orchestrator/contracts/{project}/TSK-NNN.yml`
 
 ---
 
@@ -97,11 +97,11 @@ Each contract specifies `model_tier` to control cost:
 
 ## Artifact Locations
 
-All documentation artifacts go under `.claude/artifacts/{project}/{agent}/`.
+All documentation artifacts go under `.claude/orchestrator/artifacts/{project}/{agent}/`.
 All actual project code goes **outside** of `.claude/`.
 
 ```
-.claude/artifacts/{project}/
+.claude/orchestrator/artifacts/{project}/
   researcher/    proposal.md, requirements.md, technical-constraints.md
   architect/     architecture.md, ADRs
   ui-designer/   ui-spec.md, design-system.md, accessibility.md
@@ -126,7 +126,7 @@ State is saved at every phase transition so the Orchestrator can survive context
 .claude\skills\orchestration-state\scripts\load-state.ps1
 ```
 
-State files live at: `.claude/state/{project}/orchestrator-state.yml`
+State files live at: `.claude/orchestrator/state/{project}/orchestrator-state.yml`
 
 ---
 
@@ -157,7 +157,7 @@ All scripts live under `.claude/skills/`.
 ## Security & Safety
 
 - **Protected directory**: `.claude/agents/` — blocked from writes by `validate-orchestration-command.ps1` PreToolUse hook
-- **Context blacklist**: `.augmentignore` blocks `node_modules`, `.cache`, `coverage`, `dist` from indexing
+- **Context blacklist**: `.claudeignore` blocks `node_modules`, `.cache`, `coverage`, `dist` from indexing
 - **Dangerous commands**: the hook also blocks `rm -rf`, `format C:`, and similar destructive patterns
 - **Agents cannot modify skill scripts** during project execution
 

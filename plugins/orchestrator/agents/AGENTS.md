@@ -10,7 +10,7 @@ All agents run in **Contract-Router** mode. Stateless. No shared context. Every 
 4. Execute the `objective` — no scope expansion
 5. Validate all `acceptance_criteria`
 6. Close: `${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scripts\update-contract.ps1 -ProjectName "{project}" -ContractId "{id}" -Status "Closed"` (or `"Blocked" -ErrorTrace "..."`)
-7. Summarize: `${CLAUDE_PLUGIN_ROOT}\skills\utility-tools\scripts\summarize-artifact.ps1 -Path ".claude/artifacts/{project}/{role}/primary-deliverable.md"`
+7. Summarize: `${CLAUDE_PLUGIN_ROOT}\skills\utility-tools\scripts\summarize-artifact.ps1 -Path ".claude/orchestrator/artifacts/{project}/{role}/primary-deliverable.md"`
 8. **Stop** — do not proceed, do not create contracts, do not hand off
 
 ## Execution Loop — DPVI
@@ -52,7 +52,7 @@ All scripts are at `${CLAUDE_PLUGIN_ROOT}\skills\{skill-name}\scripts\`.
 
 ## Conventions
 
-- Artifacts go in `.claude/artifacts/{project}/{role}/` — keep each file <500 lines
+- Artifacts go in `.claude/orchestrator/artifacts/{project}/{role}/` — keep each file <500 lines
 - Use bullet points/tables over prose. Reference file paths instead of inlining code.
 - Never create project code inside `.claude/`
 - Always use **named parameters** — no positional binding

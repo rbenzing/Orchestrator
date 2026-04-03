@@ -2,7 +2,7 @@
 .SYNOPSIS
     Master orchestration loop -- scans Open contracts and dispatches the next agent.
 .DESCRIPTION
-    Scans .claude/contracts/{ProjectName}/ for Open contracts whose dependencies
+    Scans .claude/orchestrator/contracts/{ProjectName}/ for Open contracts whose dependencies
     are all Closed. Outputs a prioritized dispatch queue so the Orchestrator knows
     exactly which agent to invoke next. After dispatch, updates state and runs
     cleanup-workspace.ps1 as a post-task hook.
@@ -35,8 +35,8 @@ param(
 )
 $ErrorActionPreference = "Stop"
 
-$baseDir   = ".claude\contracts"
-$stateDir  = ".claude\state"
+$baseDir   = ".claude\orchestrator\contracts"
+$stateDir  = ".claude\orchestrator\state"
 
 # -- Helper: read YAML field (simple regex, no external module needed) -------
 function Get-YamlField {

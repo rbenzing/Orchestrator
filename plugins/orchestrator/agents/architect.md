@@ -21,7 +21,7 @@ System architect and technical design authority. Translates research into archit
 
 ## Output Deliverables
 
-Artifacts → `.claude/artifacts/{project}/architect/`
+Artifacts → `.claude/orchestrator/artifacts/{project}/architect/`
 
 | File | Content |
 |---|---|

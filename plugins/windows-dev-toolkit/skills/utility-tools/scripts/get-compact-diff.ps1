@@ -12,7 +12,7 @@
 .PARAMETER MaxLines
     Maximum lines of diff output. Default: 200.
 .PARAMETER OutputFile
-    Optional file to write the diff to (e.g. .claude/artifacts/.../diff.md).
+    Optional file to write the diff to (e.g. .claude/orchestrator/artifacts/.../diff.md).
 .PARAMETER Staged
     If set, diff staged changes (git diff --cached) instead of working tree.
 .EXAMPLE
@@ -20,7 +20,7 @@
 .EXAMPLE
     .claude\skills\utility-tools\scripts\get-compact-diff.ps1 `
       -BaseBranch "main" -Files "src/auth/login.ts","tests/auth/login.test.ts" `
-      -OutputFile ".claude\artifacts\project\reviews\diff.md"
+      -OutputFile ".claude\orchestrator\artifacts\project\reviews\diff.md"
 #>
 [CmdletBinding()]
 param(

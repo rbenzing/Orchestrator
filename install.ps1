@@ -2,27 +2,32 @@
 param(
     [Parameter(Position = 0)]
     [string]$Target,
-    [switch]$SetupOnly,   # Only scaffold local dirs; do not copy to a target project
-    [switch]$Force        # Overwrite existing .augmentignore
+    [switch]$SetupOnly,      # Only scaffold local dirs; do not copy to a target project
+    [switch]$Force,          # Overwrite existing .claudeignore
+    [switch]$SkipPlugins,    # Skip plugin installation step
+    [switch]$PluginsOnly     # Only install plugins + .claudeignore; skip .claude/ copy
 )
 
 $ErrorActionPreference = 'Stop'
 $ScriptRoot = $PSScriptRoot
 if (-not $ScriptRoot) { $ScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Definition }
 
-$Directories = @('.claude')
+$Directories     = @('.claude')
+$PluginNames     = @('orchestrator', 'windows-dev-toolkit')
+$MarketplaceName = 'internal'
+$MarketplacePath = Join-Path $ScriptRoot 'marketplace.json'
 
 # --- Banner ---
 Write-Host ""
 Write-Host "  ====================================================" -ForegroundColor Cyan
 Write-Host "    Claude Contract-Router Installer" -ForegroundColor Cyan
-Write-Host "    Scaffolds .claude/ & distributes to projects" -ForegroundColor Cyan
+Write-Host "    Scaffolds .claude/, installs plugins, .claudeignore" -ForegroundColor Cyan
 Write-Host "  ====================================================" -ForegroundColor Cyan
 Write-Host ""
 
 # ============================================================
-# PHASE 1 — Local scaffold (always runs)
-# Creates new Contract-Router directories and .augmentignore
+# PHASE 1 - Local scaffold (always runs)
+# Creates new Contract-Router directories and verifies .claudeignore
 # ============================================================
 Write-Host "  [Phase 1] Scaffolding local .claude/ directories..." -ForegroundColor Yellow
 
@@ -36,36 +41,20 @@ function Initialize-Dir {
     }
 }
 
-Initialize-Dir (Join-Path $ScriptRoot ".claude\contracts")
-Initialize-Dir (Join-Path $ScriptRoot ".claude\artifacts")
+Initialize-Dir (Join-Path $ScriptRoot ".claude\orchestrator\contracts")
+Initialize-Dir (Join-Path $ScriptRoot ".claude\orchestrator\artifacts")
+Initialize-Dir (Join-Path $ScriptRoot ".claude\orchestrator\state")
 Initialize-Dir (Join-Path $ScriptRoot ".claude\orchestrator")
 Initialize-Dir (Join-Path $ScriptRoot ".claude\skills\orchestration-contracts\scripts")
 Initialize-Dir (Join-Path $ScriptRoot ".claude\skills\utility-tools\scripts")
 
-# Write / refresh .augmentignore
-$ignorePath = Join-Path $ScriptRoot ".augmentignore"
-if (-not (Test-Path $ignorePath) -or $Force) {
-    $ignoreContent = @"
-# Claude Context Engine Ignore List
-# Prevents the AI from reading these directories with built-in view/retrieval tools.
-# The PreToolUse hook also blocks terminal access to these paths.
-node_modules/
-.cache/
-.pytest_cache/
-__pycache__/
-coverage/
-dist/
-build/
-*.log
-.claude/contracts/*/archive/
-"@
-    Set-Content -Path $ignorePath -Value $ignoreContent -Encoding UTF8
-    Write-Host "    [+] Written: .augmentignore" -ForegroundColor Green
+# Verify .claudeignore exists in the repo (it is a source file, not generated)
+$claudeIgnoreSrc = Join-Path $ScriptRoot '.claudeignore'
+if (Test-Path $claudeIgnoreSrc) {
+    Write-Host "    [=] Present: .claudeignore" -ForegroundColor DarkGray
 } else {
-    Write-Host "    [=] Exists (use -Force to overwrite): .augmentignore" -ForegroundColor DarkGray
+    Write-Host "    [!] WARNING: .claudeignore missing from repo root." -ForegroundColor Yellow
 }
-
-
 
 Write-Host ""
 if ($SetupOnly) {
@@ -76,19 +65,7 @@ if ($SetupOnly) {
     exit 0
 }
 
-Write-Host "  [Phase 2] Copying harness to target project..." -ForegroundColor Yellow
-Write-Host ""
-
-# --- Validate source directories exist ---
-foreach ($dir in $Directories) {
-    $srcPath = Join-Path $ScriptRoot $dir
-    if (-not (Test-Path $srcPath)) {
-        Write-Host "  ERROR: Source directory '$dir' not found at $ScriptRoot" -ForegroundColor Red
-        exit 1
-    }
-}
-
-# --- Get target path ---
+# --- Get and validate target path ---
 if (-not $Target) {
     Write-Host "  Enter the target project path:" -ForegroundColor Yellow
     Write-Host "  (the root of the project you want to install into)" -ForegroundColor DarkGray
@@ -112,6 +89,146 @@ if (-not (Test-Path $Target -PathType Container)) {
 
 $Target = (Resolve-Path $Target).Path
 
+# ============================================================
+# PHASE 2 - Install plugins into target project
+# Registers the internal marketplace and enables both plugins
+# at project scope in .claude/settings.json
+# ============================================================
+if (-not $SkipPlugins) {
+    Write-Host "  [Phase 2] Installing plugins into $Target..." -ForegroundColor Yellow
+    Write-Host ""
+
+    # Ensure target .claude/ directory exists
+    $targetClaudeDir = Join-Path $Target '.claude'
+    if (-not (Test-Path $targetClaudeDir)) {
+        New-Item -Path $targetClaudeDir -ItemType Directory -Force | Out-Null
+        Write-Host "    [+] Created: $targetClaudeDir" -ForegroundColor Green
+    }
+
+    # Read or create target settings.json
+    $targetSettingsPath = Join-Path $targetClaudeDir 'settings.json'
+    if (Test-Path $targetSettingsPath) {
+        try {
+            $settings = Get-Content $targetSettingsPath -Raw -Encoding UTF8 | ConvertFrom-Json
+        } catch {
+            Write-Host "    [!] Could not parse existing settings.json — creating backup and replacing." -ForegroundColor Yellow
+            Copy-Item $targetSettingsPath "$targetSettingsPath.bak" -Force
+            $settings = [PSCustomObject]@{}
+        }
+    } else {
+        $settings = [PSCustomObject]@{}
+    }
+
+    # Add or update marketplaces array
+    $marketplaceEntry = [PSCustomObject]@{
+        name = $MarketplaceName
+        path = $MarketplacePath
+    }
+
+    if (-not ($settings.PSObject.Properties.Name -contains 'pluginMarketplaces')) {
+        $settings | Add-Member -NotePropertyName 'pluginMarketplaces' -NotePropertyValue @($marketplaceEntry)
+        Write-Host "    [+] Registered marketplace '$MarketplaceName' -> $MarketplacePath" -ForegroundColor Green
+    } else {
+        # Check if already registered
+        $existing = $settings.pluginMarketplaces | Where-Object { $_.name -eq $MarketplaceName }
+        if (-not $existing) {
+            $settings.pluginMarketplaces += $marketplaceEntry
+            Write-Host "    [+] Registered marketplace '$MarketplaceName' -> $MarketplacePath" -ForegroundColor Green
+        } else {
+            # Update path in case repo moved
+            $existing.path = $MarketplacePath
+            Write-Host "    [=] Updated marketplace '$MarketplaceName' path" -ForegroundColor DarkGray
+        }
+    }
+
+    # Add or update enabledPlugins array
+    $pluginRefs = $PluginNames | ForEach-Object { "${_}@${MarketplaceName}" }
+
+    if (-not ($settings.PSObject.Properties.Name -contains 'enabledPlugins')) {
+        $settings | Add-Member -NotePropertyName 'enabledPlugins' -NotePropertyValue $pluginRefs
+    } else {
+        foreach ($ref in $pluginRefs) {
+            if ($settings.enabledPlugins -notcontains $ref) {
+                $settings.enabledPlugins += $ref
+            }
+        }
+    }
+
+    foreach ($ref in $pluginRefs) {
+        Write-Host "    [+] Enabled plugin: $ref" -ForegroundColor Green
+    }
+
+    # Write updated settings.json
+    $settings | ConvertTo-Json -Depth 10 | Set-Content -Path $targetSettingsPath -Encoding UTF8
+    Write-Host "    [+] Written: $targetSettingsPath" -ForegroundColor Green
+    Write-Host ""
+
+    # Attempt claude CLI install for each plugin (non-fatal if claude not in PATH)
+    $claudeCmd = Get-Command 'claude' -ErrorAction SilentlyContinue
+    if ($claudeCmd) {
+        Write-Host "    [claude CLI] Installing plugins at project scope..." -ForegroundColor Cyan
+        Push-Location $Target
+        try {
+            foreach ($name in $PluginNames) {
+                Write-Host "      claude plugin install ${name}@${MarketplaceName} --scope project" -ForegroundColor DarkGray
+                & claude plugin install "${name}@${MarketplaceName}" --scope project 2>&1 | ForEach-Object {
+                    Write-Host "      $_" -ForegroundColor DarkGray
+                }
+            }
+        } finally {
+            Pop-Location
+        }
+    } else {
+        Write-Host "    [!] 'claude' CLI not found in PATH. Plugin entries written to settings.json." -ForegroundColor Yellow
+        Write-Host "        To complete install, restart Claude Code in $Target." -ForegroundColor Yellow
+        Write-Host "        Claude Code will pick up the enabledPlugins from .claude/settings.json." -ForegroundColor Yellow
+    }
+}
+
+# ============================================================
+# PHASE 3 - Write .claudeignore to target project
+# ============================================================
+Write-Host "  [Phase 3] Writing .claudeignore to target project..." -ForegroundColor Yellow
+
+$claudeIgnoreSrc = Join-Path $ScriptRoot '.claudeignore'
+$claudeIgnoreDest = Join-Path $Target '.claudeignore'
+
+if (Test-Path $claudeIgnoreSrc) {
+    if (-not (Test-Path $claudeIgnoreDest) -or $Force) {
+        Copy-Item -Path $claudeIgnoreSrc -Destination $claudeIgnoreDest -Force
+        Write-Host "    [+] Written: $claudeIgnoreDest" -ForegroundColor Green
+    } else {
+        Write-Host "    [=] Exists (use -Force to overwrite): $claudeIgnoreDest" -ForegroundColor DarkGray
+    }
+} else {
+    Write-Host "    [!] No .claudeignore found in $ScriptRoot — skipping." -ForegroundColor Yellow
+}
+
+Write-Host ""
+
+if ($PluginsOnly) {
+    Write-Host "  ====================================================" -ForegroundColor Green
+    Write-Host "  Plugins + .claudeignore installed to $Target" -ForegroundColor Green
+    Write-Host "  ====================================================" -ForegroundColor Green
+    Write-Host ""
+    exit 0
+}
+
+# ============================================================
+# PHASE 4 - Copy .claude/ harness to target project
+# ============================================================
+Write-Host "  [Phase 4] Copying .claude/ harness to target project..." -ForegroundColor Yellow
+Write-Host ""
+
+# --- Validate source directories exist ---
+foreach ($dir in $Directories) {
+    $srcPath = Join-Path $ScriptRoot $dir
+    if (-not (Test-Path $srcPath)) {
+        Write-Host "  ERROR: Source directory '$dir' not found at $ScriptRoot" -ForegroundColor Red
+        exit 1
+    }
+}
+
 # --- Check for existing directories ---
 $existing = @()
 foreach ($dir in $Directories) {
@@ -132,8 +249,7 @@ foreach ($dir in $Directories) {
     $files = Get-ChildItem -Path $srcPath -Recurse -File
     $count = $files.Count
     $totalFiles += $count
-    $marker = ""
-    if ($existing -contains $dir) { $marker = " (exists - will overwrite)" }
+    $marker = if ($existing -contains $dir) { " (exists - will overwrite)" } else { "" }
     Write-Host "  [DIR] $dir/ - $count files$marker" -ForegroundColor White
 }
 Write-Host ""
@@ -163,7 +279,6 @@ foreach ($dir in $Directories) {
     $srcPath = Join-Path $ScriptRoot $dir
     $destPath = Join-Path $Target $dir
 
-    # Get all items to copy (files and empty directories)
     $items = Get-ChildItem -Path $srcPath -Recurse
     foreach ($item in $items) {
         $relativePath = $item.FullName.Substring($srcPath.Length)
@@ -173,8 +288,7 @@ foreach ($dir in $Directories) {
             if (-not (Test-Path $destItem)) {
                 New-Item -Path $destItem -ItemType Directory -Force | Out-Null
             }
-        }
-        else {
+        } else {
             $destDir = Split-Path -Parent $destItem
             if (-not (Test-Path $destDir)) {
                 New-Item -Path $destDir -ItemType Directory -Force | Out-Null
@@ -191,4 +305,3 @@ Write-Host "  ====================================================" -ForegroundC
 Write-Host "  Done! Copied $copiedCount files to $Target" -ForegroundColor Green
 Write-Host "  ====================================================" -ForegroundColor Green
 Write-Host ""
-
