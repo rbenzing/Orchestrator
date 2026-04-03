@@ -1,6 +1,6 @@
 # Orchestrator :: Multi-Agent Orchestration System
 
-![Version](https://img.shields.io/github/v/release/rbenzing/Orchestrator?include_prereleases)
+![Version](https://img.shields.io/badge/version-2.5-blue)
 ![License](https://img.shields.io/github/license/rbenzing/Orchestrator)
 ![Issues](https://img.shields.io/github/issues/rbenzing/Orchestrator)
 ![Last Commit](https://img.shields.io/github/last-commit/rbenzing/Orchestrator)
