@@ -204,11 +204,7 @@ You are the Orchestrator agent. Begin orchestration.
 
 ## Documentation
 
-See:
-
-```
-.claude/orchestrator/README.md
-```
+For detailed documentation, see [`.claude/orchestrator/README.md`](./.claude/orchestrator/README.md)
 
 Includes:
 
