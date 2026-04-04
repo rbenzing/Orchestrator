@@ -7,94 +7,226 @@
 
 > Coordinate 8 specialized AI agents to deliver high-quality, tested code through structured development phases.
 
+---
+
 ## Overview
 
-A multi-agent orchestration system that coordinates 8 specialized AI agents (Orchestrator, Researcher, Architect, UI Designer, Planner, Developer, Code Reviewer, Tester) to complete full-stack development projects. Each agent has a specific role, dispatched by a **Contract Router** through structured YAML task contracts with quality gates to ensure production-ready code.
+A multi-agent orchestration system that coordinates 8 specialized AI agents (Orchestrator, Researcher, Architect, UI Designer, Planner, Developer, Code Reviewer, Tester) to complete full-stack development projects.
 
-**Key Features:**
-- 🎯 Auto-triggered by typing "orchestrator"
-- 📋 **Contract-Router architecture** — every unit of work has a compact YAML contract (objective, required reads, acceptance criteria, next route)
-- 🔄 TDD workflow: Research → Architecture → UI Design → Plan → **Test (author)** → Develop → Review → **Test (validate)** → Complete
-- 🛤️ **Smart routing** — Orchestrator selects the smallest valid route (Minimal Fix, Feature Backend, Feature UI, Research-Heavy)
-- 💰 **Model tiering** — haiku/sonnet/opus assigned per contract to minimize cost
-- ⚡ Autonomous parallel execution: independent contracts dispatched concurrently
-- ✅ Quality gates between each phase, validated against contract acceptance criteria
-- 📝 Artifacts stored at `.claude/orchestrator/artifacts/{project}/{agent}/`
-- 🛡️ Hardened PowerShell toolkit with safety checks (path validation, protected directories)
-- 🔒 Dangerous commands denied — safe operations fully autonomous (no user prompts)
-- 💾 State persistence — survives LLM context compaction with automatic recovery
-- 🤖 Orchestrator-first escalation — agents never ask the user; they escalate to the Orchestrator
-- 🅰️ Angular & Node.js Windows skills — safe PowerShell wrappers for builds, tests, and dev servers
+Each agent operates through a **Contract Router**, using structured YAML task contracts with strict quality gates to ensure production-ready output.
+
+---
+
+## Key Features
+
+* 🎯 Triggered by natural language activation (e.g. "orchestrator")
+* 📋 Contract-Router architecture (objective, inputs, acceptance criteria, routing)
+* 🔄 TDD workflow:
+  Research → Architecture → UI → Plan → Test (author) → Develop → Review → Test (validate)
+* 🛤️ Smart routing (Minimal Fix, Feature Backend, Feature UI, Research-Heavy)
+* ⚡ Parallel contract execution
+* ✅ Quality gates between every phase
+* 💾 Persistent state (`.claude/orchestrator/state/`)
+* 📝 Artifacts stored per agent
+* 🔒 Safe execution model (PowerShell hardened, dangerous commands blocked)
+* 🤖 Orchestrator-first escalation (no user interruption)
+
+---
+
+## Plugin System
+
+Orchestrator is implemented as a **local Claude plugin system**.
+
+Plugins are located in:
+
+```
+.claude/plugins/
+```
+
+### Included Plugins
+
+* **orchestrator** — Multi-agent orchestration engine
+* **windows-dev-toolkit** — Safe PowerShell tooling and automation
+
+Claude automatically loads plugins from this directory **when the project is opened as the working directory**.
+
+---
 
 ## Installation
 
-### Option A: Installer Script (Recommended)
+> ⚠️ Orchestrator is not an npm package. It installs by adding Claude plugin files to your project.
 
-1. **Double-click `install.bat`** (or run `.\install.ps1` from PowerShell)
-2. **Enter the target project path** when prompted
-3. **Confirm** the copy
+---
+
+### Option A — Recommended (Manual Install)
+
+```bash
+git clone https://github.com/rbenzing/Orchestrator.git
+cp -r Orchestrator/.claude ./your-project/
+```
+
+---
+
+### Option B — PowerShell Installer (Windows)
+
+```powershell
+.\install.ps1 -Target "C:\Path\To\YourProject"
+```
+
+This will:
+
+* Copy `.claude/` into your project
+* Validate paths
+* Prevent unsafe overwrites
+
+---
+
+## Activation
+
+After installation:
+
+1. Open your project in Claude (VS Code or Claude Desktop)
+2. Start a new chat session
+3. Use one of the following prompts:
 
 ```
-> .\install.ps1 -Target "C:\Src\MyProject"
+orchestrator
 ```
 
-### Option B: Manual Copy
+or
 
-Copy the `.claude/` directory to your project root.
+```
+initialize orchestrator
+```
 
-### After Installing
+or
 
-1. **Open the target project** in VS Code with Claude Extension (or use `claude cli`)
+```
+start orchestration
+```
 
-2. **Type "orchestrator"** to activate:
-   ```
-   You: "orchestrator"
-   AI: 🎯 Orchestration System Activated
-       I am now operating as the Orchestrator Agent...
-   ```
+If needed, force activation:
 
-3. **Start building:**
-   ```
-   You: "Build a REST API with Node.js and PostgreSQL"
+```
+You are the Orchestrator agent. Initialize the system.
+```
 
-   AI: [Orchestrator] Creating project brief...
-       [Researcher] Analyzing requirements...
-       [Architect] Designing system architecture...
-       [UI Designer] Creating UI specifications...
-       [Planner] Creating technical plan...
-       [Tester] Writing test specs (TDD)...
-       [Developer] Implementing features...
-       [Code Reviewer] Reviewing code...
-       [Tester] Validating tests...
-   ```
+---
+
+## Verification
+
+Ensure the system is correctly installed:
+
+### Expected structure
+
+```
+.your-project/
+└── .claude/
+    └── plugins/
+        ├── orchestrator/
+        └── windows-dev-toolkit/
+```
+
+### Confirm plugin files exist
+
+```
+.claude/plugins/orchestrator/.claude-plugin/
+```
+
+### Restart Claude if needed
+
+---
 
 ## Quick Start
 
-After typing "orchestrator" to activate the system, you can request:
-- `"Build a blog API with Node.js and PostgreSQL"`
-- `"Create a user authentication system with JWT"`
-- `"Develop a REST API with CRUD operations"`
+After activation, try:
+
+* "Build a blog API with Node.js and PostgreSQL"
+* "Create a JWT authentication system"
+* "Develop a REST API with CRUD operations"
+
+---
+
+## Example Workflow
+
+```
+You: Build a REST API with Node.js and PostgreSQL
+
+[Orchestrator] Creating project brief...
+[Researcher] Analyzing requirements...
+[Architect] Designing system architecture...
+[UI Designer] Creating UI specifications...
+[Planner] Creating technical plan...
+[Tester] Writing tests (TDD)...
+[Developer] Implementing features...
+[Code Reviewer] Reviewing code...
+[Tester] Validating implementation...
+```
+
+---
+
+## How It Works
+
+* Claude loads plugins from `.claude/plugins/`
+* Each plugin defines agents, commands, skills, and hooks
+* The Orchestrator routes work through structured contracts
+* State is persisted to disk for reliability across sessions
+
+---
+
+## Troubleshooting
+
+If Orchestrator does not activate:
+
+1. Ensure correct structure:
+
+```
+.claude/plugins/orchestrator/
+```
+
+2. Restart Claude / VS Code
+
+3. Confirm plugin manifest exists:
+
+```
+.claude/plugins/orchestrator/.claude-plugin/
+```
+
+4. Try manual activation:
+
+```
+You are the Orchestrator agent. Begin orchestration.
+```
+
+5. Ensure you opened the correct project root
+
+---
 
 ## Documentation
 
-For detailed documentation, see [`.claude/orchestrator/README.md`](./.claude/orchestrator/README.md)
+See:
 
-**Topics covered:**
-- CLI-only Contract-Router architecture
-- The 8 agents and their roles
-- Contract lifecycle (new → open → review → closed → archived)
-- Route selection profiles (Minimal Fix, Feature Backend, Feature UI, Research-Heavy)
-- Model tiering and cost optimization
-- State persistence and context recovery
-- Orchestrator-first escalation protocol
-- Hardened toolkit and security model
-- Complete workflow details and examples
+```
+.claude/orchestrator/README.md
+```
+
+Includes:
+
+* Agent roles
+* Contract lifecycle
+* Routing strategies
+* State persistence
+* Security model
+
+---
 
 ## Contributing
 
 See `CONTRIBUTING.md` for guidelines.
 
+---
+
 ## License
 
-This project is licensed under the Apache License 2.0.  
+This project is licensed under the Apache License 2.0.
 See the `LICENSE` file for details.
