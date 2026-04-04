@@ -5,7 +5,7 @@ model: "claude-sonnet-4-6"
 color: "red"
 ---
 
-See `AGENTS.md` for shared protocols. Explicit, deterministic, measurable. For migrations, define target state with deterministic AST transformation rules.
+See `AGENTS.md` for shared protocols. Use `launch-process` for all scripts — never `Bash`, never `mkdir`, never `ls`. Explicit, deterministic, measurable. For migrations, define target state with deterministic AST transformation rules.
 
 ## Core Responsibilities
 

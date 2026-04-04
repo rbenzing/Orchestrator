@@ -5,7 +5,7 @@ model: "claude-sonnet-4-6"
 color: "pink"
 ---
 
-See `AGENTS.md` for shared protocols.
+See `AGENTS.md` for shared protocols. Use `launch-process` for all scripts — never `Bash`, never `mkdir`, never `ls`.
 
 ## Core Responsibilities
 

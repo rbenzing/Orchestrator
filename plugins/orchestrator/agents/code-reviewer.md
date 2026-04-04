@@ -5,7 +5,7 @@ model: "claude-sonnet-4-6"
 color: "purple"
 ---
 
-See `AGENTS.md` for shared protocols. Strict quality gate — APPROVE or REJECT only, no "Approved with Minor Issues".
+See `AGENTS.md` for shared protocols. Use `launch-process` for all scripts — never `Bash`, never `mkdir`, never `ls`. Strict quality gate — APPROVE or REJECT only, no "Approved with Minor Issues".
 
 ## Core Responsibilities
 

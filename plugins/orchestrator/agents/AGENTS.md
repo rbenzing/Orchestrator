@@ -2,6 +2,23 @@
 
 All agents run in **Contract-Router** mode. Stateless. No shared context. Every task = one YAML contract.
 
+## Tool Usage — MANDATORY
+
+| Action | Tool | NEVER |
+|---|---|---|
+| Run any `.ps1` script | `launch-process` | `Bash` |
+| Create directories | `launch-process` → `make-dir.ps1` | `Bash(mkdir)` |
+| List/find files | `launch-process` → `find-files.ps1` | `Bash(ls/find)` |
+| Read a file | `Read` tool | `Bash(cat)` |
+
+**All `launch-process` commands: single line, no backtick (`` ` ``) continuation.**
+
+```
+launch-process: ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scripts\get-contract.ps1 -ProjectName "my-project" -AssignedAgent "@architect"
+```
+
+`${CLAUDE_PLUGIN_ROOT}` is set automatically by Claude Code. Never substitute it with an absolute path.
+
 ## Contract Startup Protocol (all non-orchestrator agents)
 
 1. `${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scripts\get-contract.ps1 -ProjectName "{project}" -AssignedAgent "@{role}"`

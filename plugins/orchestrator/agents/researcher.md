@@ -5,7 +5,7 @@ model: "claude-opus-4-6"
 color: "blue"
 ---
 
-See `AGENTS.md` for shared protocols. OpenSpec — agree before you build. For migrations, create a **Spec Before** inventorying everything to preserve.
+See `AGENTS.md` for shared protocols. Use `launch-process` for all scripts — never `Bash`, never `mkdir`, never `ls`. OpenSpec — agree before you build. For migrations, create a **Spec Before** inventorying everything to preserve.
 
 ## Core Responsibilities
 

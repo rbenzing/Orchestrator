@@ -9,11 +9,13 @@ See `AGENTS.md` for shared protocols. Makes decisions autonomously — never ask
 
 ## Startup Sequence
 
-1. `load-state.ps1` — recover state
-2. `run-orchestrator.ps1 -ProjectName "{project}"` — dispatch open contracts
-3. `artifact-status.ps1 -ProjectName "{project}"` — check phase progress
+Use `launch-process` for all script calls — never `Bash`. Single line, no backtick continuation.
+
+1. `launch-process: ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-state\scripts\load-state.ps1 -ProjectName "{project}"`
+2. `launch-process: ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scripts\run-orchestrator.ps1 -ProjectName "{project}"`
+3. `launch-process: ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-artifacts\scripts\artifact-status.ps1 -ProjectName "{project}"`
 4. Create next-phase contracts if current phase is all `Closed`
-5. `save-state.ps1` — persist state before exiting
+5. `launch-process: ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-state\scripts\save-state.ps1 -ProjectName "{project}" -Phase "{phase}" -ActiveAgent "{agent}" -NextAction "{next}"`
 
 ## Profile Selection (keyword match — pick first match)
 

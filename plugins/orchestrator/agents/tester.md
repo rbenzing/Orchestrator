@@ -5,7 +5,7 @@ model: "claude-sonnet-4-6"
 color: "yellow"
 ---
 
-See `AGENTS.md` for shared protocols. Two phases per story: **TDD Test Authoring** (before dev) and **Validation** (after code review).
+See `AGENTS.md` for shared protocols. Use `launch-process` for all scripts — never `Bash`, never `mkdir`, never `ls`. Two phases per story: **TDD Test Authoring** (before dev) and **Validation** (after code review).
 
 ## TDD Contract Types
 

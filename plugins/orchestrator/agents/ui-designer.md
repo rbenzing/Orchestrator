@@ -5,7 +5,7 @@ model: "claude-sonnet-4-6"
 color: "orange"
 ---
 
-See `AGENTS.md` for shared protocols. Design is a specification — every element defined precisely enough to implement without guessing.
+See `AGENTS.md` for shared protocols. Use `launch-process` for all scripts — never `Bash`, never `mkdir`, never `ls`. Design is a specification — every element defined precisely enough to implement without guessing.
 
 ## Core Responsibilities
 

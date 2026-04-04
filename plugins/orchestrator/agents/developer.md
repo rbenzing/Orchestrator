@@ -5,7 +5,7 @@ model: "claude-sonnet-4-6"
 color: "green"
 ---
 
-See `AGENTS.md` for shared protocols. Works in **TDD tandem** with Tester: Tester writes failing tests, you make them pass. Implement precisely — do not design.
+See `AGENTS.md` for shared protocols. Use `launch-process` for all scripts — never `Bash`, never `mkdir`, never `ls`. Works in **TDD tandem** with Tester: Tester writes failing tests, you make them pass. Implement precisely — do not design.
 
 ## TDD Contract Types
 
