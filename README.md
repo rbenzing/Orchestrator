@@ -37,12 +37,14 @@ Each agent operates through a **Contract Router**, using structured YAML task co
 
 Orchestrator is implemented as a **local Claude plugin system**.
 
-Plugins are located in this repo at:
+The installer copies both plugins directly into your target project:
 
 ```
-plugins/
-├── orchestrator/
-└── windows-dev-toolkit/
+{your-project}/
+└── .claude/
+    └── plugins/
+        ├── orchestrator/
+        └── windows-dev-toolkit/
 ```
 
 ### Included Plugins
@@ -50,7 +52,7 @@ plugins/
 * **orchestrator** — Multi-agent orchestration engine
 * **windows-dev-toolkit** — Safe PowerShell tooling and automation
 
-Claude loads plugins listed under `enabledPlugins` in your project's `.claude/settings.json`. The installer writes those entries for you.
+Claude loads plugins from `.claude/plugins/` when you open the project. No external repo reference needed after install.
 
 ---
 
@@ -70,12 +72,13 @@ cd Orchestrator
 
 This will:
 
-* Register the `internal` marketplace (pointing to this repo's `marketplace.json`) in your project's `.claude/settings.json`
-* Enable both plugins via `enabledPlugins` (`orchestrator@internal`, `windows-dev-toolkit@internal`)
+* Copy plugin files into `{your-project}/.claude/plugins/` (orchestrator + windows-dev-toolkit)
+* Write the `internal` marketplace manifest to `.claude/plugins/.claude-plugin/marketplace.json`
+* Register the marketplace and enable both plugins in `.claude/settings.json`
 * Copy `.claudeignore` into your project
 * Write the `toolPermissions` security block to `settings.json`
 
-When you next open your project in Claude Code, you will be prompted to trust the marketplace and install the plugins.
+Open your project in Claude Code after running the installer — plugins activate automatically.
 
 ---
 
@@ -121,7 +124,7 @@ Ensure the system is correctly installed:
 {
   "extraKnownMarketplaces": {
     "internal": {
-      "source": { "source": "file", "path": "C:\\GIT\\Orchestrator\\marketplace.json" }
+      "source": { "source": "directory", "path": ".claude/plugins" }
     }
   },
   "enabledPlugins": {
@@ -131,14 +134,15 @@ Ensure the system is correctly installed:
 }
 ```
 
-### Confirm plugin manifests exist
+### Confirm plugin files were copied into target project
 
 ```
-{orchestrator-repo}/plugins/orchestrator/plugin.json
-{orchestrator-repo}/plugins/windows-dev-toolkit/plugin.json
+{your-project}/.claude/plugins/orchestrator/.claude-plugin/plugin.json
+{your-project}/.claude/plugins/windows-dev-toolkit/.claude-plugin/plugin.json
+{your-project}/.claude/plugins/.claude-plugin/marketplace.json
 ```
 
-### Reopen the project in Claude Code after install
+### Open the project in Claude Code after install
 
 ---
 
@@ -183,14 +187,14 @@ You: Build a REST API with Node.js and PostgreSQL
 
 If Orchestrator does not activate:
 
-1. Check that `enabledPlugins` in your project's `.claude/settings.json` contains `"orchestrator@internal": true` and that `extraKnownMarketplaces` points to the correct `marketplace.json` path
+1. Check that `.claude/plugins/orchestrator/` exists in your project and that `enabledPlugins` in `.claude/settings.json` contains `"orchestrator@internal": true`
 
 2. Restart Claude / VS Code
 
 3. Confirm plugin manifest exists:
 
 ```
-{orchestrator-repo}/plugins/orchestrator/plugin.json
+{your-project}/.claude/plugins/orchestrator/.claude-plugin/plugin.json
 ```
 
 4. Try manual activation:

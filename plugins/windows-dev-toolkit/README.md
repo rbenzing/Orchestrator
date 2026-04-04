@@ -22,9 +22,9 @@ Run the installer from the Orchestrator repo root:
 .\install.ps1 -Target "C:\Path\To\YourProject"
 ```
 
-This writes the plugin path to `enabledPlugins` in your project's `.claude/settings.json`. Restart Claude Code to activate.
+This copies the plugin files into `{your-project}/.claude/plugins/windows-dev-toolkit/` and registers everything in `.claude/settings.json`. Open the project in Claude Code after install — plugins activate automatically.
 
-To load for a single session only:
+To load for a single session from this repo (no install):
 
 ```bash
 claude --plugin-dir ./plugins/windows-dev-toolkit

@@ -19,7 +19,7 @@ Run the installer from the Orchestrator repo root, targeting your project:
 .\install.ps1 -Target "C:\Path\To\YourProject"
 ```
 
-This registers the `internal` marketplace and enables both plugins in your project's `.claude/settings.json`. When you open the project in Claude Code, you will be prompted to trust the marketplace and install the plugins.
+This copies the plugin files into `{your-project}/.claude/plugins/`, writes the marketplace manifest, and registers everything in `.claude/settings.json`. Open the project in Claude Code after install — plugins activate automatically.
 
 ## First-Time Setup
 
