@@ -44,7 +44,7 @@ Copy the `.claude/` directory to your project root.
 
 ### After Installing
 
-1. **Open the target project** in VS Code with Claude Extension (or use `auggie chat`)
+1. **Open the target project** in VS Code with Claude Extension (or use `claude cli`)
 
 2. **Type "orchestrator"** to activate:
    ```
