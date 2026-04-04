@@ -21,7 +21,7 @@ Artifacts → `.claude/orchestrator/artifacts/{project}/researcher/`
 
 | File | Content |
 |---|---|
-| `proposal.md` | Why, what's changing, goals, success criteria, out of scope. Migration context if applicable |
+| `proposal.md` | Why, what's changing, goals, success criteria, out of scope, migration context if applicable. **Must end with `## Route Recommendation` naming the exact routing profile** (Minimal Fix / Feature (Backend) / Feature (UI) / Migration/Refactor) |
 | `requirements.md` | Functional (numbered, prioritized) + non-functional + constraints + dependencies |
 | `specs/scenarios.md` | User scenarios: actor, goal, steps, outcome, edge cases |
 | `specs/spec-before.md` | **Migrations only.** Current architecture, AST inventory, dependency map, complexity metrics, feature checklist, data models, APIs, migration inventory |

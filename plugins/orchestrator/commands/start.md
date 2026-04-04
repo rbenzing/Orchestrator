@@ -14,43 +14,49 @@ description: Activate the Contract-Router orchestration system. Recovers state i
 
 3. For new projects:
    - Init artifact dirs: `${CLAUDE_PLUGIN_ROOT}\skills\orchestration-artifacts\scripts\init-project.ps1 -ProjectName "$ARGUMENTS"`
+   - Select profile using keyword match (see table below)
    - Create first-phase contracts: `${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scripts\new-contract.ps1`
    - Run dispatch: `${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scripts\run-orchestrator.ps1 -ProjectName "$ARGUMENTS"`
 
 4. Save state at every workflow transition:
    `${CLAUDE_PLUGIN_ROOT}\skills\orchestration-state\scripts\save-state.ps1 -ProjectName "..." -Phase "..." -ActiveAgent "..." -NextAction "..."`
 
-## Autonomous Dispatch Rules
+## Profile Selection (keyword match — pick first match)
 
-| Trigger | Action |
-|---------|--------|
-| Research `Closed` | Create @architect + @ui-designer contracts; dispatch |
-| Architecture `Closed` | Create @planner contract; dispatch |
-| Planning `Closed` | Create per-story @tester (test-authoring) contracts; dispatch |
-| Tester-author `Closed` | Auto-dispatch @developer (deps resolved) |
-| Developer `Closed` | Auto-dispatch @code-reviewer |
-| Review `Closed` (Approved) | Auto-dispatch @tester validation |
-| Review `Closed` (Rejected) | New @developer contract with feedback in required_reads |
-| Validation Pass | Mark story complete; create next story contracts |
-| Validation Fail | New @developer contract with bug report |
-| Contract `Blocked` | Create resolver (@researcher/@architect); re-open after resolved; max 3 attempts |
-| All `Closed` | Archive contracts; announce completion |
+| If request contains | Use profile |
+|---|---|
+| fix, bug, typo, config, rename, patch, hotfix | **Minimal Fix** |
+| UI, component, page, screen, form, frontend, Angular, React, design | **Feature (UI)** |
+| migrate, migration, refactor, upgrade, rewrite, reorganize | **Migration/Refactor** |
+| anything else | **Feature (Backend)** — start with Researcher |
 
-## Communication Style
+If ambiguous after keyword match: default to **Feature (Backend)**. After Researcher closes, read `proposal.md` → `## Route Recommendation` section and switch profile if needed.
 
-**Autonomous. Declarative. Never interrogative.**
-- Announce actions: "Research complete. Assigning Architect..."
-- Never ask: "Should I proceed?" / "What next?" — just follow the workflow
-- Only contact user for: fundamental requirement conflicts, project-level blockers after 3 failed attempts, or project completion
+## Routing Profiles (fixed dispatch order)
 
-## Routing Profiles
-
-| Profile | Route |
-|---------|-------|
+| Profile | Dispatch sequence |
+|---|---|
 | **Minimal Fix** | Developer → Code Reviewer → Tester |
 | **Feature (Backend)** | Researcher → Architect → Planner → Tester (Red) → Developer (Green) → Code Reviewer → Tester (Validate) |
 | **Feature (UI)** | Researcher → Architect → UI Designer → Planner → Tester (Red) → Developer (Green) → Code Reviewer → Tester (Validate) |
 | **Migration/Refactor** | Researcher → Architect → Planner → Tester (Red) → Developer (Green) → Code Reviewer → Tester (Validate) |
+
+## Dispatch Rules (if/then)
+
+| Condition | Action |
+|---|---|
+| Gate passes | Dispatch next agent in profile sequence |
+| Gate fails / agent blocked | Feedback contract → same agent (`attempt_count` +1) |
+| `attempt_count >= 2` | Escalate `model_tier` to `opus` on new contract |
+| `attempt_count >= max_attempts` | Stop — notify user with blocker summary |
+| All contracts `Closed` | Archive contracts → announce completion |
+
+## Communication Style
+
+Announce actions declaratively — never ask permission:
+- "Research complete. Assigning Architect..."
+- Never: "Should I proceed?" / "What next?"
+- Contact user only when `attempt_count >= max_attempts` or project is complete.
 
 ## Deactivation
 

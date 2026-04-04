@@ -27,7 +27,6 @@ param(
 $ErrorActionPreference = "SilentlyContinue"
 
 $pathArg = if ($Paths.Count -gt 0) { $Paths -join " " } else { "." }
-$fixArg  = if ($Fix) { "--fix" } else { "" }
 
 Write-Host ""
 Write-Host "  [format-and-lint] Detecting project type..." -ForegroundColor Yellow
@@ -37,8 +36,6 @@ $results = @()
 # --- Node.js / TypeScript / JavaScript ---
 $pkgJson = Join-Path $Root "package.json"
 if (Test-Path $pkgJson) {
-    $pkg = Get-Content $pkgJson -Raw | ConvertFrom-Json -ErrorAction SilentlyContinue
-
     # Prettier
     $prettierCfg = @(".prettierrc", ".prettierrc.json", ".prettierrc.yaml", "prettier.config.js") |
         Where-Object { Test-Path (Join-Path $Root $_) } | Select-Object -First 1
@@ -82,7 +79,7 @@ $pyFiles = Get-ChildItem $Root -Filter "pyproject.toml" -Recurse -Depth 2 -Error
 if (-not $pyFiles) { $pyFiles = Get-ChildItem $Root -Filter "setup.py" -Recurse -Depth 2 -ErrorAction SilentlyContinue }
 if ($pyFiles) {
     # ruff (fast) preferred; fall back to black
-    $ruff = & where.exe ruff 2>$null
+    & where.exe ruff 2>$null | Out-Null
     if ($LASTEXITCODE -eq 0) {
         Write-Host "  [ruff] Running on $pathArg..." -ForegroundColor Cyan
         $ruffArgs = @("check", $pathArg)
@@ -91,7 +88,7 @@ if ($pyFiles) {
         $results += [PSCustomObject]@{ Tool="ruff"; ExitCode=$LASTEXITCODE; Output=$out }
         Write-Host "    Exit: $LASTEXITCODE" -ForegroundColor $(if ($LASTEXITCODE -eq 0) { "Green" } else { "Yellow" })
     } else {
-        $black = & where.exe black 2>$null
+        & where.exe black 2>$null | Out-Null
         if ($LASTEXITCODE -eq 0) {
             Write-Host "  [black] Running on $pathArg..." -ForegroundColor Cyan
             $blackArgs = if ($Fix) { @($pathArg) } else { @("--check", $pathArg) }

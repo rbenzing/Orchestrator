@@ -55,7 +55,7 @@ $base = Join-Path $Root ".claude\orchestrator\artifacts"
 # CONTRACT-BASED GATE — reads criteria from YAML contract
 # ============================================================
 if ($ContractID) {
-    $contractFile = Join-Path ".claude\orchestrator\contracts" (Join-Path $ProjectName "$ContractID.yml")
+    $contractFile = Join-Path $Root (Join-Path ".claude\orchestrator\contracts" (Join-Path $ProjectName "$ContractID.yml"))
     if (-not (Test-Path $contractFile)) {
         Write-Error "Contract not found: $contractFile"
         exit 1
@@ -69,7 +69,7 @@ if ($ContractID) {
     # Parse acceptance_criteria block  (lines under "acceptance_criteria:" that start with "  - ")
     $criteriaSection = $false
     $criteria = @()
-    foreach ($line in ($yaml -split "`n")) {
+    foreach ($line in ($yaml -split '\r?\n')) {
         if ($line -match '^acceptance_criteria:') { $criteriaSection = $true; continue }
         if ($criteriaSection) {
             if ($line -match '^\s*-\s+"?(.+?)"?\s*$') { $criteria += $Matches[1].Trim() }
@@ -80,7 +80,7 @@ if ($ContractID) {
     # Parse deliverables block
     $deliverablesSection = $false
     $deliverables = @()
-    foreach ($line in ($yaml -split "`n")) {
+    foreach ($line in ($yaml -split '\r?\n')) {
         if ($line -match '^deliverables:') { $deliverablesSection = $true; continue }
         if ($deliverablesSection) {
             if ($line -match '^\s*-\s+"?(.+?)"?\s*$') { $deliverables += $Matches[1].Trim() }
@@ -122,7 +122,11 @@ if ($ContractID) {
         Write-Host "  RESULT: CONTRACT GATE FAILED" -ForegroundColor Red
         $errorTrace = $contractFailures -join "; "
         # Record failure in contract via update-contract.ps1
-        $updateScript = ".claude\skills\orchestration-contracts\scripts\update-contract.ps1"
+        $updateScript = if ($env:CLAUDE_PLUGIN_ROOT) {
+            Join-Path $env:CLAUDE_PLUGIN_ROOT "skills\orchestration-contracts\scripts\update-contract.ps1"
+        } else {
+            Join-Path $PSScriptRoot "..\..\orchestration-contracts\scripts\update-contract.ps1"
+        }
         if (Test-Path $updateScript) {
             & $updateScript -ProjectName $ProjectName -ContractId $ContractID `
                 -Status "Blocked" -ErrorTrace $errorTrace

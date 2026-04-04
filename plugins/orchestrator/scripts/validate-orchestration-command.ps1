@@ -45,8 +45,10 @@ try {
     if (-not $command) { exit 0 }
 
     # Rule 1: Orchestration scripts must include a -ProjectName parameter
+    # Matches both plugin invocations (${CLAUDE_PLUGIN_ROOT}\skills\orchestration-*) and legacy paths
     # Exception: load-state.ps1 supports discovery mode without -ProjectName
-    if ($command -match '\.claude[/\\]skills[/\\]orchestration') {
+    if ($command -match '(?i)orchestration-[a-z]+[/\\]scripts[/\\]' -or
+        $command -match '(?i)\.claude[/\\]skills[/\\]orchestration') {
         if ($command -notmatch 'load-state\.ps1' -and $command -notmatch '-ProjectName\s+') {
             Deny-Hook "Orchestration scripts require a -ProjectName parameter"
         }
@@ -72,7 +74,7 @@ try {
     }
 
     # Rule 5: Prevent deleting orchestration state files outside of scripts
-    if ($command -match '(Remove-Item|del |rm ).*orchestration-state') {
+    if ($command -match '(Remove-Item|del |rm ).*orchestrator-state') {
         if ($command -notmatch 'orchestration-state[/\\]scripts[/\\]') {
             Deny-Hook "Orchestration state files must only be managed through state scripts"
         }
@@ -91,7 +93,6 @@ try {
 }
 catch {
     # On unexpected errors, allow execution (fail-open) to avoid blocking the agent
-    Write-Error "Hook validation error: $_" 2>&1 | Out-Null
     exit 0
 }
 

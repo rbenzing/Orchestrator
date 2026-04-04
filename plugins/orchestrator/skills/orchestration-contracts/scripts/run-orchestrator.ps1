@@ -35,14 +35,29 @@ param(
 )
 $ErrorActionPreference = "Stop"
 
-$baseDir   = ".claude\orchestrator\contracts"
-$stateDir  = ".claude\orchestrator\state"
+$baseDir = ".claude\orchestrator\contracts"
+
+# Resolve sibling script paths via plugin root (with PSScriptRoot fallback)
+$pluginRoot = if ($env:CLAUDE_PLUGIN_ROOT) { $env:CLAUDE_PLUGIN_ROOT } else {
+    (Resolve-Path (Join-Path $PSScriptRoot "..\..\..")).Path
+}
+$saveStateScript  = Join-Path $pluginRoot "skills\orchestration-state\scripts\save-state.ps1"
+$archiveScript    = Join-Path $pluginRoot "skills\orchestration-contracts\scripts\archive-contracts.ps1"
 
 # -- Helper: read YAML field (simple regex, no external module needed) -------
 function Get-YamlField {
     param([string]$Yaml, [string]$Field)
     $m = [regex]::Match($Yaml, "(?m)^$Field\s*:\s*[`"']?([^`"'\r\n]+)[`"']?")
-    if ($m.Success) { return $m.Groups[1].Value.Trim() }
+    if ($m.Success) {
+        $val = $m.Groups[1].Value.Trim()
+        # Block scalar indicator — read the first non-empty indented line instead
+        if ($val -eq '|' -or $val -eq '>') {
+            $bm = [regex]::Match($Yaml, "(?m)^$Field\s*:\s*[|>][^\r\n]*\r?\n([ \t]+)([^\r\n]+)")
+            if ($bm.Success) { return $bm.Groups[2].Value.Trim() }
+            return ""
+        }
+        return $val
+    }
     return ""
 }
 
@@ -129,7 +144,8 @@ if ($readyContracts.Count -eq 0 -and $blockedContracts.Count -eq 0 -and $waiting
 Write-Host "  +-- READY TO DISPATCH ($($readyContracts.Count)) ----------------------------------------+" -ForegroundColor Green
 foreach ($c in $readyContracts) {
     Write-Host "  |  [$($c.ID)]  $($c.Agent)  [$($c.Tier)]  Attempt $($c.Attempt)/$($c.MaxAttempts)" -ForegroundColor Green
-    Write-Host "  |     Goal: $($c.Objective.Substring(0, [Math]::Min(70, $c.Objective.Length)))..." -ForegroundColor DarkGray
+    $goal = if ($c.Objective.Length -gt 0) { $c.Objective.Substring(0, [Math]::Min(70, $c.Objective.Length)) } else { '(no objective)' }
+    Write-Host "  |     Goal: $goal" -ForegroundColor DarkGray
 }
 
 if ($waitingContracts.Count -gt 0) {
@@ -172,7 +188,6 @@ if ($Dispatch -and $readyContracts.Count -gt 0) {
     $phase = $phaseMap[$agentName]
     if (-not $phase) { $phase = "development" }
 
-    $saveStateScript = ".claude\skills\orchestration-state\scripts\save-state.ps1"
     if (Test-Path $saveStateScript) {
         & $saveStateScript `
             -ProjectName      $next.Project `
@@ -194,23 +209,13 @@ if ($Dispatch -and $readyContracts.Count -gt 0) {
 
 # -- Post-Task Hook: cleanup + archive after agent completes -----------------
 if ($PostTask) {
-    Write-Host "  [POST-TASK] Running cleanup hook..." -ForegroundColor Yellow
-    $cleanupScript = ".claude\skills\utility-tools\scripts\cleanup-workspace.ps1"
-    if (Test-Path $cleanupScript) {
-        & $cleanupScript
-    } else {
-        Write-Host "    [!] cleanup-workspace.ps1 not yet installed -- skipping." -ForegroundColor DarkGray
-    }
-
     if ($CompletedContractID) {
-        $archiveScript = ".claude\skills\orchestration-contracts\scripts\archive-contracts.ps1"
         if (Test-Path $archiveScript) {
             $proj = if ($ProjectName -eq "all") { "all" } else { $ProjectName }
             & $archiveScript -ProjectName $proj
         }
 
         # Update state: router is back in intake/dispatch
-        $saveStateScript = ".claude\skills\orchestration-state\scripts\save-state.ps1"
         if (Test-Path $saveStateScript) {
             & $saveStateScript `
                 -ProjectName      $ProjectName `

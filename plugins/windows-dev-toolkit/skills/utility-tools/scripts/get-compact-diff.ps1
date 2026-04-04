@@ -33,7 +33,7 @@ param(
 $ErrorActionPreference = "SilentlyContinue"
 
 # Verify git is available
-$gitCheck = git --version 2>&1
+git --version 2>&1 | Out-Null
 if ($LASTEXITCODE -ne 0) {
     Write-Error "git is not available in PATH."
     exit 1
@@ -46,14 +46,14 @@ Write-Host "  [get-compact-diff] Generating compact diff..." -ForegroundColor Ye
 $gitArgs = @("diff")
 if ($Staged) { $gitArgs += "--cached" }
 $gitArgs += "--unified=3"
-$gitArgs += $BaseBranch
+if (-not $Staged) { $gitArgs += $BaseBranch }
 if ($Files.Count -gt 0) {
     $gitArgs += "--"
     $gitArgs += $Files
 }
 
 $rawDiff = & git @gitArgs 2>&1
-$rawLines = ($rawDiff -split "`n")
+$rawLines = ($rawDiff -split '\r?\n')
 $totalLines = $rawLines.Count
 
 Write-Host "  Raw diff: $totalLines lines" -ForegroundColor DarkGray

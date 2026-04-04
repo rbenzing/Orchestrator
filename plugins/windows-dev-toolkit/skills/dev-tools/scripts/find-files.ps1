@@ -48,18 +48,20 @@ if ($DirectoriesOnly) {
     $items = Get-ChildItem -Path $Path -Recurse -File -ErrorAction SilentlyContinue
 }
 
-$items | Where-Object {
+$filtered = $items | Where-Object {
     $fp = $_.FullName; $skip = $false
     foreach ($d in $ExcludeDirs) { if ($fp -match "[\\/]$([regex]::Escape($d))[\\/]") { $skip = $true; break } }
     if ($skip) { return $false }
     if ($Regex) { $_.Name -match $Name } else { $_.Name -like $Name }
-} | ForEach-Object {
-    if ($count -ge $MaxResults) { return }
+}
+
+foreach ($item in $filtered) {
+    if ($count -ge $MaxResults) { break }
     $count++
-    $rel = $_.FullName
+    $rel = $item.FullName
     if ($rel.StartsWith($Path)) { $rel = $rel.Substring($Path.Length).TrimStart('\','/') }
-    $size = if (-not $DirectoriesOnly -and $_.Length -gt 1024) { " ({0:N0} KB)" -f ($_.Length / 1024) }
-            elseif (-not $DirectoriesOnly) { " ($($_.Length) B)" } else { "" }
+    $size = if (-not $DirectoriesOnly -and $item.Length -gt 1024) { " ({0:N0} KB)" -f ($item.Length / 1024) }
+            elseif (-not $DirectoriesOnly) { " ($($item.Length) B)" } else { "" }
     Write-Host "  $rel$size"
 }
 

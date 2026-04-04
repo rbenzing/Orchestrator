@@ -41,7 +41,6 @@ $lines      = Get-Content $Path
 $totalLines = $lines.Count
 $output     = [System.Collections.Generic.List[string]]::new()
 $emitted    = 0
-$lastWasBlank = $false
 
 $output.Add("# ARTIFACT SUMMARY: $(Split-Path $Path -Leaf)")
 $output.Add("# Source: $Path  ($totalLines lines)")
@@ -75,7 +74,6 @@ for ($i = 0; $i -lt $lines.Count; $i++) {
         $output.Add("${indent}[$level] $title")
         $emitted++
         $bodyCount = 0
-        $lastWasBlank = $false
         continue
     }
 

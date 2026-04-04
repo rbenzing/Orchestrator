@@ -86,7 +86,7 @@ if (-not $ContractId) {
 # --- Build contract parameters ---
 $fromPhase = $agentPhase[$From]
 $toHandle  = $agentHandle[$To]
-$contractType = if ($IsFeedback) { "Feedback" } else { "Validation" }
+$contractType = if ($IsFeedback) { "Feedback" } else { "Task" }
 
 # Build objective text
 if ($IsFeedback) {

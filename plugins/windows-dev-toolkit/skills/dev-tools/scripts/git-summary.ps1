@@ -30,7 +30,7 @@ if ($ExtraArgs) {
 
 Push-Location $Path
 try {
-    $gitDir = git rev-parse --git-dir 2>$null
+    git rev-parse --git-dir 2>$null | Out-Null
     if ($LASTEXITCODE -ne 0) { Write-Error "Not a git repository: $Path"; exit 1 }
 
     Write-Host "=== Git Summary ===" -ForegroundColor Cyan
@@ -44,8 +44,8 @@ try {
     Write-Host "  Branch: $branch$trackInfo"
 
     if ($tracking) {
-        $ahead = (git rev-list --count "@{upstream}..HEAD" 2>$null)
-        $behind = (git rev-list --count "HEAD..@{upstream}" 2>$null)
+        [int]$ahead  = (git rev-list --count "@{upstream}..HEAD"  2>$null)
+        [int]$behind = (git rev-list --count "HEAD..@{upstream}" 2>$null)
         if ($ahead -gt 0 -or $behind -gt 0) {
             Write-Host "  Ahead: $ahead | Behind: $behind"
         } else { Write-Host "  Up to date" }

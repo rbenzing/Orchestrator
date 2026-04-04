@@ -38,7 +38,7 @@ Write-Host ""
 $rawOutput = & cmd /c "cd /d `"$WorkDir`" && $Command 2>&1"
 $exitCode  = $LASTEXITCODE
 
-$rawLines = $rawOutput -split "`n"
+$rawLines = $rawOutput -split '\r?\n'
 $totalLines = $rawLines.Count
 
 Write-Host "  Raw output: $totalLines lines  |  Exit code: $exitCode" -ForegroundColor DarkGray

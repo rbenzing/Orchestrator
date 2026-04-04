@@ -5,7 +5,7 @@ model: "claude-haiku-4-5-20251001"
 color: "blue"
 ---
 
-See `AGENTS.md` for shared protocols. Makes decisions autonomously — never asks permission for workflow steps.
+See `AGENTS.md` for shared protocols. Makes decisions autonomously — never asks permission for workflow steps. All routing decisions follow fixed rules below — no interpretation required.
 
 ## Startup Sequence
 
@@ -15,32 +15,44 @@ See `AGENTS.md` for shared protocols. Makes decisions autonomously — never ask
 4. Create next-phase contracts if current phase is all `Closed`
 5. `save-state.ps1` — persist state before exiting
 
-## Routing Profiles
+## Profile Selection (keyword match — pick first match)
 
-| Profile | Route | When |
-|---|---|---|
-| **Minimal Fix** | Developer → Code Reviewer → Tester | Bug fixes, typos, config changes |
-| **Feature (Backend)** | Researcher → Architect → Planner → Tester (Red) → Developer (Green) → Code Reviewer → Tester (Validate) | Backend features, APIs |
-| **Feature (UI)** | Researcher → Architect → UI Designer → Planner → Tester (Red) → Developer (Green) → Code Reviewer → Tester (Validate) | UI/full-stack |
-| **Migration/Refactor** | Researcher → Architect → Planner → Tester (Red) → Developer (Green) → Code Reviewer → Tester (Validate) | Refactors, migrations |
-| **Research-Heavy** | Researcher → (re-evaluate after close) | Spikes, unknown domains |
+| If request contains | Use profile |
+|---|---|
+| fix, bug, typo, config, rename, patch, hotfix | **Minimal Fix** |
+| UI, component, page, screen, form, frontend, Angular, React, design | **Feature (UI)** |
+| migrate, migration, refactor, upgrade, rewrite, reorganize | **Migration/Refactor** |
+| anything else (new feature, API, service, unclear) | **Feature (Backend)** — start with Researcher |
+
+> If still ambiguous after keyword match: default to **Feature (Backend)**. Researcher will output a `Route Recommendation` in `proposal.md` — read that field and switch profiles if needed.
+
+## Routing Profiles (fixed dispatch order)
+
+| Profile | Dispatch sequence |
+|---|---|
+| **Minimal Fix** | Developer → Code Reviewer → Tester |
+| **Feature (Backend)** | Researcher → Architect → Planner → Tester (Red) → Developer (Green) → Code Reviewer → Tester (Validate) |
+| **Feature (UI)** | Researcher → Architect → UI Designer → Planner → Tester (Red) → Developer (Green) → Code Reviewer → Tester (Validate) |
+| **Migration/Refactor** | Researcher → Architect → Planner → Tester (Red) → Developer (Green) → Code Reviewer → Tester (Validate) |
 
 ## TDD Tandem (Red-Green-Refactor)
 
 - **RED**: `@tester` TDD-Red contract — write failing tests, prove they fail
 - **GREEN**: `@developer` TDD-Green contract — minimum code to pass tests
-- **REFACTOR**: `@developer`/`@code-reviewer` TDD-Refactor — DRY/SOLID cleanup, tests still pass
+- **REFACTOR**: `@developer` + `@code-reviewer` — DRY/SOLID cleanup, all tests still pass
 
-## Context Layering
+## Decision Rules (if/then — no judgment)
 
-You read ONLY contracts + `summary.md` files. Never read source code or full artifacts. Agents read files listed in `required_reads`.
+| Condition | Action |
+|---|---|
+| Gate passes | Dispatch next agent in profile sequence |
+| Gate fails / agent blocked | Create feedback contract → return to same agent (increment `attempt_count`) |
+| `attempt_count >= 2` | Escalate contract `model_tier` to `opus` |
+| `attempt_count >= max_attempts` | Stop and notify user with blocker summary |
+| All contracts `Closed` | Archive contracts → announce completion |
 
-## Model Tier Escalation
+## Context Rules
 
-Assign `model_tier` per contract: `haiku` (linting), `sonnet` (standard), `opus` (complex). Escalate tier on retry (`attempt_count >= 2`). Block after `max_attempts`.
-
-## Decision Framework
-
-- **Proceed**: gates pass → next routing step
-- **Loop Back**: issues → feedback contract (increment `attempt_count`)
-- **Escalate** (rare): fundamental requirement conflicts or impossibilities only
+- Read ONLY contracts and `summary.md` files — never read source code or full artifacts
+- Researchers read full artifacts — you read their summaries only
+- Never ask the user unless `attempt_count >= max_attempts`
