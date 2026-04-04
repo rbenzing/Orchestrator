@@ -15,7 +15,7 @@ if (-not $ScriptRoot) { $ScriptRoot = Split-Path -Parent $MyInvocation.MyCommand
 $Directories      = @('.claude')
 $PluginNames      = @('orchestrator', 'windows-dev-toolkit')
 $MarketplaceName  = 'internal'
-$MarketplacePath  = Join-Path $ScriptRoot 'marketplace.json'
+$MarketplaceRoot  = $ScriptRoot
 
 # --- Banner ---
 Write-Host ""
@@ -117,17 +117,17 @@ if (-not $SkipPlugins) {
     }
 
     # Add or update extraKnownMarketplaces (file source pointing to marketplace.json)
-    $mktSource  = [PSCustomObject]@{ source = 'file'; path = $MarketplacePath }
+    $mktSource  = [PSCustomObject]@{ source = 'directory'; path = $MarketplaceRoot }
     $mktEntry   = [PSCustomObject]@{ source = $mktSource }
     if (-not ($settings.PSObject.Properties.Name -contains 'extraKnownMarketplaces')) {
         $mkts = [PSCustomObject]@{}
         $mkts | Add-Member -NotePropertyName $MarketplaceName -NotePropertyValue $mktEntry
         $settings | Add-Member -NotePropertyName 'extraKnownMarketplaces' -NotePropertyValue $mkts
-        Write-Host "    [+] Registered marketplace '$MarketplaceName' -> $MarketplacePath" -ForegroundColor Green
+        Write-Host "    [+] Registered marketplace '$MarketplaceName' -> $MarketplaceRoot" -ForegroundColor Green
     } else {
         if (-not ($settings.extraKnownMarketplaces.PSObject.Properties.Name -contains $MarketplaceName)) {
             $settings.extraKnownMarketplaces | Add-Member -NotePropertyName $MarketplaceName -NotePropertyValue $mktEntry
-            Write-Host "    [+] Registered marketplace '$MarketplaceName' -> $MarketplacePath" -ForegroundColor Green
+            Write-Host "    [+] Registered marketplace '$MarketplaceName' -> $MarketplaceRoot" -ForegroundColor Green
         } else {
             $settings.extraKnownMarketplaces.$MarketplaceName = $mktEntry
             Write-Host "    [=] Updated marketplace '$MarketplaceName' path" -ForegroundColor DarkGray
