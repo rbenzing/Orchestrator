@@ -11,28 +11,25 @@ Contract-Router multi-agent orchestration pipeline for Claude Code. Coordinates 
 | **7 hooks** | PreToolUse (validation), PreCompact, PostCompact, SessionStart, UserPromptSubmit, SubagentStart, SubagentStop |
 | **2 commands** | `/orchestrator:start`, `/orchestrator:setup` |
 
-## Installation (Internal)
+## Installation
 
-```bash
-# Load for a single session (development/testing)
-claude --plugin-dir ./plugins/orchestrator
+Run the installer from the Orchestrator repo root, targeting your project:
 
-# Install permanently (user scope)
-claude plugin install orchestrator@local-marketplace
-
-# Install for the whole team (project scope — commits to .claude/settings.json)
-claude plugin install orchestrator@local-marketplace --scope project
+```powershell
+.\install.ps1 -Target "C:\Path\To\YourProject"
 ```
+
+This registers the `internal` marketplace and enables both plugins in your project's `.claude/settings.json`. When you open the project in Claude Code, you will be prompted to trust the marketplace and install the plugins.
 
 ## First-Time Setup
 
-After enabling the plugin, run the setup command to write recommended tool permissions to your project:
+After the plugin activates, run the setup command to write recommended tool permissions to your project:
 
 ```
 /orchestrator:setup
 ```
 
-This generates `.claude/settings.json` with the security deny-list that prevents agents from running raw PowerShell commands, git destructive operations, and credential-leaking patterns.
+This writes the security deny-list to `.claude/settings.json` that prevents agents from running raw PowerShell, git destructive operations, and credential-leaking patterns.
 
 ## Usage
 

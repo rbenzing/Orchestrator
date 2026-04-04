@@ -12,10 +12,10 @@ $ErrorActionPreference = 'Stop'
 $ScriptRoot = $PSScriptRoot
 if (-not $ScriptRoot) { $ScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Definition }
 
-$Directories     = @('.claude')
-$PluginNames     = @('orchestrator', 'windows-dev-toolkit')
-$MarketplaceName = 'internal'
-$MarketplacePath = Join-Path $ScriptRoot 'marketplace.json'
+$Directories      = @('.claude')
+$PluginNames      = @('orchestrator', 'windows-dev-toolkit')
+$MarketplaceName  = 'internal'
+$MarketplacePath  = Join-Path $ScriptRoot 'marketplace.json'
 
 # --- Banner ---
 Write-Host ""
@@ -108,7 +108,7 @@ if (-not $SkipPlugins) {
         try {
             $settings = Get-Content $targetSettingsPath -Raw -Encoding UTF8 | ConvertFrom-Json
         } catch {
-            Write-Host "    [!] Could not parse existing settings.json — creating backup and replacing." -ForegroundColor Yellow
+            Write-Host "    [!] Could not parse existing settings.json - creating backup and replacing." -ForegroundColor Yellow
             Copy-Item $targetSettingsPath "$targetSettingsPath.bak" -Force
             $settings = [PSCustomObject]@{}
         }
@@ -116,43 +116,42 @@ if (-not $SkipPlugins) {
         $settings = [PSCustomObject]@{}
     }
 
-    # Add or update marketplaces array
-    $marketplaceEntry = [PSCustomObject]@{
-        name = $MarketplaceName
-        path = $MarketplacePath
-    }
-
-    if (-not ($settings.PSObject.Properties.Name -contains 'pluginMarketplaces')) {
-        $settings | Add-Member -NotePropertyName 'pluginMarketplaces' -NotePropertyValue @($marketplaceEntry)
+    # Add or update extraKnownMarketplaces (file source pointing to marketplace.json)
+    $mktSource  = [PSCustomObject]@{ source = 'file'; path = $MarketplacePath }
+    $mktEntry   = [PSCustomObject]@{ source = $mktSource }
+    if (-not ($settings.PSObject.Properties.Name -contains 'extraKnownMarketplaces')) {
+        $mkts = [PSCustomObject]@{}
+        $mkts | Add-Member -NotePropertyName $MarketplaceName -NotePropertyValue $mktEntry
+        $settings | Add-Member -NotePropertyName 'extraKnownMarketplaces' -NotePropertyValue $mkts
         Write-Host "    [+] Registered marketplace '$MarketplaceName' -> $MarketplacePath" -ForegroundColor Green
     } else {
-        # Check if already registered
-        $existing = $settings.pluginMarketplaces | Where-Object { $_.name -eq $MarketplaceName }
-        if (-not $existing) {
-            $settings.pluginMarketplaces += $marketplaceEntry
+        if (-not ($settings.extraKnownMarketplaces.PSObject.Properties.Name -contains $MarketplaceName)) {
+            $settings.extraKnownMarketplaces | Add-Member -NotePropertyName $MarketplaceName -NotePropertyValue $mktEntry
             Write-Host "    [+] Registered marketplace '$MarketplaceName' -> $MarketplacePath" -ForegroundColor Green
         } else {
-            # Update path in case repo moved
-            $existing.path = $MarketplacePath
+            $settings.extraKnownMarketplaces.$MarketplaceName = $mktEntry
             Write-Host "    [=] Updated marketplace '$MarketplaceName' path" -ForegroundColor DarkGray
         }
     }
 
-    # Add or update enabledPlugins array
-    $pluginRefs = $PluginNames | ForEach-Object { "${_}@${MarketplaceName}" }
-
+    # Add or update enabledPlugins ("name@marketplace": true)
     if (-not ($settings.PSObject.Properties.Name -contains 'enabledPlugins')) {
-        $settings | Add-Member -NotePropertyName 'enabledPlugins' -NotePropertyValue $pluginRefs
+        $enabled = [PSCustomObject]@{}
+        foreach ($name in $PluginNames) {
+            $enabled | Add-Member -NotePropertyName "$name@$MarketplaceName" -NotePropertyValue $true
+        }
+        $settings | Add-Member -NotePropertyName 'enabledPlugins' -NotePropertyValue $enabled
     } else {
-        foreach ($ref in $pluginRefs) {
-            if ($settings.enabledPlugins -notcontains $ref) {
-                $settings.enabledPlugins += $ref
+        foreach ($name in $PluginNames) {
+            $key = "$name@$MarketplaceName"
+            if (-not ($settings.enabledPlugins.PSObject.Properties.Name -contains $key)) {
+                $settings.enabledPlugins | Add-Member -NotePropertyName $key -NotePropertyValue $true
             }
         }
     }
 
-    foreach ($ref in $pluginRefs) {
-        Write-Host "    [+] Enabled plugin: $ref" -ForegroundColor Green
+    foreach ($name in $PluginNames) {
+        Write-Host "    [+] Enabled plugin: $name@$MarketplaceName" -ForegroundColor Green
     }
 
     # Add toolPermissions if not already present
@@ -204,7 +203,7 @@ if (-not $SkipPlugins) {
         $settings | Add-Member -NotePropertyName 'toolPermissions' -NotePropertyValue $toolPermissions
         Write-Host "    [+] Written toolPermissions security block" -ForegroundColor Green
     } else {
-        Write-Host "    [=] toolPermissions already present — skipping" -ForegroundColor DarkGray
+        Write-Host "    [=] toolPermissions already present - skipping" -ForegroundColor DarkGray
     }
 
     # Write updated settings.json
@@ -212,26 +211,8 @@ if (-not $SkipPlugins) {
     Write-Host "    [+] Written: $targetSettingsPath" -ForegroundColor Green
     Write-Host ""
 
-    # Attempt claude CLI install for each plugin (non-fatal if claude not in PATH)
-    $claudeCmd = Get-Command 'claude' -ErrorAction SilentlyContinue
-    if ($claudeCmd) {
-        Write-Host "    [claude CLI] Installing plugins at project scope..." -ForegroundColor Cyan
-        Push-Location $Target
-        try {
-            foreach ($name in $PluginNames) {
-                Write-Host "      claude plugin install ${name}@${MarketplaceName} --scope project" -ForegroundColor DarkGray
-                & claude plugin install "${name}@${MarketplaceName}" --scope project 2>&1 | ForEach-Object {
-                    Write-Host "      $_" -ForegroundColor DarkGray
-                }
-            }
-        } finally {
-            Pop-Location
-        }
-    } else {
-        Write-Host "    [!] 'claude' CLI not found in PATH. Plugin entries written to settings.json." -ForegroundColor Yellow
-        Write-Host "        To complete install, restart Claude Code in $Target." -ForegroundColor Yellow
-        Write-Host "        Claude Code will pick up the enabledPlugins from .claude/settings.json." -ForegroundColor Yellow
-    }
+    Write-Host "    [i] Open $Target in Claude Code." -ForegroundColor Cyan
+    Write-Host "        You will be prompted to trust the marketplace and install plugins." -ForegroundColor Cyan
 }
 
 # ============================================================
@@ -250,7 +231,7 @@ if (Test-Path $claudeIgnoreSrc) {
         Write-Host "    [=] Exists (use -Force to overwrite): $claudeIgnoreDest" -ForegroundColor DarkGray
     }
 } else {
-    Write-Host "    [!] No .claudeignore found in $ScriptRoot — skipping." -ForegroundColor Yellow
+    Write-Host "    [!] No .claudeignore found in $ScriptRoot - skipping." -ForegroundColor Yellow
 }
 
 Write-Host ""
@@ -298,21 +279,12 @@ foreach ($dir in $Directories) {
     $files = Get-ChildItem -Path $srcPath -Recurse -File
     $count = $files.Count
     $totalFiles += $count
-    $marker = if ($existing -contains $dir) { " (exists - will overwrite)" } else { "" }
+    $marker = if ($existing -contains $dir) { " (exists - new files only)" } else { "" }
     Write-Host "  [DIR] $dir/ - $count files$marker" -ForegroundColor White
 }
 Write-Host ""
-Write-Host "  Total: $totalFiles files will be copied." -ForegroundColor White
+Write-Host "  Total: $totalFiles source files. Existing files in target will not be overwritten." -ForegroundColor White
 Write-Host ""
-
-# --- Confirm ---
-if ($existing.Count -gt 0) {
-    Write-Host "  WARNING: The following directories already exist and will be OVERWRITTEN:" -ForegroundColor Yellow
-    foreach ($dir in $existing) {
-        Write-Host "     - $Target\$dir" -ForegroundColor Yellow
-    }
-    Write-Host ""
-}
 
 $confirm = Read-Host "  Proceed? (Y/n)"
 if ($confirm -and $confirm -notin @('y', 'Y', 'yes', 'Yes', 'YES')) {
@@ -321,9 +293,10 @@ if ($confirm -and $confirm -notin @('y', 'Y', 'yes', 'Yes', 'YES')) {
     exit 0
 }
 
-# --- Copy ---
+# --- Copy (never overwrite — skip files that already exist) ---
 Write-Host ""
 $copiedCount = 0
+$skippedCount = 0
 foreach ($dir in $Directories) {
     $srcPath = Join-Path $ScriptRoot $dir
     $destPath = Join-Path $Target $dir
@@ -338,22 +311,27 @@ foreach ($dir in $Directories) {
                 New-Item -Path $destItem -ItemType Directory -Force | Out-Null
             }
         } else {
-            # Skip README.md files — they are repo documentation, not runtime files
+            # Skip README.md files - they are repo documentation, not runtime files
             if ($item.Name -eq 'README.md') { continue }
             $destDir = Split-Path -Parent $destItem
             if (-not (Test-Path $destDir)) {
                 New-Item -Path $destDir -ItemType Directory -Force | Out-Null
             }
-            Copy-Item -Path $item.FullName -Destination $destItem -Force
-            $copiedCount++
-            Write-Host "  + $dir$relativePath" -ForegroundColor DarkGreen
+            if (Test-Path $destItem) {
+                $skippedCount++
+                Write-Host "  = $dir$relativePath" -ForegroundColor DarkGray
+            } else {
+                Copy-Item -Path $item.FullName -Destination $destItem
+                $copiedCount++
+                Write-Host "  + $dir$relativePath" -ForegroundColor DarkGreen
+            }
         }
     }
 }
 
 Write-Host ""
 Write-Host "  ====================================================" -ForegroundColor Green
-Write-Host "  Done! Copied $copiedCount files to $Target" -ForegroundColor Green
+Write-Host "  Done! Copied $copiedCount new files, skipped $skippedCount existing." -ForegroundColor Green
 Write-Host "  ====================================================" -ForegroundColor Green
 Write-Host ""
 Write-Host "  Next steps:" -ForegroundColor Cyan

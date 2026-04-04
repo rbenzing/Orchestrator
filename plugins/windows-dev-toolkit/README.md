@@ -14,17 +14,20 @@ PowerShell dev tool wrappers for Windows — hardened for non-interactive AI age
 | **dotnet-windows** | dotnet-build, dotnet-test, dotnet-run, dotnet-restore, dotnet-format | .NET CLI |
 | **polyglot-tools** | python-run, pip-install, poetry-run, cargo-run, go-run, ruby-run | Python, Rust, Go, Ruby |
 
-## Installation (Internal)
+## Installation
+
+Run the installer from the Orchestrator repo root:
+
+```powershell
+.\install.ps1 -Target "C:\Path\To\YourProject"
+```
+
+This writes the plugin path to `enabledPlugins` in your project's `.claude/settings.json`. Restart Claude Code to activate.
+
+To load for a single session only:
 
 ```bash
-# Load for a single session
 claude --plugin-dir ./plugins/windows-dev-toolkit
-
-# Install permanently
-claude plugin install windows-dev-toolkit@local-marketplace
-
-# Team scope
-claude plugin install windows-dev-toolkit@local-marketplace --scope project
 ```
 
 ## Requirements
