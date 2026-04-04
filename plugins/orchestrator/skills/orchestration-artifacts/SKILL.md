@@ -3,6 +3,10 @@ name: orchestration-artifacts
 description: Artifact directory structure, project initialization, completion dashboard, and quality gate validation for the Contract-Router orchestration pipeline.
 ---
 
+> **TOOL**: Always call these scripts via `launch-process`. Never use `Bash`.
+> **FORMAT**: All parameters on a single line — no backtick line continuation.
+> **PATH**: Use `${CLAUDE_PLUGIN_ROOT}\skills\orchestration-artifacts\scripts\` prefix.
+
 ## Directory Structure
 
 ```
@@ -33,22 +37,40 @@ description: Artifact directory structure, project initialization, completion da
 
 ## Scripts
 
-### `init-project.ps1` — Create artifact directory tree
-```powershell
-${CLAUDE_PLUGIN_ROOT}\skills\orchestration-artifacts\scripts\init-project.ps1 -ProjectName "user-auth"
-${CLAUDE_PLUGIN_ROOT}\skills\orchestration-artifacts\scripts\init-project.ps1 -ProjectName "dashboard.v2" -BasePath "artifacts"
-```
-Params: `-ProjectName` (required), `-BasePath`
+### `init-project.ps1`
+Creates the full artifact directory tree for a project.
 
-### `artifact-status.ps1` — Artifact completion dashboard
-```powershell
+```
+${CLAUDE_PLUGIN_ROOT}\skills\orchestration-artifacts\scripts\init-project.ps1 -ProjectName "user-auth"
+```
+
+Required: `-ProjectName`
+Optional: `-BasePath`
+
+### `artifact-status.ps1`
+Artifact completion dashboard — shows which files exist per agent.
+
+```
 ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-artifacts\scripts\artifact-status.ps1 -ProjectName "user-auth"
 ```
-Params: `-ProjectName` (required), `-Root`
 
-### `check-gate.ps1` — Quality gate validation
-```powershell
-${CLAUDE_PLUGIN_ROOT}\skills\orchestration-artifacts\scripts\check-gate.ps1 -ProjectName "user-auth" -Phase "research"
-${CLAUDE_PLUGIN_ROOT}\skills\orchestration-artifacts\scripts\check-gate.ps1 -ProjectName "billing" -Phase "all" -IsMigration
+Required: `-ProjectName`
+Optional: `-Root`
+
+### `check-gate.ps1`
+Quality gate validation — verifies required artifacts and section headers exist.
+
 ```
-Params: `-ProjectName` (required), `-Phase` (required: research|architecture|ui-design|planning|development|reviews|testing|all), `-IsMigration`, `-Root`
+${CLAUDE_PLUGIN_ROOT}\skills\orchestration-artifacts\scripts\check-gate.ps1 -ProjectName "user-auth" -Phase "research"
+```
+
+```
+${CLAUDE_PLUGIN_ROOT}\skills\orchestration-artifacts\scripts\check-gate.ps1 -ProjectName "user-auth" -Phase "all" -IsMigration
+```
+
+```
+${CLAUDE_PLUGIN_ROOT}\skills\orchestration-artifacts\scripts\check-gate.ps1 -ProjectName "user-auth" -ContractID "TSK-003"
+```
+
+Required: `-ProjectName` + one of `-Phase` or `-ContractID`
+Optional: `-Phase` (research|architecture|ui-design|planning|development|reviews|testing|all) `-ContractID` `-IsMigration` `-Root`

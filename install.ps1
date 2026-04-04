@@ -12,10 +12,9 @@ $ErrorActionPreference = 'Stop'
 $ScriptRoot = $PSScriptRoot
 if (-not $ScriptRoot) { $ScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Definition }
 
-$Directories      = @('.claude')
-$PluginNames      = @('orchestrator', 'windows-dev-toolkit')
-$MarketplaceName  = 'internal'
-$MarketplaceRoot  = $ScriptRoot
+$Directories     = @('.claude')
+$PluginNames     = @('orchestrator', 'windows-dev-toolkit')
+$MarketplaceName = 'internal'
 
 # --- Banner ---
 Write-Host ""
@@ -116,18 +115,18 @@ if (-not $SkipPlugins) {
         $settings = [PSCustomObject]@{}
     }
 
-    # Add or update extraKnownMarketplaces (file source pointing to marketplace.json)
-    $mktSource  = [PSCustomObject]@{ source = 'directory'; path = $MarketplaceRoot }
+    # Add or update extraKnownMarketplaces (directory source — relative to target project root)
+    $mktSource  = [PSCustomObject]@{ source = 'directory'; path = '.claude/plugins' }
     $mktEntry   = [PSCustomObject]@{ source = $mktSource }
     if (-not ($settings.PSObject.Properties.Name -contains 'extraKnownMarketplaces')) {
         $mkts = [PSCustomObject]@{}
         $mkts | Add-Member -NotePropertyName $MarketplaceName -NotePropertyValue $mktEntry
         $settings | Add-Member -NotePropertyName 'extraKnownMarketplaces' -NotePropertyValue $mkts
-        Write-Host "    [+] Registered marketplace '$MarketplaceName' -> $MarketplaceRoot" -ForegroundColor Green
+        Write-Host "    [+] Registered marketplace '$MarketplaceName' -> .claude/plugins" -ForegroundColor Green
     } else {
         if (-not ($settings.extraKnownMarketplaces.PSObject.Properties.Name -contains $MarketplaceName)) {
             $settings.extraKnownMarketplaces | Add-Member -NotePropertyName $MarketplaceName -NotePropertyValue $mktEntry
-            Write-Host "    [+] Registered marketplace '$MarketplaceName' -> $MarketplaceRoot" -ForegroundColor Green
+            Write-Host "    [+] Registered marketplace '$MarketplaceName' -> .claude/plugins" -ForegroundColor Green
         } else {
             $settings.extraKnownMarketplaces.$MarketplaceName = $mktEntry
             Write-Host "    [=] Updated marketplace '$MarketplaceName' path" -ForegroundColor DarkGray
@@ -167,7 +166,7 @@ if (-not $SkipPlugins) {
             [PSCustomObject]@{ toolName = "write-process";       permission = [PSCustomObject]@{ type = "allow" } }
             [PSCustomObject]@{ toolName = "web-search";          permission = [PSCustomObject]@{ type = "allow" } }
             [PSCustomObject]@{ toolName = "web-fetch";           permission = [PSCustomObject]@{ type = "allow" } }
-            [PSCustomObject]@{ toolName = "launch-process"; shellInputRegex = "\.claude[/\\]skills[/\\]"; permission = [PSCustomObject]@{ type = "allow" } }
+            [PSCustomObject]@{ toolName = "launch-process"; shellInputRegex = "\.claude[/\\]plugins[/\\]"; permission = [PSCustomObject]@{ type = "allow" } }
             [PSCustomObject]@{ toolName = "launch-process"; shellInputRegex = "(cmd\s+/[ck]|powershell\s+-[Cc]ommand|powershell\.exe\s+-[Cc]ommand|pwsh\s+-[Cc]ommand|bash\s+-c|sh\s+-c)"; permission = [PSCustomObject]@{ type = "deny" } }
             [PSCustomObject]@{ toolName = "launch-process"; shellInputRegex = "(dotnet build|dotnet test|dotnet run|dotnet restore|dotnet format)"; permission = [PSCustomObject]@{ type = "deny" } }
             [PSCustomObject]@{ toolName = "launch-process"; shellInputRegex = "(python |pip |poetry |cargo |go |ruby |bundle )"; permission = [PSCustomObject]@{ type = "deny" } }
@@ -211,8 +210,7 @@ if (-not $SkipPlugins) {
     Write-Host "    [+] Written: $targetSettingsPath" -ForegroundColor Green
     Write-Host ""
 
-    Write-Host "    [i] Open $Target in Claude Code." -ForegroundColor Cyan
-    Write-Host "        You will be prompted to trust the marketplace and install plugins." -ForegroundColor Cyan
+    Write-Host "    [i] Plugin files will be copied to $Target\.claude\plugins\" -ForegroundColor Cyan
 }
 
 # ============================================================
@@ -236,18 +234,91 @@ if (Test-Path $claudeIgnoreSrc) {
 
 Write-Host ""
 
+# ============================================================
+# PHASE 4 - Copy plugin files into target project
+# Copies plugins/orchestrator and plugins/windows-dev-toolkit
+# into {target}/.claude/plugins/ and writes marketplace manifest
+# ============================================================
+if (-not $SkipPlugins) {
+    Write-Host "  [Phase 4] Copying plugin files to $Target\.claude\plugins\..." -ForegroundColor Yellow
+    Write-Host ""
+
+    $targetPluginsDir = Join-Path $Target '.claude\plugins'
+
+    # Write marketplace manifest (always overwrite - it is installer-generated)
+    $mktManifestDir  = Join-Path $targetPluginsDir '.claude-plugin'
+    $mktManifestPath = Join-Path $mktManifestDir 'marketplace.json'
+    if (-not (Test-Path $mktManifestDir)) {
+        New-Item -Path $mktManifestDir -ItemType Directory -Force | Out-Null
+    }
+    $mktManifest = [PSCustomObject]@{
+        name  = $MarketplaceName
+        owner = [PSCustomObject]@{ name = 'rbenzing' }
+        plugins = @(
+            [PSCustomObject]@{ name = 'orchestrator';        source = './orchestrator' }
+            [PSCustomObject]@{ name = 'windows-dev-toolkit'; source = './windows-dev-toolkit' }
+        )
+    }
+    $mktManifest | ConvertTo-Json -Depth 5 | Set-Content -Path $mktManifestPath -Encoding UTF8
+    Write-Host "    [+] Written: $mktManifestPath" -ForegroundColor Green
+
+    # Copy each plugin directory (never overwrite existing files)
+    $pluginCopied = 0
+    $pluginSkipped = 0
+    foreach ($name in $PluginNames) {
+        $srcPlugin  = Join-Path $ScriptRoot "plugins\$name"
+        $destPlugin = Join-Path $targetPluginsDir $name
+
+        if (-not (Test-Path $srcPlugin)) {
+            Write-Host "    [!] Plugin source not found: $srcPlugin" -ForegroundColor Yellow
+            continue
+        }
+
+        $items = Get-ChildItem -Path $srcPlugin -Recurse
+        foreach ($item in $items) {
+            $relativePath = $item.FullName.Substring($srcPlugin.Length)
+            $destItem     = Join-Path $destPlugin $relativePath
+
+            if ($item.PSIsContainer) {
+                if (-not (Test-Path $destItem)) {
+                    New-Item -Path $destItem -ItemType Directory -Force | Out-Null
+                }
+            } else {
+                if ($item.Name -eq 'README.md') { continue }
+                $destDir = Split-Path -Parent $destItem
+                if (-not (Test-Path $destDir)) {
+                    New-Item -Path $destDir -ItemType Directory -Force | Out-Null
+                }
+                if (Test-Path $destItem) {
+                    $pluginSkipped++
+                    Write-Host "    = plugins\$name$relativePath" -ForegroundColor DarkGray
+                } else {
+                    Copy-Item -Path $item.FullName -Destination $destItem
+                    $pluginCopied++
+                    Write-Host "    + plugins\$name$relativePath" -ForegroundColor DarkGreen
+                }
+            }
+        }
+    }
+
+    Write-Host ""
+    Write-Host "    [+] Plugins: $pluginCopied new files copied, $pluginSkipped existing skipped." -ForegroundColor Green
+    Write-Host ""
+}
+
 if ($PluginsOnly) {
     Write-Host "  ====================================================" -ForegroundColor Green
     Write-Host "  Plugins + .claudeignore installed to $Target" -ForegroundColor Green
+    Write-Host "  Open $Target in Claude Code to activate." -ForegroundColor Green
     Write-Host "  ====================================================" -ForegroundColor Green
     Write-Host ""
     exit 0
 }
 
 # ============================================================
-# PHASE 4 - Copy .claude/ harness to target project
+# PHASE 5 - Copy .claude/ harness to target project
 # ============================================================
-Write-Host "  [Phase 4] Copying .claude/ harness to target project..." -ForegroundColor Yellow
+Write-Host "  [Phase 5] Copying .claude/ harness to target project..." -ForegroundColor Yellow
 Write-Host ""
 
 # --- Validate source directories exist ---

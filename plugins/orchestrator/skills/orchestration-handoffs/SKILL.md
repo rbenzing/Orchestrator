@@ -3,6 +3,10 @@ name: orchestration-handoffs
 description: Standardized handoff protocol and message generator for agent-to-agent transitions in the 8-phase orchestration pipeline.
 ---
 
+> **TOOL**: Always call these scripts via `launch-process`. Never use `Bash`.
+> **FORMAT**: All parameters on a single line — no backtick line continuation.
+> **PATH**: Use `${CLAUDE_PLUGIN_ROOT}\skills\orchestration-handoffs\scripts\` prefix.
+
 ## Agent Transition Map
 
 | From | To | Trigger |
@@ -21,11 +25,18 @@ description: Standardized handoff protocol and message generator for agent-to-ag
 
 ## Script
 
-### `handoff.ps1` — Generate handoff or feedback messages
-```powershell
-${CLAUDE_PLUGIN_ROOT}\skills\orchestration-handoffs\scripts\handoff.ps1 -From "Researcher" -To "Architect" -ProjectName "user-auth" -Findings "OAuth 2.0 recommended"
-${CLAUDE_PLUGIN_ROOT}\skills\orchestration-handoffs\scripts\handoff.ps1 -From "Tester" -To "Developer" -ProjectName "user-auth" -IsFeedback -Issues "Login fails - Critical"
-```
-Params: `-From` (required), `-To` (required), `-ProjectName` (required), `-Findings`, `-IsFeedback`, `-Issues`
+### `handoff.ps1`
+Generates a handoff or feedback contract between agents.
 
-Valid agents: Orchestrator, Researcher, Architect, UI Designer, Planner, Developer, Code Reviewer, Tester
+```
+${CLAUDE_PLUGIN_ROOT}\skills\orchestration-handoffs\scripts\handoff.ps1 -From "Researcher" -To "Architect" -ProjectName "user-auth" -Findings "OAuth 2.0 recommended"
+```
+
+```
+${CLAUDE_PLUGIN_ROOT}\skills\orchestration-handoffs\scripts\handoff.ps1 -From "Tester" -To "Developer" -ProjectName "user-auth" -IsFeedback -Issues "Login fails on empty password - Critical"
+```
+
+Required: `-From` `-To` `-ProjectName`
+Optional: `-Findings` `-IsFeedback` `-Issues`
+
+Valid agents: `Orchestrator` `Researcher` `Architect` `UI Designer` `Planner` `Developer` `Code Reviewer` `Tester`

@@ -48,7 +48,7 @@ try {
     # Matches both plugin invocations (${CLAUDE_PLUGIN_ROOT}\skills\orchestration-*) and legacy paths
     # Exception: load-state.ps1 supports discovery mode without -ProjectName
     if ($command -match '(?i)orchestration-[a-z]+[/\\]scripts[/\\]' -or
-        $command -match '(?i)\.claude[/\\]skills[/\\]orchestration') {
+        $command -match '(?i)\.claude[/\\]plugins[/\\]') {
         if ($command -notmatch 'load-state\.ps1' -and $command -notmatch '-ProjectName\s+') {
             Deny-Hook "Orchestration scripts require a -ProjectName parameter"
         }
