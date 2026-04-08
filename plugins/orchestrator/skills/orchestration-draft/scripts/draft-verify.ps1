@@ -94,7 +94,7 @@ if ($Result -eq "pass") {
     $costNote = "draft-passed (~30% cost vs full Sonnet run)"
 } else {
     # fix: verifier already wrote corrected artifacts to final dir
-    Write-Host "  |  Fix mode — verifier wrote corrected artifacts to final dir." -ForegroundColor Yellow
+    Write-Host "  |  Fix mode - verifier wrote corrected artifacts to final dir." -ForegroundColor Yellow
     if ($FailedCriteria.Count -gt 0) {
         Write-Host "  |  Failed criteria:" -ForegroundColor Yellow
         foreach ($c in $FailedCriteria) {
@@ -128,7 +128,7 @@ if (-not (Test-Path $contractFile)) {
 
     # Update draft_notes field
     if ($yaml -match '(?m)^draft_notes:') {
-        $yaml = $yaml -replace '(?m)^draft_notes:\s*"?[^"\r\n]*"?', "draft_notes: `"$notesValue`""
+        $yaml = $yaml -replace '(?m)^draft_notes:\s*("([^"]|\\")*"|[^\r\n]*)', "draft_notes: `"$notesValue`""
     } else {
         $yaml = $yaml.TrimEnd() + "`ndraft_notes: `"$notesValue`"`n"
     }

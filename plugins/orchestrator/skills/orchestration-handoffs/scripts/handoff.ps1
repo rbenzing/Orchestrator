@@ -52,13 +52,6 @@ if ($ExtraArgs) {
 }
 
 # --- Agent metadata maps ---
-$agentPhase = @{
-    "Researcher"="research"; "Architect"="architecture"; "UI Designer"="ui-design"
-    "Planner"="planning"; "Planner Draft"="planning"; "Planner Verify"="planning"
-    "Developer"="development"; "Developer Draft"="development"; "Developer Verify"="development"
-    "Code Reviewer"="reviews"
-    "Tester"="testing"; "Tester Draft"="testing"; "Tester Verify"="testing"
-}
 $agentHandle = @{
     "Orchestrator"="@orchestrator"; "Researcher"="@researcher"; "Architect"="@architect"
     "UI Designer"="@ui-designer"
@@ -96,7 +89,6 @@ if (-not $ContractId) {
 }
 
 # --- Build contract parameters ---
-$fromPhase = $agentPhase[$From]
 $toHandle  = $agentHandle[$To]
 $contractType = if ($IsFeedback) { "Feedback" } else { "Task" }
 
