@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Claude PreToolUse hook for orchestration command validation.
     Validates that orchestration skill scripts are invoked with required parameters
@@ -31,7 +31,7 @@ try {
     # Read JSON event data from stdin (Claude hook contract)
     $eventJson = $input | Out-String
     if (-not $eventJson -or $eventJson.Trim().Length -eq 0) {
-        # No input — nothing to validate, allow
+        # No input - nothing to validate, allow
         exit 0
     }
 
@@ -88,7 +88,7 @@ try {
         }
     }
 
-    # All checks passed — allow
+    # All checks passed - allow
     exit 0
 }
 catch {

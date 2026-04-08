@@ -1,6 +1,6 @@
-<#
+﻿<#
 .SYNOPSIS
-    SessionStart hook — discovers active orchestration projects at session start.
+    SessionStart hook - discovers active orchestration projects at session start.
     Surfaces workflow state so Claude can resume without a manual load-state call.
 #>
 $ErrorActionPreference = "SilentlyContinue"

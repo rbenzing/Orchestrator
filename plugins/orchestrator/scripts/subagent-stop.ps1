@@ -1,6 +1,6 @@
-<#
+﻿<#
 .SYNOPSIS
-    SubagentStop hook — signals subagent completion to the orchestrator.
+    SubagentStop hook - signals subagent completion to the orchestrator.
     Reads the active contract to surface what was expected, reminding the
     orchestrator to check artifacts and update the contract status.
 #>

@@ -1,16 +1,16 @@
-<#
+﻿<#
 .SYNOPSIS
     Speculative Draft + Verify harness for cost-optimized contract execution.
 .DESCRIPTION
     Manages the draft artifact workspace for a contract running the Draft+Verify
-    pattern. Provides path resolution, artifact promotion (draft → final), and
+    pattern. Provides path resolution, artifact promotion (draft -> final), and
     result recording. Called by agents after both draft and verify phases complete.
 
     Flow:
       1. Agent (as draft_model/Haiku) writes artifacts to draft dir
       2. Agent (as draft_verify_model/Sonnet) reads draft, checks acceptance criteria
       3. Agent calls this script with -Result pass|fix and optional -FailedCriteria
-      4. Script promotes artifacts (copy draft → final agent dir on pass, or records
+      4. Script promotes artifacts (copy draft -> final agent dir on pass, or records
          that verifier already wrote to final dir on fix), updates contract YAML.
 
 .PARAMETER ProjectName
@@ -24,14 +24,14 @@
     rewrote failing sections directly to the final agent dir).
 .PARAMETER FailedCriteria
     Array of acceptance criteria strings that failed the draft check. Only used
-    when Result="fix" — recorded in draft_notes for audit trail.
+    when Result="fix" - recorded in draft_notes for audit trail.
 .PARAMETER Root
     Repository root. Defaults to current working directory.
 .EXAMPLE
-    # Draft passed — promote artifacts unchanged
+    # Draft passed - promote artifacts unchanged
     draft-verify.ps1 -ProjectName "user-auth" -ContractId "TSK-003" -AgentDir "developer" -Result "pass"
 .EXAMPLE
-    # Draft had issues — verifier fixed them, record which criteria failed
+    # Draft had issues - verifier fixed them, record which criteria failed
     draft-verify.ps1 -ProjectName "user-auth" -ContractId "TSK-003" -AgentDir "tester" -Result "fix" `
         -FailedCriteria "All edge cases covered","Error paths tested"
 #>

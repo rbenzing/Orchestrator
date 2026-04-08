@@ -1,6 +1,6 @@
-<#
+﻿<#
 .SYNOPSIS
-    UserPromptSubmit hook — prepends a compact orchestration context line to each prompt.
+    UserPromptSubmit hook - prepends a compact orchestration context line to each prompt.
     Eliminates ambient context loss between turns without reading full state files.
 #>
 $ErrorActionPreference = "SilentlyContinue"
@@ -21,7 +21,7 @@ try {
 
     $phase = ([regex]::Match($yaml, '(?m)^phase:\s*(.+)$')).Groups[1].Value.Trim()
 
-    # Skip injection for completed projects — no noise when done
+    # Skip injection for completed projects - no noise when done
     if ($phase -eq 'complete') { exit 0 }
 
     $project  = $stateFile.Directory.Name

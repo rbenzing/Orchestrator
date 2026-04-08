@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Master orchestration loop -- scans Open contracts and dispatches the next agent.
 .DESCRIPTION
@@ -50,7 +50,7 @@ function Get-YamlField {
     $m = [regex]::Match($Yaml, "(?m)^$Field\s*:\s*[`"']?([^`"'\r\n]+)[`"']?")
     if ($m.Success) {
         $val = $m.Groups[1].Value.Trim()
-        # Block scalar indicator — read the first non-empty indented line instead
+        # Block scalar indicator - read the first non-empty indented line instead
         if ($val -eq '|' -or $val -eq '>') {
             $bm = [regex]::Match($Yaml, "(?m)^$Field\s*:\s*[|>][^\r\n]*\r?\n([ \t]+)([^\r\n]+)")
             if ($bm.Success) { return $bm.Groups[2].Value.Trim() }

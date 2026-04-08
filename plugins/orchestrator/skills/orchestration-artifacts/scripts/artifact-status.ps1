@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Show artifact completion dashboard for a project.
 .DESCRIPTION
@@ -26,7 +26,7 @@ if ($ExtraArgs) {
 
 $base = Join-Path $Root ".claude\orchestrator\artifacts"
 
-# Phase label → agent directory name under .claude/orchestrator/artifacts/{project}/{agent}/
+# Phase label -> agent directory name under .claude/orchestrator/artifacts/{project}/{agent}/
 $phaseToAgent = [ordered]@{
     "researcher"    = @("proposal.md","requirements.md","technical-constraints.md","specs/scenarios.md")
     "architect"     = @("architecture.md")

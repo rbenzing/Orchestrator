@@ -1,6 +1,6 @@
-<#
+﻿<#
 .SYNOPSIS
-    SubagentStart hook — injects orchestration context into subagent invocations.
+    SubagentStart hook - injects orchestration context into subagent invocations.
     Subagents receive project/phase/contract context automatically, reducing
     the token cost of re-explaining context in every Agent tool prompt.
 #>

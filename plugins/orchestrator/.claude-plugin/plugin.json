@@ -6,6 +6,6 @@
     "name": "rbenzing"
   },
   "repository": "https://github.com/rbenzing/orchestrator",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "keywords": ["orchestration", "agents", "contracts", "tdd", "workflow", "windows"]
 }

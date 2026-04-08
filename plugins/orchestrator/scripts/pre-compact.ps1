@@ -1,6 +1,6 @@
-<#
+﻿<#
 .SYNOPSIS
-    PreCompact hook — injects orchestration state into the compaction context.
+    PreCompact hook - injects orchestration state into the compaction context.
     Claude includes this in the summary so workflow position survives.
 #>
 $ErrorActionPreference = "SilentlyContinue"

@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Initialize the artifact directory tree for a project.
 .DESCRIPTION
@@ -31,7 +31,7 @@ if ($ExtraArgs) {
     Write-Host "  Usage: .claude\skills\orchestration-artifacts\scripts\init-project.ps1 -ProjectName ""my-project""" -ForegroundColor Yellow
 }
 
-# Agent directories — artifacts/{project}/{agent}/
+# Agent directories - artifacts/{project}/{agent}/
 $agents = @(
     @{ Dir = "researcher";     Files = @("proposal.md","requirements.md","technical-constraints.md","specs") }
     @{ Dir = "architect";      Files = @("architecture.md","decisions") }

@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Validate quality gate for a project phase or YAML contract.
 .DESCRIPTION
@@ -52,7 +52,7 @@ if (-not $Phase -and -not $ContractID) {
 $base = Join-Path $Root ".claude\orchestrator\artifacts"
 
 # ============================================================
-# CONTRACT-BASED GATE — reads criteria from YAML contract
+# CONTRACT-BASED GATE - reads criteria from YAML contract
 # ============================================================
 if ($ContractID) {
     $contractFile = Join-Path $Root (Join-Path ".claude\orchestrator\contracts" (Join-Path $ProjectName "$ContractID.yml"))
@@ -107,7 +107,7 @@ if ($ContractID) {
         }
     }
 
-    # Report acceptance criteria (informational — agent self-certifies)
+    # Report acceptance criteria (informational - agent self-certifies)
     if ($criteria.Count -gt 0) {
         Write-Host "`n  Acceptance Criteria (self-certified by agent):" -ForegroundColor White
         foreach ($c in $criteria) {
@@ -153,7 +153,7 @@ function Test-FileWithSections {
     return $r
 }
 
-# Phase → agent directory mapping (.claude/orchestrator/artifacts/{project}/{agent}/)
+# Phase -> agent directory mapping (.claude/orchestrator/artifacts/{project}/{agent}/)
 $phaseToAgent = @{
     "research"     = "researcher"
     "architecture" = "architect"

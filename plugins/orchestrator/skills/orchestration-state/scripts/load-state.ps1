@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Load orchestrator workflow state from disk.
 .DESCRIPTION
@@ -9,7 +9,7 @@
     If called WITHOUT -ProjectName, discovers all projects with saved state
     and lists them so the orchestrator can pick the right one.
 .PARAMETER ProjectName
-    Project identifier (e.g. "user-auth"). Optional — omit to discover all projects.
+    Project identifier (e.g. "user-auth"). Optional - omit to discover all projects.
 .PARAMETER Root
     Repository root. Defaults to current directory.
 .EXAMPLE
