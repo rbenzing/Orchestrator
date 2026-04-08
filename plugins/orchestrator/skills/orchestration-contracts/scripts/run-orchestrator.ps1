@@ -111,17 +111,22 @@ foreach ($proj in $projects) {
         $maxAttempts = Get-YamlField $yaml "max_attempts"
         $objective   = (Get-YamlField $yaml "objective") -replace '\|',''
 
+        $draftEnabled = Get-YamlField $yaml "draft_enabled"
+        $draftResult  = Get-YamlField $yaml "draft_result"
+
         $entry = [PSCustomObject]@{
-            Project    = $proj
-            ID         = $f.BaseName
-            Agent      = $agent
-            Tier       = $tier
-            Status     = $status
-            DepsAreMet = $depsAreMet
-            Attempt    = $attempt
-            MaxAttempts= $maxAttempts
-            Objective  = $objective.Trim()
-            File       = $f.FullName
+            Project      = $proj
+            ID           = $f.BaseName
+            Agent        = $agent
+            Tier         = $tier
+            Status       = $status
+            DepsAreMet   = $depsAreMet
+            Attempt      = $attempt
+            MaxAttempts  = $maxAttempts
+            Objective    = $objective.Trim()
+            File         = $f.FullName
+            DraftEnabled = $draftEnabled
+            DraftResult  = $draftResult
         }
 
         if ($depsAreMet -and $status -eq "Open") { $readyContracts  += $entry }
@@ -143,7 +148,8 @@ if ($readyContracts.Count -eq 0 -and $blockedContracts.Count -eq 0 -and $waiting
 
 Write-Host "  +-- READY TO DISPATCH ($($readyContracts.Count)) ----------------------------------------+" -ForegroundColor Green
 foreach ($c in $readyContracts) {
-    Write-Host "  |  [$($c.ID)]  $($c.Agent)  [$($c.Tier)]  Attempt $($c.Attempt)/$($c.MaxAttempts)" -ForegroundColor Green
+    $draftTag = if ($c.DraftEnabled -eq "true") { "  [Draft+Verify]" } else { "" }
+    Write-Host "  |  [$($c.ID)]  $($c.Agent)  [$($c.Tier)]  Attempt $($c.Attempt)/$($c.MaxAttempts)$draftTag" -ForegroundColor Green
     $goal = if ($c.Objective.Length -gt 0) { $c.Objective.Substring(0, [Math]::Min(70, $c.Objective.Length)) } else { '(no objective)' }
     Write-Host "  |     Goal: $goal" -ForegroundColor DarkGray
 }
@@ -163,6 +169,30 @@ if ($blockedContracts.Count -gt 0) {
 }
 
 Write-Host "  +---------------------------------------------------------------+" -ForegroundColor Cyan
+
+# -- Draft stats: scan all closed contracts for draft results ----------------
+$allClosedFiles = @()
+foreach ($proj in $projects) {
+    $projDir = Join-Path $baseDir $proj
+    $archiveDir = Join-Path $projDir "archive"
+    foreach ($searchDir in @($projDir, $archiveDir)) {
+        if (Test-Path $searchDir) {
+            $allClosedFiles += Get-ChildItem $searchDir -Filter "*.yml" -Recurse -ErrorAction SilentlyContinue
+        }
+    }
+}
+$totalDrafted = 0; $draftPassed = 0; $draftFixed = 0
+foreach ($f in $allClosedFiles) {
+    $yaml = Get-Content $f.FullName -Raw -ErrorAction SilentlyContinue
+    if (-not $yaml) { continue }
+    $dr = Get-YamlField $yaml "draft_result"
+    if ($dr -eq "pass")  { $totalDrafted++; $draftPassed++ }
+    if ($dr -eq "fix")   { $totalDrafted++; $draftFixed++ }
+}
+if ($totalDrafted -gt 0) {
+    $passPct = [math]::Round(($draftPassed / $totalDrafted) * 100)
+    Write-Host "  Draft Stats: $totalDrafted drafted | $draftPassed passed ($passPct%) | $draftFixed fixed" -ForegroundColor DarkGray
+}
 Write-Host ""
 
 # -- Dispatch: mark first ready contract as active in state ------------------

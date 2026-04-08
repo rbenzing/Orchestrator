@@ -30,26 +30,30 @@ Use `launch-process` for all script calls — never `Bash`. Single line, no back
 
 ## Routing Profiles (fixed dispatch order)
 
+Draft+Verify splits eligible agents into two sequential contracts: `@{agent}-draft` (Haiku) → `@{agent}-verify` (Sonnet). The verify contract depends on the draft contract ID. Use the standard agent (`@planner`, `@tester`, `@developer`) on retries or escalations.
+
 | Profile | Dispatch sequence |
 |---|---|
 | **Minimal Fix** | Developer → Code Reviewer → Tester |
-| **Feature (Backend)** | Researcher → Architect → Planner → Tester (Red) → Developer (Green) → Code Reviewer → Tester (Validate) |
-| **Feature (UI)** | Researcher → Architect → UI Designer → Planner → Tester (Red) → Developer (Green) → Code Reviewer → Tester (Validate) |
-| **Migration/Refactor** | Researcher → Architect → Planner → Tester (Red) → Developer (Green) → Code Reviewer → Tester (Validate) |
+| **Feature (Backend)** | Researcher → Architect → Planner Draft → Planner Verify → Tester Draft → Tester Verify → Developer Draft → Developer Verify → Code Reviewer → Tester (Validate) |
+| **Feature (UI)** | Researcher → Architect → UI Designer → Planner Draft → Planner Verify → Tester Draft → Tester Verify → Developer Draft → Developer Verify → Code Reviewer → Tester (Validate) |
+| **Migration/Refactor** | Researcher → Architect → Planner Draft → Planner Verify → Tester Draft → Tester Verify → Developer Draft → Developer Verify → Code Reviewer → Tester (Validate) |
 
 ## TDD Tandem (Red-Green-Refactor)
 
-- **RED**: `@tester` TDD-Red contract — write failing tests, prove they fail
-- **GREEN**: `@developer` TDD-Green contract — minimum code to pass tests
+- **RED**: `@tester-draft` + `@tester-verify` TDD-Red contracts — write failing tests, prove they fail
+- **GREEN**: `@developer-draft` + `@developer-verify` TDD-Green contracts — minimum code to pass tests
 - **REFACTOR**: `@developer` + `@code-reviewer` — DRY/SOLID cleanup, all tests still pass
 
 ## Decision Rules (if/then — no judgment)
 
 | Condition | Action |
 |---|---|
-| Gate passes | Dispatch next agent in profile sequence |
-| Gate fails / agent blocked | Create feedback contract → return to same agent (increment `attempt_count`) |
-| `attempt_count >= 2` | Escalate contract `model_tier` to `opus` |
+| Dispatching Planner, Tester (Red), or Developer (Green) on attempt 1 | Use draft+verify pair: create `{agent}-draft` contract, then `{agent}-verify` contract with dependency on draft contract ID |
+| `{agent}-draft` contract closes | Dispatch `{agent}-verify` contract (dependency now met) |
+| `{agent}-verify` gate passes | Dispatch next agent in profile sequence |
+| Gate fails / agent blocked | Create feedback contract → return to standard `@{agent}` (not draft/verify) — increment `attempt_count` |
+| `attempt_count >= 2` | Escalate `model_tier` to `opus` on new contract — use standard agent, never draft/verify |
 | `attempt_count >= max_attempts` | Stop and notify user with blocker summary |
 | All contracts `Closed` | Archive contracts → announce completion |
 

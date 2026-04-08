@@ -44,6 +44,8 @@ param(
     [Parameter(Mandatory)][ValidateSet("Project","Story","Task","TDD-Red","TDD-Green","TDD-Refactor","Feedback","Validation")][string]$Type,
     [Parameter(Mandatory)][string]$AssignedAgent,
     [ValidateSet("haiku","sonnet","opus")][string]$ModelTier = "sonnet",
+    [switch]$DraftEnabled,
+    [string]$DraftModel = "claude-haiku-4-5-20251001",
     [Parameter(Mandatory)][string]$Objective,
     [string[]]$Deliverables = @(),
     [string[]]$AcceptanceCriteria = @(),
@@ -54,6 +56,16 @@ param(
     [string]$IfFail = "Return to Router with Feedback Contract"
 )
 $ErrorActionPreference = "Stop"
+
+# Auto-enable draft for eligible types on first-attempt Sonnet contracts
+$draftEligibleTypes = @("TDD-Red","TDD-Green","Task")
+if (-not $DraftEnabled -and ($draftEligibleTypes -contains $Type) -and ($ModelTier -eq "sonnet")) {
+    $DraftEnabled = $true
+}
+# Never draft on escalated or non-Sonnet contracts
+if ($ModelTier -ne "sonnet") { $DraftEnabled = $false }
+
+$draftEnabledStr = if ($DraftEnabled) { "true" } else { "false" }
 
 $contractDir = Join-Path ".claude\orchestrator\contracts" $ProjectName
 if (-not (Test-Path $contractDir)) {
@@ -110,12 +122,18 @@ execution_history: []
 next_routing:
   if_pass: "$IfPass"
   if_fail: "$IfFail"
+
+draft_enabled: $draftEnabledStr
+draft_model: "$DraftModel"
+draft_result: "pending"
+draft_notes: ""
 "@
 
 Set-Content -Path $contractFile -Value $yaml -Encoding UTF8
 Write-Host ""
 Write-Host "  [+] Contract created: $contractFile" -ForegroundColor Green
-Write-Host "      Type: $Type | Agent: $AssignedAgent | Model: $ModelTier" -ForegroundColor White
+$draftLabel = if ($DraftEnabled) { " | Draft+Verify: ON" } else { "" }
+Write-Host "      Type: $Type | Agent: $AssignedAgent | Model: $ModelTier$draftLabel" -ForegroundColor White
 Write-Host "      Status: Open" -ForegroundColor Cyan
 Write-Host ""
 # Output the file path so callers can capture it

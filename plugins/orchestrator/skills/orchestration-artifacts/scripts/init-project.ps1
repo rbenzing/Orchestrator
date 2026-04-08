@@ -76,6 +76,16 @@ foreach ($agent in $agents) {
     }
 }
 
+# Create draft artifact base dir (per-contract subdirs created at runtime by draft-verify.ps1)
+$draftBase = Join-Path $BasePath "draft\$ProjectName"
+if (-not (Test-Path $draftBase)) {
+    New-Item -Path $draftBase -ItemType Directory -Force | Out-Null
+    $created++
+    Write-Host "  [+] $draftBase (draft workspace)" -ForegroundColor Green
+} else {
+    Write-Host "  [=] $draftBase (exists)" -ForegroundColor DarkGray
+}
+
 # Create state directory
 $stateDir = Join-Path ".claude\orchestrator\state" $ProjectName
 if (-not (Test-Path $stateDir)) {

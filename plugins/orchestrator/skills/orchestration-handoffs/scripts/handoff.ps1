@@ -30,10 +30,10 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet("Orchestrator","Researcher","Architect","UI Designer","Planner","Developer","Code Reviewer","Tester")]
+    [ValidateSet("Orchestrator","Researcher","Architect","UI Designer","Planner","Developer","Developer Draft","Developer Verify","Code Reviewer","Tester","Tester Draft","Tester Verify","Planner Draft","Planner Verify")]
     [string]$From,
     [Parameter(Mandatory = $true)]
-    [ValidateSet("Orchestrator","Researcher","Architect","UI Designer","Planner","Developer","Code Reviewer","Tester")]
+    [ValidateSet("Orchestrator","Researcher","Architect","UI Designer","Planner","Developer","Developer Draft","Developer Verify","Code Reviewer","Tester","Tester Draft","Tester Verify","Planner Draft","Planner Verify")]
     [string]$To,
     [Parameter(Mandatory = $true)]
     [string]$ProjectName,
@@ -54,21 +54,33 @@ if ($ExtraArgs) {
 # --- Agent metadata maps ---
 $agentPhase = @{
     "Researcher"="research"; "Architect"="architecture"; "UI Designer"="ui-design"
-    "Planner"="planning"; "Developer"="development"; "Code Reviewer"="reviews"; "Tester"="testing"
+    "Planner"="planning"; "Planner Draft"="planning"; "Planner Verify"="planning"
+    "Developer"="development"; "Developer Draft"="development"; "Developer Verify"="development"
+    "Code Reviewer"="reviews"
+    "Tester"="testing"; "Tester Draft"="testing"; "Tester Verify"="testing"
 }
 $agentHandle = @{
     "Orchestrator"="@orchestrator"; "Researcher"="@researcher"; "Architect"="@architect"
-    "UI Designer"="@ui-designer"; "Planner"="@planner"; "Developer"="@developer"
-    "Code Reviewer"="@code-reviewer"; "Tester"="@tester"
+    "UI Designer"="@ui-designer"
+    "Planner"="@planner"; "Planner Draft"="@planner-draft"; "Planner Verify"="@planner-verify"
+    "Developer"="@developer"; "Developer Draft"="@developer-draft"; "Developer Verify"="@developer-verify"
+    "Code Reviewer"="@code-reviewer"
+    "Tester"="@tester"; "Tester Draft"="@tester-draft"; "Tester Verify"="@tester-verify"
 }
 $agentArtifacts = @{
     "Researcher"=@(".claude/orchestrator/artifacts/$ProjectName/researcher/proposal.md",".claude/orchestrator/artifacts/$ProjectName/researcher/requirements.md")
     "Architect"=@(".claude/orchestrator/artifacts/$ProjectName/architect/architecture.md")
     "UI Designer"=@(".claude/orchestrator/artifacts/$ProjectName/ui-designer/ui-spec.md",".claude/orchestrator/artifacts/$ProjectName/ui-designer/design-system.md")
     "Planner"=@(".claude/orchestrator/artifacts/$ProjectName/planner/story-breakdown.md",".claude/orchestrator/artifacts/$ProjectName/planner/implementation-spec.md")
+    "Planner Draft"=@(".claude/orchestrator/artifacts/$ProjectName/planner/story-breakdown.md",".claude/orchestrator/artifacts/$ProjectName/planner/implementation-spec.md")
+    "Planner Verify"=@(".claude/orchestrator/artifacts/$ProjectName/planner/story-breakdown.md",".claude/orchestrator/artifacts/$ProjectName/planner/implementation-spec.md")
     "Developer"=@(".claude/orchestrator/artifacts/$ProjectName/developer/implementation-notes.md")
+    "Developer Draft"=@(".claude/orchestrator/artifacts/$ProjectName/developer/implementation-notes.md")
+    "Developer Verify"=@(".claude/orchestrator/artifacts/$ProjectName/developer/implementation-notes.md")
     "Code Reviewer"=@(".claude/orchestrator/artifacts/$ProjectName/code-reviewer/code-review-report.md")
     "Tester"=@(".claude/orchestrator/artifacts/$ProjectName/tester/test-results.md")
+    "Tester Draft"=@(".claude/orchestrator/artifacts/$ProjectName/tester/test-results.md")
+    "Tester Verify"=@(".claude/orchestrator/artifacts/$ProjectName/tester/test-results.md")
     "Orchestrator"=@()
 }
 
@@ -124,8 +136,11 @@ $contractFile = & $newContractScript `
 # --- Persist a human-readable handoff summary to the sender's artifact directory ---
 $agentDir = @{
     "Researcher"="researcher"; "Architect"="architect"; "UI Designer"="ui-designer"
-    "Planner"="planner"; "Developer"="developer"; "Code Reviewer"="code-reviewer"
-    "Tester"="tester"; "Orchestrator"="orchestrator"
+    "Planner"="planner"; "Planner Draft"="planner"; "Planner Verify"="planner"
+    "Developer"="developer"; "Developer Draft"="developer"; "Developer Verify"="developer"
+    "Code Reviewer"="code-reviewer"
+    "Tester"="tester"; "Tester Draft"="tester"; "Tester Verify"="tester"
+    "Orchestrator"="orchestrator"
 }
 $senderDir = if ($agentDir.ContainsKey($From)) { $agentDir[$From] } else { "orchestrator" }
 $artifactDir = Join-Path (Get-Location).Path ".claude\orchestrator\artifacts\$ProjectName\$senderDir"
