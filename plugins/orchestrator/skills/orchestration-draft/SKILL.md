@@ -45,14 +45,14 @@ launch-process: ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-draft\scripts\draft-v
 
 **What it does**:
 
-- `pass`: copies all files from `artifacts/draft/{project}/{contract-id}/` → `artifacts/{project}/{agent-dir}/`
+- `pass`: copies all files from `draft/{project}/{contract-id}/` → `artifacts/{project}/{agent-dir}/`
 - `fix`: records failed criteria (verifier has already written corrected artifacts to the final dir)
 - Updates contract YAML: sets `draft_result` and `draft_notes`
 - Prints cost estimate: ~30% (pass) or ~110% (fix) vs a full Sonnet run
 
 **Draft artifact dir** (where Haiku writes during draft phase):
 ```
-.claude/orchestrator/artifacts/draft/{project}/{contract-id}/
+.claude/orchestrator/draft/{project}/{contract-id}/
 ```
 
 **Final artifact dir** (where check-gate reads from — always):
