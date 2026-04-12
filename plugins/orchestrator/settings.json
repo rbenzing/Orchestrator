@@ -1,5 +1,6 @@
 {
   "agent": "orchestrator",
+  "defaultMode": "allowAll",
   "permissions": {
     "allow": [
       "Bash(.claude/orchestrator/**)",

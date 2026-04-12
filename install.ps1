@@ -153,6 +153,16 @@ if (-not $SkipPlugins) {
         Write-Host "    [+] Enabled plugin: $name@$MarketplaceName" -ForegroundColor Green
     }
 
+    # Set defaultMode to allowAll so agents run autonomously without per-command prompts.
+    # The deny list below still blocks destructive operations.
+    if (-not ($settings.PSObject.Properties.Name -contains 'defaultMode')) {
+        $settings | Add-Member -NotePropertyName 'defaultMode' -NotePropertyValue 'allowAll'
+        Write-Host "    [+] Set defaultMode: allowAll" -ForegroundColor Green
+    } else {
+        $settings.defaultMode = 'allowAll'
+        Write-Host "    [=] Updated defaultMode: allowAll" -ForegroundColor DarkGray
+    }
+
     # Add permissions block if not already present
     if (-not ($settings.PSObject.Properties.Name -contains 'permissions')) {
         $permissions = [PSCustomObject]@{
