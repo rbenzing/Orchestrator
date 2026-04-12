@@ -21,7 +21,7 @@ param(
 )
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-if ($ExtraArgs) { Write-Host "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -Root"; exit 1 }
+if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -Root"; exit 1 }
 
 $base = Join-Path $Root "${CLAUDE_PLUGIN_ROOT}\artifacts"
 $agents = @("researcher","architect","ui-designer","planner","developer","code-reviewer","tester")
@@ -35,8 +35,8 @@ foreach ($agent in $agents) {
     $totalArtifacts += $count
     if ($count -gt 0) {
         $names = ($files | ForEach-Object { $_.BaseName }) -join ","
-        Write-Host "$agent $count ($names)"
+        Write-Output "$agent $count ($names)"
     }
 }
 
-Write-Host "total=$totalArtifacts"
+Write-Output "total=$totalArtifacts"

@@ -28,19 +28,19 @@ param(
 )
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-if ($ExtraArgs) { Write-Host "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -Agent -ContractId -Field"; exit 1 }
+if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -Agent -ContractId -Field"; exit 1 }
 
 $artifactDir = Join-Path "${CLAUDE_PLUGIN_ROOT}\artifacts" (Join-Path $ProjectName $Agent)
 
 # List mode -- no ContractId, show all artifacts in agent dir
 if (-not $ContractId) {
     if (-not (Test-Path $artifactDir)) {
-        Write-Host "  No artifacts for $Agent in $ProjectName" -ForegroundColor DarkGray
+        Write-Output "  No artifacts for $Agent in $ProjectName" -ForegroundColor DarkGray
         exit 0
     }
     $files = Get-ChildItem $artifactDir -Filter "*.yml" -ErrorAction SilentlyContinue
     if ($files.Count -eq 0) {
-        Write-Host "  No artifacts for $Agent in $ProjectName" -ForegroundColor DarkGray
+        Write-Output "  No artifacts for $Agent in $ProjectName" -ForegroundColor DarkGray
     } else {
         foreach ($f in $files) { Write-Output $f.Name }
     }

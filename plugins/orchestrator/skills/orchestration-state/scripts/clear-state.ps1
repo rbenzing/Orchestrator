@@ -2,7 +2,7 @@
 .SYNOPSIS
     Delete or reset the orchestrator state file for a project.
 .DESCRIPTION
-    Removes ${CLAUDE_PLUGIN_ROOT}/state/{ProjectName}/orchestrator-state.yml so the next
+    Removes .claude/orchestrator/state/{ProjectName}/orchestrator-state.yml so the next
     orchestrator session starts clean. Use after a project is fully archived
     or when recovering from a corrupted state file.
     Pass -Reset to write a blank initial state instead of deleting.
@@ -25,11 +25,11 @@ param(
 )
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-if ($ExtraArgs) { Write-Host "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -Reset"; exit 1 }
+if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -Reset"; exit 1 }
 
-$stateFile = Join-Path "${CLAUDE_PLUGIN_ROOT}\state" (Join-Path $ProjectName "orchestrator-state.yml")
+$stateFile = Join-Path ".claude\orchestrator\state" (Join-Path $ProjectName "orchestrator-state.yml")
 
-if (-not (Test-Path $stateFile)) { Write-Host "No state for $ProjectName"; exit 0 }
+if (-not (Test-Path $stateFile)) { Write-Output "No state for $ProjectName"; exit 0 }
 
 if ($Reset) {
     $blank = @"
@@ -47,8 +47,8 @@ completed: []
 notes: "State reset by clear-state.ps1"
 "@
     Set-Content -Path $stateFile -Value $blank -Encoding UTF8
-    Write-Host "reset $ProjectName"
+    Write-Output "reset $ProjectName"
 } else {
     Remove-Item -Path $stateFile -Force
-    Write-Host "cleared $ProjectName"
+    Write-Output "cleared $ProjectName"
 }

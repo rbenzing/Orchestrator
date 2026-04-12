@@ -57,7 +57,7 @@ param(
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
 
-if ($ExtraArgs) { Write-Host "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -ContractId -Type -AssignedAgent -ModelTier -Objective -AcceptanceCriteria -Deliverables -RequiredReads -Dependencies -ParentContract -IfPass -IfFail"; exit 1 }
+if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -ContractId -Type -AssignedAgent -ModelTier -Objective -AcceptanceCriteria -Deliverables -RequiredReads -Dependencies -ParentContract -IfPass -IfFail"; exit 1 }
 
 $contractDir = Join-Path "${CLAUDE_PLUGIN_ROOT}\contracts" $ProjectName
 if (-not (Test-Path $contractDir)) {
@@ -117,5 +117,5 @@ next_routing:
 "@
 
 Set-Content -Path $contractFile -Value $yaml -Encoding UTF8
-Write-Host "+$ContractId $AssignedAgent [$ModelTier] $Type"
+Write-Output "+$ContractId $AssignedAgent [$ModelTier] $Type"
 Write-Output $contractFile

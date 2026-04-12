@@ -30,7 +30,7 @@ param(
 )
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-if ($ExtraArgs) { Write-Host "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -Agent -ContractId -Field -Value -Status"; exit 1 }
+if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -Agent -ContractId -Field -Value -Status"; exit 1 }
 
 $artifactPath = Join-Path "${CLAUDE_PLUGIN_ROOT}\artifacts" (Join-Path $ProjectName (Join-Path $Agent "$ContractId.yml"))
 if (-not (Test-Path $artifactPath)) {
@@ -109,4 +109,4 @@ if (-not $replaced) {
 }
 
 Set-Content -Path $artifactPath -Value ($output -join "`n") -Encoding UTF8
-Write-Host "  [~] Updated $Field in $artifactPath" -ForegroundColor Cyan
+Write-Output "  [~] Updated $Field in $artifactPath" -ForegroundColor Cyan

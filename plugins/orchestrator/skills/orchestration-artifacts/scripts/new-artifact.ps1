@@ -25,7 +25,7 @@ param(
 )
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-if ($ExtraArgs) { Write-Host "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -Agent -ContractId -BasePath -Force"; exit 1 }
+if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -Agent -ContractId -BasePath -Force"; exit 1 }
 
 $templateMap = @{
     "researcher"    = "requirements.yml"
@@ -53,7 +53,7 @@ if (-not (Test-Path $artifactDir)) {
 
 $destPath = Join-Path $artifactDir "$ContractId.yml"
 if ((Test-Path $destPath) -and -not $Force) {
-    Write-Host "  [=] Artifact exists: $destPath (use -Force to overwrite)" -ForegroundColor Yellow
+    Write-Output "  [=] Artifact exists: $destPath (use -Force to overwrite)" -ForegroundColor Yellow
     Write-Output $destPath
     exit 0
 }
@@ -68,5 +68,5 @@ if ($content -match 'contract_id: ""') {
 }
 
 Set-Content -Path $destPath -Value $content -Encoding UTF8
-Write-Host "  [+] Artifact created: $destPath" -ForegroundColor Green
+Write-Output "  [+] Artifact created: $destPath" -ForegroundColor Green
 Write-Output $destPath

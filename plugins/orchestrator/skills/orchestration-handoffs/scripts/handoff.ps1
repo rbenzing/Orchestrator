@@ -48,7 +48,7 @@ param(
 )
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-if ($ExtraArgs) { Write-Host "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -From -To -ProjectName -ContractId -IsFeedback -Issues -ModelTier"; exit 1 }
+if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -From -To -ProjectName -ContractId -IsFeedback -Issues -ModelTier"; exit 1 }
 
 # --- Agent metadata maps ---
 $agentHandle = @{
@@ -73,7 +73,7 @@ $agentDirMap = @{
     "Planner"="planner"; "Developer"="developer"; "Code Reviewer"="code-reviewer"
     "Tester"="tester"; "Orchestrator"="orchestrator"
 }
-function Get-AgentArtifacts($AgentName) {
+function Get-AgentArtifactList($AgentName) {
     $dir = $agentDirMap[$AgentName]
     if (-not $dir) { return @() }
     $artifactDir = Join-Path "${CLAUDE_PLUGIN_ROOT}\artifacts" (Join-Path $ProjectName $dir)
@@ -112,7 +112,7 @@ if ($IsFeedback) {
 }
 
 # Required reads -- discover all artifacts from the sending agent
-$reads = Get-AgentArtifacts $From
+$reads = Get-AgentArtifactList $From
 
 # --- Invoke new-contract.ps1 ---
 $newContractScript = "${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scripts\new-contract.ps1"
@@ -129,5 +129,5 @@ $newContractScript = "${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scrip
 
 # Handoff data lives in the YAML contract -- no duplicate .md summary needed
 
-Write-Host "handoff $contractType $From->$To $ContractId"
+Write-Output "handoff $contractType $From->$To $ContractId"
 Write-Output $ContractId

@@ -31,11 +31,11 @@ param(
 )
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-if ($ExtraArgs) { Write-Host "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -ContractId -AssignedAgent -Raw"; exit 1 }
+if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -ContractId -AssignedAgent -Raw"; exit 1 }
 
 $contractDir = Join-Path "${CLAUDE_PLUGIN_ROOT}\contracts" $ProjectName
 if (-not (Test-Path $contractDir)) {
-    Write-Host "No contracts for $ProjectName"; exit 0
+    Write-Output "No contracts for $ProjectName"; exit 0
 }
 
 if ($ContractId) {
@@ -62,11 +62,11 @@ foreach ($f in $files) {
 }
 
 if (-not $found) {
-    Write-Host "No open contracts project=$ProjectName agent=$AssignedAgent"; exit 0
+    Write-Output "No open contracts project=$ProjectName agent=$AssignedAgent"; exit 0
 }
 
 if ($Raw) { Write-Output $foundYaml; exit 0 }
 
 # Output YAML directly -- agent parses it
 Write-Output $foundYaml
-Write-Host "contract=$($found.BaseName) file=$($found.FullName)"
+Write-Output "contract=$($found.BaseName) file=$($found.FullName)"

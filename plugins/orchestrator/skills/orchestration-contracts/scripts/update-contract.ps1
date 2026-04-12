@@ -37,7 +37,7 @@ param(
 )
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-if ($ExtraArgs) { Write-Host "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -ContractId -Status -Notes -ErrorTrace -FailedRef"; exit 1 }
+if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -ContractId -Status -Notes -ErrorTrace -FailedRef"; exit 1 }
 
 $contractFile = Join-Path "${CLAUDE_PLUGIN_ROOT}\contracts" (Join-Path $ProjectName "$ContractId.yml")
 if (-not (Test-Path $contractFile)) {
@@ -89,4 +89,4 @@ if ($ErrorTrace -or $Notes) {
 
 Set-Content -Path $contractFile -Value $content -Encoding UTF8
 
-Write-Host "$ContractId -> $Status$(if ($ErrorTrace) { " error=$ErrorTrace" })"
+Write-Output "$ContractId -> $Status$(if ($ErrorTrace) { " error=$ErrorTrace" })"

@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Claude PreToolUse hook for orchestration command validation.
     Validates that orchestration skill scripts are invoked with required parameters
@@ -13,6 +13,7 @@
 #>
 
 $ErrorActionPreference = "Stop"
+$ProgressPreference = "SilentlyContinue"
 
 function Deny-Hook {
     param([string]$Reason)
@@ -31,45 +32,55 @@ try {
     # Read JSON event data from stdin (Claude hook contract)
     $eventJson = $input | Out-String
     if (-not $eventJson -or $eventJson.Trim().Length -eq 0) {
-        # No input - nothing to validate, allow
+        # No input -- nothing to validate, allow
         exit 0
     }
 
     $eventData = $eventJson | ConvertFrom-Json
 
-    # Only act on PreToolUse for launch-process
+    # Only act on PreToolUse
     if ($eventData.hook_event_name -ne "PreToolUse") { exit 0 }
-    if ($eventData.tool_name -ne "launch-process") { exit 0 }
+
+    $toolName = $eventData.tool_name
+
+    # Rule 0: Deny built-in Grep/Glob -- use skill scripts which are git-aware and exclude
+    # build artifacts (bin, obj, node_modules, dist, vendor, etc.) that .claudeignore misses
+    if ($toolName -eq "Grep") {
+        Deny-Hook "Use .\${CLAUDE_PLUGIN_ROOT}\skills\grep\scripts\grep.ps1 instead of the Grep tool. It excludes build artifacts and binary files automatically."
+    }
+    if ($toolName -eq "Glob") {
+        Deny-Hook "Use .\${CLAUDE_PLUGIN_ROOT}\skills\find-files\scripts\find-files.ps1 instead of the Glob tool. It excludes build artifacts and non-source directories automatically."
+    }
+
+    if ($toolName -ne "launch-process") { exit 0 }
 
     $command = $eventData.tool_input.command
     if (-not $command) { exit 0 }
 
     # Rule 1: Orchestration scripts must include a -ProjectName parameter
-    # Matches both plugin invocations (${CLAUDE_PLUGIN_ROOT}\skills\orchestration-*) and legacy paths
     # Exception: load-state.ps1 supports discovery mode without -ProjectName
-    if ($command -match '(?i)orchestration-[a-z]+[/\\]scripts[/\\]' -or
-        $command -match '(?i)\.claude[/\\]plugins[/\\]') {
+    if ($command -match "\${CLAUDE_PLUGIN_ROOT}[/\\]skills[/\\]orchestration") {
         if ($command -notmatch 'load-state\.ps1' -and $command -notmatch '-ProjectName\s+') {
             Deny-Hook "Orchestration scripts require a -ProjectName parameter"
         }
     }
 
     # Rule 2: check-gate.ps1 must include a -Phase parameter
-    if ($command -match 'check-gate\.ps1') {
+    if ($command -match "\${CLAUDE_PLUGIN_ROOT}[/\\]skills[/\\]check-gate\.ps1") {
         if ($command -notmatch '-Phase\s+') {
             Deny-Hook "check-gate.ps1 requires a -Phase parameter"
         }
     }
 
     # Rule 3: save-state.ps1 must include -Phase and -NextAction parameters
-    if ($command -match 'save-state\.ps1') {
+    if ($command -match "\${CLAUDE_PLUGIN_ROOT}[/\\]skills[/\\]save-state\.ps1") {
         if ($command -notmatch '-Phase\s+' -or $command -notmatch '-NextAction\s+') {
             Deny-Hook "save-state.ps1 requires -Phase and -NextAction parameters"
         }
     }
 
     # Rule 4: Prevent writing to .claude/agents/ (read-only agent definitions)
-    if ($command -match '(New-Item|Set-Content|Out-File|Add-Content|Copy-Item|Move-Item).*\.claude[/\\]agents') {
+    if ($command -match "(New-Item|Set-Content|Out-File|Add-Content|Copy-Item|Move-Item).*\${CLAUDE_PLUGIN_ROOT}[/\\]agents") {
         Deny-Hook "Agent definitions in .claude/agents/ are read-only and must not be modified during execution"
     }
 
@@ -81,18 +92,19 @@ try {
     }
 
     # Rule 6: Block reading or manipulating banned cache/vendor directories to prevent context bloat
-    $blacklist = @('node_modules', '\.cache', '\.pytest_cache', '__pycache__', 'coverage[/\\]')
+    $blacklist = @('node_modules', '\.cache', '\.pytest_cache', '__pycache__', 'coverage[/\\]', 'dist[/\\]', 
+    'build[/\\]', 'bin[/\\]', 'obj[/\\]', 'vendor[/\\]', 'packages[/\\]', 'site-packages[/\\]')
     foreach ($item in $blacklist) {
         if ($command -match $item) {
             Deny-Hook "Access to blocked directory/file ($item) is prohibited to prevent context bloat and token waste."
         }
     }
 
-    # All checks passed - allow
+    # All checks passed -- allow
     exit 0
 }
 catch {
     # On unexpected errors, allow execution (fail-open) to avoid blocking the agent
+    Write-Error "Hook validation error: $_" 2>&1 | Out-Null
     exit 0
 }
-

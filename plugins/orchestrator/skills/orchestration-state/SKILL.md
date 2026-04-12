@@ -7,7 +7,7 @@ description: Saves, loads and clears orchestrator workflow state
 
 File-based state persistence. After context compaction the orchestrator reads state to recover its exact workflow position
 
-State file: ${CLAUDE_PLUGIN_ROOT}/state/state-{project-name}.yml
+State file: .claude\orchestrator\state\{project-name}\orchestrator-state.yml
 
 ## When to Save
 
@@ -36,7 +36,7 @@ Params: -ProjectName required, -Phase required, -ActiveAgent required, -NextActi
 ```
 ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-state\scripts\load-state.ps1 -ProjectName "user-auth"
 ```
-Params: -ProjectName required. Outputs full state file contents. Warning if no state file exists
+Params: -ProjectName optional (auto-discovers if omitted). Outputs full state file contents. Warning if no state file exists
 
 ### clear-state.ps1 -- Delete or reset state for a project
 ```

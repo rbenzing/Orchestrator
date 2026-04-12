@@ -1,61 +1,45 @@
 ---
-description: Generate the recommended .claude/settings.json toolPermissions for this project. Run once after enabling the orchestrator plugin.
+description: Generate the recommended .claude/settings.json permissions for this project. Run once after enabling the orchestrator plugin.
 disable-model-invocation: true
 ---
 
-Generate a `.claude/settings.json` file in the current working directory with the recommended `toolPermissions` block for the orchestrator plugin.
+Generate a `.claude/settings.json` file in the current working directory with the recommended `permissions` block for the orchestrator plugin.
 
-The file should contain ONLY the toolPermissions array (do not overwrite any existing hooks). If `.claude/settings.json` already exists, merge toolPermissions into it.
+If `.claude/settings.json` already exists, merge the `permissions` keys into it — do not overwrite unrelated keys (hooks, env, etc.).
 
-The toolPermissions to generate:
+The permissions to generate:
 
 ```json
 {
-  "toolPermissions": [
-    { "toolName": "view", "permission": { "type": "allow" } },
-    { "toolName": "codebase-retrieval", "permission": { "type": "allow" } },
-    { "toolName": "grep-search", "permission": { "type": "allow" } },
-    { "toolName": "str-replace-editor", "permission": { "type": "allow" } },
-    { "toolName": "save-file", "permission": { "type": "allow" } },
-    { "toolName": "read-process", "permission": { "type": "allow" } },
-    { "toolName": "list-processes", "permission": { "type": "allow" } },
-    { "toolName": "write-process", "permission": { "type": "allow" } },
-    { "toolName": "web-search", "permission": { "type": "allow" } },
-    { "toolName": "web-fetch", "permission": { "type": "allow" } },
-    { "toolName": "launch-process", "shellInputRegex": "\\.claude[/\\\\]skills[/\\\\]", "permission": { "type": "allow" } },
-    { "toolName": "launch-process", "shellInputRegex": "(cmd\\s+/[ck]|powershell\\s+-[Cc]ommand|powershell\\.exe\\s+-[Cc]ommand|pwsh\\s+-[Cc]ommand|bash\\s+-c|sh\\s+-c)", "permission": { "type": "deny" } },
-    { "toolName": "launch-process", "shellInputRegex": "(dotnet build|dotnet test|dotnet run|dotnet restore|dotnet format)", "permission": { "type": "deny" } },
-    { "toolName": "launch-process", "shellInputRegex": "(python |pip |poetry |cargo |go |ruby |bundle )", "permission": { "type": "deny" } },
-    { "toolName": "launch-process", "shellInputRegex": "(mkdir|New-Item|Copy-Item|Move-Item|Rename-Item)", "permission": { "type": "deny" } },
-    { "toolName": "launch-process", "shellInputRegex": "(git status|git diff|git log|git branch|git show|git stash)", "permission": { "type": "deny" } },
-    { "toolName": "launch-process", "shellInputRegex": "(ls |dir |pwd|echo |cat |type |Get-Content|Get-ChildItem|Get-Location|Write-Output)", "permission": { "type": "deny" } },
-    { "toolName": "launch-process", "shellInputRegex": "(npm test|npm run|npx |yarn |pnpm |node |tsc |jest |vitest |prettier |eslint )", "permission": { "type": "deny" } },
-    { "toolName": "launch-process", "shellInputRegex": "(cd |Set-Location|Push-Location|Pop-Location)", "permission": { "type": "deny" } },
-    { "toolName": "launch-process", "shellInputRegex": "(Test-Path|Resolve-Path|Split-Path|Join-Path)", "permission": { "type": "deny" } },
-    { "toolName": "launch-process", "shellInputRegex": "Get-Process", "permission": { "type": "deny" } },
-    { "toolName": "launch-process", "shellInputRegex": "(Remove-Item |rm |ri |del )", "permission": { "type": "deny" } },
-    { "toolName": "launch-process", "shellInputRegex": "(Stop-Process|Get-NetTCPConnection)", "permission": { "type": "deny" } },
-    { "toolName": "launch-process", "shellInputRegex": "Select-String", "permission": { "type": "deny" } },
-    { "toolName": "launch-process", "shellInputRegex": "(rm -rf /|Remove-Item.*-Recurse.*C:\\\\|Remove-Item.*-Recurse.*\\$env:)", "permission": { "type": "deny" } },
-    { "toolName": "launch-process", "shellInputRegex": "(sudo|runas|Start-Process.*-Verb RunAs)", "permission": { "type": "deny" } },
-    { "toolName": "launch-process", "shellInputRegex": "(shutdown|restart|Restart-Computer|Stop-Computer|reboot)", "permission": { "type": "deny" } },
-    { "toolName": "launch-process", "shellInputRegex": "(chmod 777|icacls.*/grant.*Everyone)", "permission": { "type": "deny" } },
-    { "toolName": "launch-process", "shellInputRegex": "(curl.*\\|.*sh|curl.*\\|.*bash|iex.*\\(.*Net\\.WebClient|Invoke-Expression.*Download)", "permission": { "type": "deny" } },
-    { "toolName": "launch-process", "shellInputRegex": "(Set-ExecutionPolicy|reg add|reg delete|New-Service|Stop-Service|Remove-Service)", "permission": { "type": "deny" } },
-    { "toolName": "launch-process", "shellInputRegex": "(format |diskpart|fdisk|mkfs|dd if=)", "permission": { "type": "deny" } },
-    { "toolName": "launch-process", "shellInputRegex": "(net user|net localgroup|Add-LocalGroupMember|passwd)", "permission": { "type": "deny" } },
-    { "toolName": "launch-process", "shellInputRegex": "(git push|git merge|git rebase|git reset --hard|git clean -fd)", "permission": { "type": "deny" } },
-    { "toolName": "launch-process", "shellInputRegex": "(npm publish|npm unpublish|dotnet nuget push|dotnet publish)", "permission": { "type": "deny" } },
-    { "toolName": "launch-process", "shellInputRegex": "(env |\\$env:|ConvertTo-SecureString|Get-Credential).*([Pp]assword|[Ss]ecret|[Tt]oken|[Kk]ey|[Cc]redential)", "permission": { "type": "deny" } },
-    { "toolName": "launch-process", "shellInputRegex": "\\$[a-zA-Z_][a-zA-Z0-9_]* *=", "permission": { "type": "deny" } },
-    { "toolName": "launch-process", "permission": { "type": "allow" } },
-    { "toolName": "remove-files", "permission": { "type": "allow" } },
-    { "toolName": "kill-process", "permission": { "type": "allow" } },
-    { "toolName": "github-api", "permission": { "type": "allow" } },
-    { "toolName": "linear", "permission": { "type": "allow" } },
-    { "toolName": "notion", "permission": { "type": "allow" } }
-  ]
+  "permissions": {
+    "allow": [
+      "Bash(.claude/orchestrator/**)",
+      "Bash(${CLAUDE_PLUGIN_ROOT}/**)"
+    ],
+    "deny": [
+      "Bash(git push*)",
+      "Bash(git merge*)",
+      "Bash(git rebase*)",
+      "Bash(git reset --hard*)",
+      "Bash(git clean*)",
+      "Bash(rm -rf*)",
+      "Bash(Remove-Item*-Recurse*)",
+      "Bash(sudo*)",
+      "Bash(runas*)",
+      "Bash(shutdown*)",
+      "Bash(Restart-Computer*)",
+      "Bash(Stop-Computer*)",
+      "Bash(Set-ExecutionPolicy*)",
+      "Bash(net user*)",
+      "Bash(net localgroup*)",
+      "Bash(npm publish*)",
+      "Bash(dotnet publish*)",
+      "Bash(curl*|*sh)",
+      "Bash(iex*WebClient*)",
+      "Bash(Invoke-Expression*Download*)"
+    ]
+  }
 }
 ```
 
-After writing the file, confirm: "Setup complete. toolPermissions written to .claude/settings.json"
+After writing the file, confirm: "Setup complete. permissions written to .claude/settings.json"

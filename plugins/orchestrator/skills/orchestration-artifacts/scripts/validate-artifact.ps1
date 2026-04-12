@@ -23,7 +23,7 @@ param(
 )
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-if ($ExtraArgs) { Write-Host "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -Agent -ContractId"; exit 1 }
+if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -Agent -ContractId"; exit 1 }
 
 $requiredFields = @{
     "researcher"    = @("goal","functional_reqs","non_functional_reqs","constraints","tech_stack")
@@ -41,15 +41,15 @@ $artifactDir = Join-Path "${CLAUDE_PLUGIN_ROOT}\artifacts" (Join-Path $ProjectNa
 if ($ContractId) {
     $filesToCheck = @(Join-Path $artifactDir "$ContractId.yml")
     if (-not (Test-Path $filesToCheck[0])) {
-        Write-Host "FAIL artifact not found: $($filesToCheck[0])"; exit 1
+        Write-Output "FAIL artifact not found: $($filesToCheck[0])"; exit 1
     }
 } else {
     if (-not (Test-Path $artifactDir)) {
-        Write-Host "FAIL no dir: $artifactDir"; exit 1
+        Write-Output "FAIL no dir: $artifactDir"; exit 1
     }
     $filesToCheck = @(Get-ChildItem $artifactDir -Filter "*.yml" -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName })
     if ($filesToCheck.Count -eq 0) {
-        Write-Host "FAIL no artifacts in $artifactDir"; exit 1
+        Write-Output "FAIL no artifacts in $artifactDir"; exit 1
     }
 }
 
@@ -92,10 +92,10 @@ foreach ($artifactPath in $filesToCheck) {
 
     $total = $fields.Count; $ok = $populated.Count
     if ($missing.Count -gt 0) {
-        Write-Host "FAIL $fileName $ok/$total missing=$($missing -join ',')"
+        Write-Output "FAIL $fileName $ok/$total missing=$($missing -join ',')"
         $allPassed = $false
     } else {
-        Write-Host "PASS $fileName $ok/$total"
+        Write-Output "PASS $fileName $ok/$total"
     }
 }
 

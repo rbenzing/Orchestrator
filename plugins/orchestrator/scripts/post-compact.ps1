@@ -4,6 +4,7 @@
     Claude reads this RESUME POINT to continue the workflow without manual intervention.
 #>
 $ErrorActionPreference = "SilentlyContinue"
+$ProgressPreference = "SilentlyContinue"
 
 try {
     $stateRoot = Join-Path (Get-Location).Path ".claude\orchestrator\state"

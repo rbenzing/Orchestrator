@@ -1,9 +1,10 @@
-﻿<#
+<#
 .SYNOPSIS
     UserPromptSubmit hook - prepends a compact orchestration context line to each prompt.
     Eliminates ambient context loss between turns without reading full state files.
 #>
 $ErrorActionPreference = "SilentlyContinue"
+$ProgressPreference = "SilentlyContinue"
 
 try {
     $stateRoot = Join-Path (Get-Location).Path ".claude\orchestrator\state"

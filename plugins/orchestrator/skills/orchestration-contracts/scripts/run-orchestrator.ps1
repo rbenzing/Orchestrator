@@ -36,7 +36,7 @@ param(
 )
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-if ($ExtraArgs) { Write-Host "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -Dispatch -PostTask -CompletedContractID"; exit 1 }
+if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -Dispatch -PostTask -CompletedContractID"; exit 1 }
 
 $baseDir   = "${CLAUDE_PLUGIN_ROOT}\contracts"
 
@@ -124,7 +124,7 @@ foreach ($proj in $projects) {
 # -- Display queue -----------------------------------------------------------
 if ($readyContracts.Count -eq 0 -and $blockedContracts.Count -eq 0 -and $waitingContracts.Count -eq 0) {
     if ($totalClosedCount -gt 0 -and $ProjectName -ne "all") {
-        Write-Host "COMPLETE: all $totalClosedCount contracts closed"
+        Write-Output "COMPLETE: all $totalClosedCount contracts closed"
         $saveStateScript = "${CLAUDE_PLUGIN_ROOT}\skills\orchestration-state\scripts\save-state.ps1"
         if (Test-Path $saveStateScript) {
             & $saveStateScript `
@@ -136,20 +136,20 @@ if ($readyContracts.Count -eq 0 -and $blockedContracts.Count -eq 0 -and $waiting
                 -NextAction       "Project $ProjectName is complete. All $totalClosedCount contracts closed."
         }
     } else {
-        Write-Host "No active contracts"
+        Write-Output "No active contracts"
     }
     exit 0
 }
 
-Write-Host "READY($($readyContracts.Count)) WAITING($($waitingContracts.Count)) BLOCKED($($blockedContracts.Count))"
+Write-Output "READY($($readyContracts.Count)) WAITING($($waitingContracts.Count)) BLOCKED($($blockedContracts.Count))"
 foreach ($c in $readyContracts) {
-    Write-Host "READY $($c.ID) $($c.Agent) [$($c.Tier)] attempt=$($c.Attempt)/$($c.MaxAttempts)"
+    Write-Output "READY $($c.ID) $($c.Agent) [$($c.Tier)] attempt=$($c.Attempt)/$($c.MaxAttempts)"
 }
 foreach ($c in $waitingContracts) {
-    Write-Host "WAIT $($c.ID) $($c.Agent) deps-unmet"
+    Write-Output "WAIT $($c.ID) $($c.Agent) deps-unmet"
 }
 foreach ($c in $blockedContracts) {
-    Write-Host "BLOCKED $($c.ID) $($c.Agent) attempt=$($c.Attempt)/$($c.MaxAttempts)"
+    Write-Output "BLOCKED $($c.ID) $($c.Agent) attempt=$($c.Attempt)/$($c.MaxAttempts)"
 }
 
 # -- Dispatch: mark first ready contract as active in state ------------------
@@ -184,7 +184,7 @@ if ($Dispatch -and $readyContracts.Count -gt 0) {
             -NextAction       "Waiting for $agentName to complete contract $($next.ID)"
     }
 
-    Write-Host "DISPATCH $($next.ID) -> $($next.Agent) file=$($next.File)"
+    Write-Output "DISPATCH $($next.ID) -> $($next.Agent) file=$($next.File)"
     Write-Output $next.ID
 }
 
@@ -211,5 +211,5 @@ if ($PostTask) {
                 -NextAction       "Contract $CompletedContractID closed. Scanning next."
         }
     }
-    Write-Host "POST-TASK done"
+    Write-Output "POST-TASK done"
 }

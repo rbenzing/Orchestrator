@@ -8,6 +8,31 @@
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/scripts/validate-orchestration-command.sh",
             "timeout": 5000
+          },
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/token-budget-guard.sh",
+            "timeout": 5000
+          }
+        ]
+      },
+      {
+        "matcher": "view",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/token-budget-guard.sh",
+            "timeout": 5000
+          }
+        ]
+      },
+      {
+        "matcher": "codebase-retrieval",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/token-budget-guard.sh",
+            "timeout": 5000
           }
         ]
       }
@@ -18,7 +43,29 @@
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/scripts/pre-compact.sh",
-            "timeout": 8000
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "view",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/post-tool-budget.sh",
+            "timeout": 5000
+          }
+        ]
+      },
+      {
+        "matcher": "codebase-retrieval",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/post-tool-budget.sh",
+            "timeout": 5000
           }
         ]
       }
@@ -29,7 +76,7 @@
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/scripts/post-compact.sh",
-            "timeout": 8000
+            "timeout": 5000
           }
         ]
       }
@@ -40,7 +87,7 @@
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/scripts/session-start.sh",
-            "timeout": 8000
+            "timeout": 5000
           }
         ]
       }
@@ -62,7 +109,7 @@
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/scripts/subagent-start.sh",
-            "timeout": 8000
+            "timeout": 5000
           }
         ]
       }
@@ -73,7 +120,18 @@
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/scripts/subagent-stop.sh",
-            "timeout": 8000
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/stop-guard.sh",
+            "timeout": 10000
           }
         ]
       }

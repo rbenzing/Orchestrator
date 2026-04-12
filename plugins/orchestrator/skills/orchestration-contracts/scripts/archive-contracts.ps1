@@ -22,10 +22,10 @@ param(
 )
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-if ($ExtraArgs) { Write-Host "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -DryRun"; exit 1 }
+if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -DryRun"; exit 1 }
 
 $baseDir = "${CLAUDE_PLUGIN_ROOT}\contracts"
-if (-not (Test-Path $baseDir)) { Write-Host "No contracts dir"; exit 0 }
+if (-not (Test-Path $baseDir)) { Write-Output "No contracts dir"; exit 0 }
 
 # Determine which projects to process
 if ($ProjectName -eq "all") {
@@ -55,7 +55,7 @@ foreach ($proj in $projects) {
 
     foreach ($f in $closedFiles) {
         $dest = Join-Path $archiveDir $f.Name
-        if ($DryRun) { Write-Host "DRY $($f.Name) -> archive/$dateLabel" }
+        if ($DryRun) { Write-Output "DRY $($f.Name) -> archive/$dateLabel" }
         else {
             Move-Item -Path $f.FullName -Destination $dest -Force
             $totalMoved++
@@ -63,4 +63,4 @@ foreach ($proj in $projects) {
     }
 }
 
-Write-Host "archived=$totalMoved$(if ($DryRun) { ' (dry-run)' })"
+Write-Output "archived=$totalMoved$(if ($DryRun) { ' (dry-run)' })"

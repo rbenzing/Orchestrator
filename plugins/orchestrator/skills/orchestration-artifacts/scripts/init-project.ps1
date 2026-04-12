@@ -27,7 +27,7 @@ param(
 )
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-if ($ExtraArgs) { Write-Host "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -BasePath"; exit 1 }
+if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -BasePath"; exit 1 }
 
 $agents = @("researcher","architect","ui-designer","planner","developer","code-reviewer","tester")
 
@@ -46,4 +46,4 @@ if (-not (Test-Path $stateDir)) {
     $created++
 }
 
-Write-Host "init $ProjectName created=$created"
+Write-Output "init $ProjectName created=$created"

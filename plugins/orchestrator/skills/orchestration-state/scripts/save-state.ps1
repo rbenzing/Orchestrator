@@ -1,19 +1,30 @@
 ﻿<#
 .SYNOPSIS
     Persist orchestrator workflow state to disk.
-.PARAMETER ProjectName  Project identifier.
-.PARAMETER Phase        research|architecture|ui-design|planning|test-authoring|development|reviews|testing|complete
-.PARAMETER ActiveAgent  Agent currently executing.
-.PARAMETER NextAction   Next action the orchestrator should take.
-.PARAMETER ActiveContractID  Open contract ID (Contract-Router mode).
-.PARAMETER RouterPhase  intake|dispatch|waiting|gate|complete
-.PARAMETER CurrentStory Story being worked on.
-.PARAMETER StoryStatus  not-started|in-progress|authoring-tests|validating|review|testing|complete|blocked
-.PARAMETER StoryQueue   Remaining stories.
-.PARAMETER CompletedStories Completed stories.
-.PARAMETER Notes        Optional freeform notes.
+.PARAMETER ProjectName  
+    Project identifier.
+.PARAMETER Phase        
+    research|architecture|ui-design|planning|test-authoring|development|reviews|testing|complete
+.PARAMETER ActiveAgent  
+    Agent currently executing.
+.PARAMETER NextAction   
+    Next action the orchestrator should take.
+.PARAMETER ActiveContractID  
+    Open contract ID (Contract-Router mode).
+.PARAMETER RouterPhase  
+    intake|dispatch|waiting|gate|complete
+.PARAMETER CurrentStory 
+    Story being worked on.
+.PARAMETER StoryStatus  
+    not-started|in-progress|authoring-tests|validating|review|testing|complete|blocked
+.PARAMETER StoryQueue   
+    Remaining stories.
+.PARAMETER CompletedStories 
+    Completed stories.
+.PARAMETER Notes        
+    Optional freeform notes.
 .EXAMPLE
-    save-state.ps1 -ProjectName "user-auth" -Phase "development" -ActiveAgent "Developer" -ActiveContractID "TSK-003" -RouterPhase "waiting" -NextAction "Waiting for Developer to close TSK-003"
+    ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-state\scripts\save-state.ps1 -ProjectName "user-auth" -Phase "development" -ActiveAgent "Developer" -ActiveContractID "TSK-003" -RouterPhase "waiting" -NextAction "Waiting for Developer to close TSK-003"
 #>
 [CmdletBinding()]
 param(
@@ -32,9 +43,9 @@ param(
 )
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-if ($ExtraArgs) { Write-Host "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -Phase -ActiveAgent -ActiveContractID -RouterPhase -NextAction -CurrentStory -StoryStatus -StoryQueue -CompletedStories -Notes"; exit 1 }
+if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -Phase -ActiveAgent -ActiveContractID -RouterPhase -NextAction -CurrentStory -StoryStatus -StoryQueue -CompletedStories -Notes"; exit 1 }
 
-$stateDir = Join-Path "${CLAUDE_PLUGIN_ROOT}\state" $ProjectName
+$stateDir = Join-Path ".claude/orchestrator/state" $ProjectName
 if (-not (Test-Path $stateDir)) { New-Item -Path $stateDir -ItemType Directory -Force | Out-Null }
 
 function Format-YamlList([string[]]$items) {
@@ -59,4 +70,4 @@ notes: "$Notes"
 "@
 
 Set-Content -Path $stateFile -Value $content -Encoding UTF8
-Write-Host "saved $ProjectName phase=$Phase agent=$ActiveAgent"
+Write-Output "saved $ProjectName phase=$Phase agent=$ActiveAgent"

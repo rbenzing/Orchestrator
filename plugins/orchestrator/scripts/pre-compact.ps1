@@ -1,9 +1,10 @@
-﻿<#
+<#
 .SYNOPSIS
     PreCompact hook - injects orchestration state into the compaction context.
     Claude includes this in the summary so workflow position survives.
 #>
 $ErrorActionPreference = "SilentlyContinue"
+$ProgressPreference = "SilentlyContinue"
 
 try {
     $stateRoot = Join-Path (Get-Location).Path ".claude\orchestrator\state"

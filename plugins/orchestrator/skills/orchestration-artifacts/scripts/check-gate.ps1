@@ -15,14 +15,10 @@
 .PARAMETER ContractID
     YAML contract ID to validate against (e.g. "TSK-003"). When supplied,
     acceptance criteria and deliverables are read from the contract file.
-.PARAMETER IsMigration
-    Include migration-specific checks.
 .PARAMETER Root
     Repository root. Defaults to current directory.
 .EXAMPLE
     ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-artifacts\scripts\check-gate.ps1 -ProjectName "user-auth" -Phase "research"
-.EXAMPLE
-    ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-artifacts\scripts\check-gate.ps1 -ProjectName "billing" -Phase "all" -IsMigration
 .EXAMPLE
     ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-artifacts\scripts\check-gate.ps1 -ProjectName "user-auth" -ContractID "TSK-003"
 #>
@@ -33,14 +29,13 @@ param(
     [ValidateSet("all","research","architecture","ui-design","planning","development","reviews","testing")]
     [string]$Phase = "",
     [string]$ContractID = "",
-    [switch]$IsMigration,
     [string]$Root = (Get-Location).Path,
     [Parameter(ValueFromRemainingArguments = $true)]
     [object[]]$ExtraArgs
 )
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-if ($ExtraArgs) { Write-Host "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -Phase -ContractID -IsMigration -Root"; exit 1 }
+if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -Phase -ContractID -Root"; exit 1 }
 
 # Validate: at least one of Phase or ContractID must be provided
 if (-not $Phase -and -not $ContractID) {
@@ -89,9 +84,9 @@ if ($ContractID) {
         foreach ($d in $deliverables) {
             $filePath = ($d -split ':')[0].Trim()
             if (Test-Path $filePath) {
-                Write-Host "OK $filePath"
+                Write-Output "OK $filePath"
             } else {
-                Write-Host "MISSING $filePath"
+                Write-Output "MISSING $filePath"
                 $contractFailures += "Deliverable missing: $filePath"
                 $contractPassed = $false
             }
@@ -99,13 +94,13 @@ if ($ContractID) {
     }
 
     if ($criteria.Count -gt 0) {
-        foreach ($c in $criteria) { Write-Host "CRITERIA: $c" }
+        foreach ($c in $criteria) { Write-Output "CRITERIA: $c" }
     }
 
     if ($contractPassed) {
-        Write-Host "GATE PASSED $ContractID"
+        Write-Output "GATE PASSED $ContractID"
     } else {
-        Write-Host "GATE FAILED $ContractID"
+        Write-Output "GATE FAILED $ContractID"
         $errorTrace = $contractFailures -join "; "
         $updateScript = "${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scripts\update-contract.ps1"
         if (Test-Path $updateScript) {
@@ -159,16 +154,16 @@ foreach ($p in $phasesToCheck) {
     }
 
     if ($validationPassed) {
-        Write-Host "PHASE $p OK"
+        Write-Output "PHASE $p OK"
     } else {
-        Write-Host "PHASE $p FAIL"
+        Write-Output "PHASE $p FAIL"
         $allPassed = $false
         if ($p -in @("development","testing")) {
             $hint = Get-ProjectRunnerHint -SearchRoot $Root
-            if ($hint) { Write-Host "HINT: $hint" }
+            if ($hint) { Write-Output "HINT: $hint" }
         }
     }
 }
 
-if ($allPassed) { Write-Host "ALL GATES PASSED" }
-else { Write-Host "GATE(S) FAILED"; exit 1 }
+if ($allPassed) { Write-Output "ALL GATES PASSED" }
+else { Write-Output "GATE(S) FAILED"; exit 1 }

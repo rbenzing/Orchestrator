@@ -1,3 +1,31 @@
 {
-  "agent": "orchestrator"
+  "agent": "orchestrator",
+  "permissions": {
+    "allow": [
+      "Bash(.claude/orchestrator/**)",
+      "Bash(.claude\\orchestrator\\**)"
+    ],
+    "deny": [
+      "Bash(git push*)",
+      "Bash(git merge*)",
+      "Bash(git rebase*)",
+      "Bash(git reset --hard*)",
+      "Bash(git clean*)",
+      "Bash(rm -rf*)",
+      "Bash(Remove-Item*-Recurse*)",
+      "Bash(sudo*)",
+      "Bash(runas*)",
+      "Bash(shutdown*)",
+      "Bash(Restart-Computer*)",
+      "Bash(Stop-Computer*)",
+      "Bash(Set-ExecutionPolicy*)",
+      "Bash(net user*)",
+      "Bash(net localgroup*)",
+      "Bash(npm publish*)",
+      "Bash(dotnet publish*)",
+      "Bash(curl*|*sh)",
+      "Bash(iex*WebClient*)",
+      "Bash(Invoke-Expression*Download*)"
+    ]
+  }
 }
