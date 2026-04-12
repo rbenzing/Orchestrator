@@ -52,6 +52,48 @@ try {
         Deny-Hook "Use .\${CLAUDE_PLUGIN_ROOT}\skills\find-files\scripts\find-files.ps1 instead of the Glob tool. It excludes build artifacts and non-source directories automatically."
     }
 
+    # Rule 0b: Intercept Bash commands that have skill equivalents -- redirect to skills
+    if ($toolName -eq "Bash") {
+        $cmd = $eventData.tool_input.command
+        if ($cmd) {
+            # File search / listing
+            if ($cmd -match '^(find |ls |dir )') {
+                Deny-Hook "Use .\${CLAUDE_PLUGIN_ROOT}\skills\find-files\scripts\find-files.ps1 instead of Bash find/ls. It excludes build artifacts automatically."
+            }
+            # File content reads
+            if ($cmd -match '^(cat |head |tail )') {
+                Deny-Hook "Use the Read tool to read files, or .\${CLAUDE_PLUGIN_ROOT}\skills\summarize-artifact\scripts\summarize-artifact.ps1 for large files."
+            }
+            # Git operations with skill equivalents
+            if ($cmd -match '^git (diff|log|show|stash)') {
+                Deny-Hook "Use .\${CLAUDE_PLUGIN_ROOT}\skills\git-diff\scripts\git-diff.ps1 or .\${CLAUDE_PLUGIN_ROOT}\skills\git-summary\scripts\git-summary.ps1 instead of raw git commands."
+            }
+            if ($cmd -match '^git (status|branch)') {
+                Deny-Hook "Use .\${CLAUDE_PLUGIN_ROOT}\skills\git-summary\scripts\git-summary.ps1 instead of raw git commands."
+            }
+            # Build/test operations
+            if ($cmd -match '^(npm run build|npm build|ng build)') {
+                Deny-Hook "Use .\${CLAUDE_PLUGIN_ROOT}\skills\node-build\scripts\node-build.ps1 instead of raw npm/ng build commands."
+            }
+            if ($cmd -match '^(npm (run )?test|ng test)') {
+                Deny-Hook "Use .\${CLAUDE_PLUGIN_ROOT}\skills\node-test\scripts\node-test.ps1 instead of raw npm/ng test commands."
+            }
+            if ($cmd -match '^(npm run lint|ng lint)') {
+                Deny-Hook "Use .\${CLAUDE_PLUGIN_ROOT}\skills\node-lint\scripts\node-lint.ps1 instead of raw npm/ng lint commands."
+            }
+            if ($cmd -match '^ng serve') {
+                Deny-Hook "Use .\${CLAUDE_PLUGIN_ROOT}\skills\ng-serve\scripts\ng-serve.ps1 instead of raw ng serve."
+            }
+            if ($cmd -match '^dotnet (build|test|restore|format)') {
+                $op = $Matches[1]
+                Deny-Hook "Use .\${CLAUDE_PLUGIN_ROOT}\skills\dotnet-${op}\scripts\dotnet-${op}.ps1 instead of raw dotnet $op commands."
+            }
+            if ($cmd -match '^(python |pip )') {
+                Deny-Hook "Use .\${CLAUDE_PLUGIN_ROOT}\skills\python-run\scripts\python-run.ps1 or .\${CLAUDE_PLUGIN_ROOT}\skills\pip-install\scripts\pip-install.ps1 instead of raw python/pip commands."
+            }
+        }
+    }
+
     if ($toolName -ne "launch-process") { exit 0 }
 
     $command = $eventData.tool_input.command
