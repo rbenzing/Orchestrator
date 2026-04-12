@@ -1,6 +1,6 @@
 ---
 name: orchestration-draft
-description: Speculative draft-and-verify harness. Runs a cheap Haiku draft of a contract then uses the agent's assigned model to verify or fix. Reduces cost on first-attempt TDD and planning contracts.
+description: Draft-and-verify harness runs a Haiku draft of a contract then uses the agent's assigned model to verify or fix.
 ---
 
 Always call these scripts via `launch-process`. Never use `Bash`.
