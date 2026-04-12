@@ -1,8 +1,8 @@
-<#
+﻿<#
 .SYNOPSIS
     Creates a new YAML contract file for a task assignment.
 .DESCRIPTION
-    Generates a structured YAML contract under .claude/orchestrator/contracts/{ProjectName}/
+    Generates a structured YAML contract under ${CLAUDE_PLUGIN_ROOT}/contracts/{ProjectName}/
     following the Contract-Router YAML schema.
 .PARAMETER ProjectName
     Project identifier (e.g. "user-auth").
@@ -31,7 +31,7 @@
 .PARAMETER IfFail
     Routing instruction if the contract fails.
 .EXAMPLE
-    .claude\skills\orchestration-contracts\scripts\new-contract.ps1 `
+    ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scripts\new-contract.ps1 `
       -ProjectName "user-auth" -ContractId "TSK-001" -Type "Task" `
       -AssignedAgent "@developer" -Objective "Implement JWT login endpoint." `
       -Deliverables "src/auth/login.ts","tests/auth/login.test.ts" `
@@ -44,8 +44,6 @@ param(
     [Parameter(Mandatory)][ValidateSet("Project","Story","Task","TDD-Red","TDD-Green","TDD-Refactor","Feedback","Validation")][string]$Type,
     [Parameter(Mandatory)][string]$AssignedAgent,
     [ValidateSet("haiku","sonnet","opus")][string]$ModelTier = "sonnet",
-    [switch]$DraftEnabled,
-    [string]$DraftModel = "claude-haiku-4-5-20251001",
     [Parameter(Mandatory)][string]$Objective,
     [string[]]$Deliverables = @(),
     [string[]]$AcceptanceCriteria = @(),
@@ -53,21 +51,15 @@ param(
     [string[]]$Dependencies = @(),
     [string]$ParentContract = "",
     [string]$IfPass = "Return to Router",
-    [string]$IfFail = "Return to Router with Feedback Contract"
+    [string]$IfFail = "Return to Router with Feedback Contract",
+    [Parameter(ValueFromRemainingArguments = $true)][object[]]$ExtraArgs
 )
 $ErrorActionPreference = "Stop"
+$ProgressPreference = "SilentlyContinue"
 
-# Auto-enable draft for eligible types on first-attempt Sonnet contracts
-$draftEligibleTypes = @("TDD-Red","TDD-Green","Task")
-if (-not $DraftEnabled -and ($draftEligibleTypes -contains $Type) -and ($ModelTier -eq "sonnet")) {
-    $DraftEnabled = $true
-}
-# Never draft on escalated or non-Sonnet contracts
-if ($ModelTier -ne "sonnet") { $DraftEnabled = $false }
+if ($ExtraArgs) { Write-Host "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -ContractId -Type -AssignedAgent -ModelTier -Objective -AcceptanceCriteria -Deliverables -RequiredReads -Dependencies -ParentContract -IfPass -IfFail"; exit 1 }
 
-$draftEnabledStr = if ($DraftEnabled) { "true" } else { "false" }
-
-$contractDir = Join-Path ".claude\orchestrator\contracts" $ProjectName
+$contractDir = Join-Path "${CLAUDE_PLUGIN_ROOT}\contracts" $ProjectName
 if (-not (Test-Path $contractDir)) {
     New-Item -Path $contractDir -ItemType Directory -Force | Out-Null
 }
@@ -122,20 +114,8 @@ execution_history: []
 next_routing:
   if_pass: "$IfPass"
   if_fail: "$IfFail"
-
-draft_enabled: $draftEnabledStr
-draft_model: "$DraftModel"
-draft_result: "pending"
-draft_notes: ""
 "@
 
 Set-Content -Path $contractFile -Value $yaml -Encoding UTF8
-Write-Host ""
-Write-Host "  [+] Contract created: $contractFile" -ForegroundColor Green
-$draftLabel = if ($DraftEnabled) { " | Draft+Verify: ON" } else { "" }
-Write-Host "      Type: $Type | Agent: $AssignedAgent | Model: $ModelTier$draftLabel" -ForegroundColor White
-Write-Host "      Status: Open" -ForegroundColor Cyan
-Write-Host ""
-# Output the file path so callers can capture it
+Write-Host "+$ContractId $AssignedAgent [$ModelTier] $Type"
 Write-Output $contractFile
-

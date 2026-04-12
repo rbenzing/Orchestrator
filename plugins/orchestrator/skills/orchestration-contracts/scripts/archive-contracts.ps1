@@ -1,31 +1,31 @@
-<#
+﻿<#
 .SYNOPSIS
     Archives Closed contracts to prevent file system and context bloat.
 .DESCRIPTION
     Moves all Closed contracts for a project into an archive subfolder
-    (.claude/orchestrator/contracts/{ProjectName}/archive/{date}/) so active contract
+    (${CLAUDE_PLUGIN_ROOT}/contracts/{ProjectName}/archive/{date}/) so active contract
     directories stay small and readable.
 .PARAMETER ProjectName
     Project identifier. Use "all" to archive across all projects.
 .PARAMETER DryRun
     List what would be archived without moving anything.
 .EXAMPLE
-    .claude\skills\orchestration-contracts\scripts\archive-contracts.ps1 -ProjectName "user-auth"
+    ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scripts\archive-contracts.ps1 -ProjectName "user-auth"
 .EXAMPLE
-    .claude\skills\orchestration-contracts\scripts\archive-contracts.ps1 -ProjectName "all" -DryRun
+    ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scripts\archive-contracts.ps1 -ProjectName "all" -DryRun
 #>
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)][string]$ProjectName,
-    [switch]$DryRun
+    [switch]$DryRun,
+    [Parameter(ValueFromRemainingArguments)][object[]]$ExtraArgs
 )
 $ErrorActionPreference = "Stop"
+$ProgressPreference = "SilentlyContinue"
+if ($ExtraArgs) { Write-Host "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -DryRun"; exit 1 }
 
-$baseDir = ".claude\orchestrator\contracts"
-if (-not (Test-Path $baseDir)) {
-    Write-Host "  [!] No contracts directory found." -ForegroundColor Yellow
-    exit 0
-}
+$baseDir = "${CLAUDE_PLUGIN_ROOT}\contracts"
+if (-not (Test-Path $baseDir)) { Write-Host "No contracts dir"; exit 0 }
 
 # Determine which projects to process
 if ($ProjectName -eq "all") {
@@ -46,10 +46,7 @@ foreach ($proj in $projects) {
         $yaml -match 'status:\s*"Closed"'
     }
 
-    if ($closedFiles.Count -eq 0) {
-        Write-Host "  [=] $proj -- no Closed contracts to archive." -ForegroundColor DarkGray
-        continue
-    }
+    if ($closedFiles.Count -eq 0) { continue }
 
     $archiveDir = Join-Path $projDir "archive\$dateLabel"
     if (-not $DryRun -and -not (Test-Path $archiveDir)) {
@@ -58,21 +55,12 @@ foreach ($proj in $projects) {
 
     foreach ($f in $closedFiles) {
         $dest = Join-Path $archiveDir $f.Name
-        if ($DryRun) {
-            Write-Host "  [DRY] Would archive: $($f.FullName)  ->  $dest" -ForegroundColor DarkYellow
-        } else {
+        if ($DryRun) { Write-Host "DRY $($f.Name) -> archive/$dateLabel" }
+        else {
             Move-Item -Path $f.FullName -Destination $dest -Force
-            Write-Host "  [>] Archived: $($f.Name)  ->  archive\$dateLabel\" -ForegroundColor Green
             $totalMoved++
         }
     }
 }
 
-Write-Host ""
-if ($DryRun) {
-    Write-Host "  [DRY RUN complete -- no files moved]" -ForegroundColor DarkYellow
-} else {
-    Write-Host "  Archive complete. $totalMoved contract(s) moved." -ForegroundColor Cyan
-}
-Write-Host ""
-
+Write-Host "archived=$totalMoved$(if ($DryRun) { ' (dry-run)' })"

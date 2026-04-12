@@ -1,0 +1,25 @@
+# Template: stories.yml
+# Agent: @planner
+# All fields required per story. Stories ordered by dependency.
+
+project: ""
+status: draft
+updated_at: ""
+
+implementation_order:
+  # - S-1
+  # - S-2
+  []
+
+stories:
+  # - id: S-1
+  #   title: short title
+  #   scope: |
+  #     what this story covers (2-3 lines max)
+  #   deps: []
+  #   acceptance_criteria:
+  #     - testable criterion
+  #   deliverables:
+  #     - path/to/file.ts
+  #   estimated_complexity: low|medium|high
+  []

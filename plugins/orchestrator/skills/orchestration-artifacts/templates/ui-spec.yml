@@ -1,0 +1,59 @@
+# Template: ui-spec.yml
+# Agent: @ui-designer
+# All fields required. Keep token-efficient: bullets, no prose.
+
+project: ""
+status: draft
+updated_at: ""
+
+design_system:
+  colors:
+    # - token: color-primary
+    #   value: "#hex"
+    #   usage: where used
+    []
+  typography:
+    # - token: font-heading
+    #   value: font spec
+    []
+  spacing:
+    # - token: space-sm
+    #   value: 8px
+    []
+  breakpoints:
+    # - name: mobile
+    #   value: 0-767px
+    []
+
+screens:
+  # - id: S-1
+  #   name: screen name
+  #   route: /path
+  #   layout: description of layout structure
+  #   components:
+  #     - name: component name
+  #       type: form|list|card|nav|modal|etc
+  #       props: key props
+  #       behavior: interaction notes
+  []
+
+flows:
+  # - id: F-1
+  #   name: flow name
+  #   steps:
+  #     - screen: S-1
+  #       action: user action
+  #       result: what happens
+  []
+
+accessibility:
+  wcag_level: AA
+  requirements:
+    # - area: keyboard|screen-reader|contrast|focus
+    #   spec: requirement
+    []
+
+responsive:
+  # - breakpoint: mobile|tablet|desktop
+  #   changes: what adapts
+  []

@@ -1,76 +1,82 @@
 ---
 name: orchestration-artifacts
-description: Artifact directory structure, project initialization, completion dashboard, and quality gate validation for the Contract-Router orchestration pipeline.
+description: YAML artifact CRUD, templates, and quality gates
 ---
 
-> **TOOL**: Always call these scripts via `launch-process`. Never use `Bash`.
-> **FORMAT**: All parameters on a single line — no backtick line continuation.
-> **PATH**: Use `${CLAUDE_PLUGIN_ROOT}\skills\orchestration-artifacts\scripts\` prefix.
+# Orchestration Artifacts
+
+One YAML file per contract per agent. ContractId is the filename. Deterministic schema, token-efficient.
 
 ## Directory Structure
 
 ```
-.claude/orchestrator/artifacts/
-+-- {project-name}/
-|   +-- researcher/
-|   |   +-- proposal.md, requirements.md, technical-constraints.md
-|   |   +-- specs/ (scenarios.md, spec-before.md for migrations)
-|   +-- architect/
-|   |   +-- architecture.md, decisions/, diagrams/
-|   +-- ui-designer/
-|   |   +-- ui-spec.md, design-system.md, accessibility.md, flows/
-|   +-- planner/
-|   |   +-- design.md, implementation-spec.md, story-breakdown.md
-|   +-- developer/
-|   |   +-- implementation-notes.md, build-logs.txt
-|   +-- code-reviewer/
-|   |   +-- code-review-report.md
-|   +-- tester/
-|       +-- test-results.md, test-coverage.md
+${CLAUDE_PLUGIN_ROOT}/artifacts/{project}/
+  researcher/    {contract-id}.yml  (requirements template)
+  architect/     {contract-id}.yml  (architecture template)
+  ui-designer/   {contract-id}.yml  (ui-spec template)
+  planner/       {contract-id}.yml  (stories template)
+  developer/     {contract-id}.yml  (dev-log template)
+  code-reviewer/ {contract-id}.yml  (review template)
+  tester/        {contract-id}.yml  (test-results template)
 ```
+
+Templates: `${CLAUDE_PLUGIN_ROOT}/skills/orchestration-artifacts/templates/`
 
 ## Rules
 
-1. Source code goes OUTSIDE `.claude/` — only planning artifacts live here
-2. Each agent owns its subdirectory — agents must not write into another agent's directory
-3. `{project-name}` must be consistent across all agent directories
+1. Source code goes OUTSIDE ${CLAUDE_PLUGIN_ROOT}/ -- only planning artifacts live here
+2. Each agent owns its subdirectory -- agents must not write into another agent's directory
+3. Use CRUD scripts below -- do not manually create artifact files
+4. All artifacts are YAML -- no markdown prose, no unicode, no unnecessary formatting
+5. Use get-artifact -Field to read single fields -- avoid loading full files
+6. One artifact per contract -- never append to another contract's artifact
 
-## Scripts
+## CRUD Scripts
 
-### `init-project.ps1`
-Creates the full artifact directory tree for a project.
-
+### new-artifact.ps1 -- Create artifact from template for a contract
 ```
-${CLAUDE_PLUGIN_ROOT}\skills\orchestration-artifacts\scripts\init-project.ps1 -ProjectName "user-auth"
+new-artifact.ps1 -ProjectName "auth" -Agent "researcher" -ContractId "TSK-001"
 ```
+Params: -ProjectName, -Agent, -ContractId (all required), -BasePath, -Force
 
-Required: `-ProjectName`
-Optional: `-BasePath`
-
-### `artifact-status.ps1`
-Artifact completion dashboard — shows which files exist per agent.
-
+### get-artifact.ps1 -- Read artifact, single field, or list all
 ```
-${CLAUDE_PLUGIN_ROOT}\skills\orchestration-artifacts\scripts\artifact-status.ps1 -ProjectName "user-auth"
+get-artifact.ps1 -ProjectName "auth" -Agent "researcher" -ContractId "TSK-001"
+get-artifact.ps1 -ProjectName "auth" -Agent "researcher" -ContractId "TSK-001" -Field "goal"
+get-artifact.ps1 -ProjectName "auth" -Agent "developer"
 ```
+Params: -ProjectName, -Agent required. -ContractId (read one), -Field (single field). No ContractId = list all.
 
-Required: `-ProjectName`
-Optional: `-Root`
+### update-artifact.ps1 -- Update a field in an artifact
+```
+update-artifact.ps1 -ProjectName "auth" -Agent "researcher" -ContractId "TSK-001" -Field "goal" -Value "JWT auth"
+```
+Params: -ProjectName, -Agent, -ContractId, -Field, -Value (all required), -Status default active
 
-### `check-gate.ps1`
-Quality gate validation — verifies required artifacts and section headers exist.
+### validate-artifact.ps1 -- Check required fields are populated
+```
+validate-artifact.ps1 -ProjectName "auth" -Agent "researcher" -ContractId "TSK-001"
+validate-artifact.ps1 -ProjectName "auth" -Agent "developer"
+```
+Params: -ProjectName, -Agent required. -ContractId validates one; omit to validate all in agent dir.
 
-```
-${CLAUDE_PLUGIN_ROOT}\skills\orchestration-artifacts\scripts\check-gate.ps1 -ProjectName "user-auth" -Phase "research"
-```
+## Infrastructure Scripts
 
+### init-project.ps1 -- Create agent directories (no pre-created files)
 ```
-${CLAUDE_PLUGIN_ROOT}\skills\orchestration-artifacts\scripts\check-gate.ps1 -ProjectName "user-auth" -Phase "all" -IsMigration
+init-project.ps1 -ProjectName "auth"
 ```
+Params: -ProjectName required, -BasePath
 
+### artifact-status.ps1 -- Artifact dashboard (scans all .yml per agent)
 ```
-${CLAUDE_PLUGIN_ROOT}\skills\orchestration-artifacts\scripts\check-gate.ps1 -ProjectName "user-auth" -ContractID "TSK-003"
+artifact-status.ps1 -ProjectName "auth"
 ```
+Params: -ProjectName required, -Root
 
-Required: `-ProjectName` + one of `-Phase` or `-ContractID`
-Optional: `-Phase` (research|architecture|ui-design|planning|development|reviews|testing|all) `-ContractID` `-IsMigration` `-Root`
+### check-gate.ps1 -- Quality gate (validates all artifacts in agent dir)
+```
+check-gate.ps1 -ProjectName "auth" -Phase "research"
+```
+Params: -ProjectName required, -Phase (research|architecture|ui-design|planning|development|reviews|testing|all), -Root
+

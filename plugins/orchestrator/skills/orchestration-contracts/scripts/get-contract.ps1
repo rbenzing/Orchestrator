@@ -1,9 +1,9 @@
-<#
+﻿<#
 .SYNOPSIS
     Reads and displays the active contract for a given project and agent.
 .DESCRIPTION
     Finds the most recent Open contract assigned to the specified agent
-    under .claude/orchestrator/contracts/{ProjectName}/. Outputs the YAML content
+    under ${CLAUDE_PLUGIN_ROOT}/contracts/{ProjectName}/. Outputs the YAML content
     to stdout so the agent can parse its objective and required_reads.
 .PARAMETER ProjectName
     Project identifier.
@@ -15,10 +15,10 @@
 .PARAMETER Raw
     If set, output raw YAML. Otherwise prints a formatted summary.
 .EXAMPLE
-    .claude\skills\orchestration-contracts\scripts\get-contract.ps1 `
+    ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scripts\get-contract.ps1 `
       -ProjectName "user-auth" -AssignedAgent "@developer"
 .EXAMPLE
-    .claude\skills\orchestration-contracts\scripts\get-contract.ps1 `
+    ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scripts\get-contract.ps1 `
       -ProjectName "user-auth" -ContractId "TSK-001" -Raw
 #>
 [CmdletBinding()]
@@ -26,14 +26,16 @@ param(
     [Parameter(Mandatory)][string]$ProjectName,
     [string]$ContractId = "",
     [string]$AssignedAgent = "",
-    [switch]$Raw
+    [switch]$Raw,
+    [Parameter(ValueFromRemainingArguments)][object[]]$ExtraArgs
 )
 $ErrorActionPreference = "Stop"
+$ProgressPreference = "SilentlyContinue"
+if ($ExtraArgs) { Write-Host "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -ContractId -AssignedAgent -Raw"; exit 1 }
 
-$contractDir = Join-Path ".claude\orchestrator\contracts" $ProjectName
+$contractDir = Join-Path "${CLAUDE_PLUGIN_ROOT}\contracts" $ProjectName
 if (-not (Test-Path $contractDir)) {
-    Write-Host "  [!] No contracts directory found for project: $ProjectName" -ForegroundColor Yellow
-    exit 0
+    Write-Host "No contracts for $ProjectName"; exit 0
 }
 
 if ($ContractId) {
@@ -60,24 +62,11 @@ foreach ($f in $files) {
 }
 
 if (-not $found) {
-    Write-Host ""
-    Write-Host "  [=] No open contracts found for: ProjectName=$ProjectName Agent=$AssignedAgent" -ForegroundColor DarkGray
-    Write-Host ""
-    exit 0
+    Write-Host "No open contracts project=$ProjectName agent=$AssignedAgent"; exit 0
 }
 
-if ($Raw) {
-    Write-Output $foundYaml
-    exit 0
-}
+if ($Raw) { Write-Output $foundYaml; exit 0 }
 
-# Pretty summary
-Write-Host ""
-Write-Host "  +-- Contract: $($found.BaseName) -----------------------------------------" -ForegroundColor Cyan
-$foundYaml -split "`n" | ForEach-Object { Write-Host "  |  $_" -ForegroundColor White }
-Write-Host "  +----------------------------------------------------------" -ForegroundColor Cyan
-Write-Host ""
-
-# Output file path for callers
-Write-Output $found.FullName
-
+# Output YAML directly -- agent parses it
+Write-Output $foundYaml
+Write-Host "contract=$($found.BaseName) file=$($found.FullName)"

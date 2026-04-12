@@ -1,50 +1,54 @@
 ---
 name: orchestration-state
-description: Persistent workflow state for the orchestration pipeline. Saves and loads orchestrator position so workflow survives context compaction.
+description: Saves, loads and clears orchestrator workflow state
 ---
 
-> **TOOL**: Always call these scripts via `launch-process`. Never use `Bash`.
-> **FORMAT**: All parameters on a single line — no backtick line continuation.
-> **PATH**: Use `${CLAUDE_PLUGIN_ROOT}\skills\orchestration-state\scripts\` prefix.
+# Orchestration State
 
-## State File Location
+File-based state persistence. After context compaction the orchestrator reads state to recover its exact workflow position
 
-```
-.claude/orchestrator/state/{project-name}/orchestrator-state.yml
-```
+State file: ${CLAUDE_PLUGIN_ROOT}/state/state-{project-name}.yml
 
-## When to Save State
+## When to Save
 
-Save at **every** workflow transition: phase changes, story status changes, agent hand-offs, any routing decision.
+Save at every workflow transition:
+- Phase changes research -> architecture -> planning etc
+- Story status changes in-progress -> review -> testing -> complete
+- Agent hand-offs Developer -> Code Reviewer -> Tester
+- After any decision that changes workflow direction
 
-## When to Load State
+## When to Load
 
-Load **immediately** when starting a response, after compaction, or when the user says "continue" / "resume".
+Load immediately when:
+- Orchestrator starts a new response always as first action
+- Context feels unfamiliar or incomplete compaction likely happened
+- User says continue, resume, or keep going
 
 ## Scripts
 
-### `save-state.ps1`
-Persists orchestrator state to disk.
-
+### save-state.ps1 -- Persist state to disk
 ```
 ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-state\scripts\save-state.ps1 -ProjectName "user-auth" -Phase "development" -ActiveAgent "Developer" -ActiveContractID "TSK-003" -RouterPhase "waiting" -NextAction "Waiting for Developer to close TSK-003"
 ```
+Params: -ProjectName required, -Phase required, -ActiveAgent required, -NextAction required, -ActiveContractID, -RouterPhase, -CurrentStory, -StoryStatus, -StoryQueue, -CompletedStories, -Notes
 
-Required: `-ProjectName` `-Phase` `-ActiveAgent` `-NextAction`
-Optional: `-ActiveContractID` `-RouterPhase` `-CurrentStory` `-StoryStatus` `-StoryQueue` `-CompletedStories` `-Notes`
-
-### `load-state.ps1`
-Loads orchestrator state from disk. Outputs full state file contents.
-
+### load-state.ps1 -- Load state from disk
 ```
 ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-state\scripts\load-state.ps1 -ProjectName "user-auth"
 ```
+Params: -ProjectName required. Outputs full state file contents. Warning if no state file exists
 
-Required: `-ProjectName`
+### clear-state.ps1 -- Delete or reset state for a project
+```
+${CLAUDE_PLUGIN_ROOT}\skills\orchestration-state\scripts\clear-state.ps1 -ProjectName "user-auth"
+${CLAUDE_PLUGIN_ROOT}\skills\orchestration-state\scripts\clear-state.ps1 -ProjectName "user-auth" -Reset
+```
+Params: -ProjectName required, -Reset (write blank defaults instead of deleting)
+Use after project completion or to recover from a corrupted state file
 
 ## Rules
 
 - Always save state before handing off to another agent
 - Always load state as the FIRST action in any orchestrator response
-- State files are auto-generated — do not edit manually
-- One state file per project
+- State files are auto-generated -- do not edit manually
+- One state file per project, compact YAML

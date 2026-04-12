@@ -1,0 +1,40 @@
+# Template: test-results.yml
+# Agent: @tester
+# One result set per validation contract.
+
+project: ""
+status: draft
+updated_at: ""
+
+contract_id: ""
+story_id: ""
+
+verdict: pending
+
+test_run:
+  command: ""
+  exit_code: null
+  passed: 0
+  failed: 0
+  skipped: 0
+
+tests:
+  # - name: test name
+  #   file: tests/file.test.ts
+  #   status: pass|fail|skip
+  #   error: "" (only if fail)
+  []
+
+acceptance_criteria:
+  # - criterion: the criterion text
+  #   met: true|false
+  #   evidence: how verified
+  []
+
+coverage:
+  statements: null
+  branches: null
+  functions: null
+  lines: null
+
+summary: ""

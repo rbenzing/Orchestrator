@@ -1,0 +1,53 @@
+# Template: architecture.yml
+# Agent: @architect
+# All fields required. Reference file paths, not inline code.
+
+project: ""
+status: draft
+updated_at: ""
+
+overview: ""
+
+components:
+  # - name: component name
+  #   responsibility: what it does
+  #   type: service|library|module|api|ui|database|queue
+  #   tech: implementation technology
+  #   interfaces:
+  #     - name: interface/endpoint name
+  #       direction: in|out
+  #       protocol: http|grpc|ws|event|direct
+  #       contract: brief signature or shape
+  []
+
+data_model:
+  entities:
+    # - name: entity name
+    #   fields:
+    #     - name: field name
+    #       type: data type
+    #       required: true|false
+    []
+  storage: ""
+  migrations: ""
+
+decisions:
+  # - id: ADR-1
+  #   title: short title
+  #   context: why this decision was needed
+  #   decision: what was decided
+  #   alternatives: what was rejected and why
+  []
+
+integration_points:
+  # - source: component name
+  #   target: component name
+  #   protocol: http|grpc|ws|event
+  #   notes: brief
+  []
+
+directory_structure: |
+  # projected source layout
+  # src/
+  #   module/
+  #     file.ts

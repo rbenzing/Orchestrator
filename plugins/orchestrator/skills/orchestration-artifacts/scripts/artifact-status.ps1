@@ -9,7 +9,7 @@
 .PARAMETER Root
     Repository root. Defaults to current directory.
 .EXAMPLE
-    .claude\skills\orchestration-artifacts\scripts\artifact-status.ps1 -ProjectName "user-auth"
+    ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-artifacts\scripts\artifact-status.ps1 -ProjectName "user-auth"
 #>
 [CmdletBinding()]
 param(
@@ -20,49 +20,23 @@ param(
     [object[]]$ExtraArgs
 )
 $ErrorActionPreference = "Stop"
-if ($ExtraArgs) {
-    Write-Host "  WARNING: Stray arguments ignored: $($ExtraArgs -join ', ')" -ForegroundColor Yellow
-}
+$ProgressPreference = "SilentlyContinue"
+if ($ExtraArgs) { Write-Host "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -Root"; exit 1 }
 
-$base = Join-Path $Root ".claude\orchestrator\artifacts"
+$base = Join-Path $Root "${CLAUDE_PLUGIN_ROOT}\artifacts"
+$agents = @("researcher","architect","ui-designer","planner","developer","code-reviewer","tester")
+$totalArtifacts = 0
 
-# Phase label -> agent directory name under .claude/orchestrator/artifacts/{project}/{agent}/
-$phaseToAgent = [ordered]@{
-    "researcher"    = @("proposal.md","requirements.md","technical-constraints.md","specs/scenarios.md")
-    "architect"     = @("architecture.md")
-    "ui-designer"   = @("ui-spec.md","design-system.md","accessibility.md")
-    "planner"       = @("design.md","implementation-spec.md","story-breakdown.md")
-    "developer"     = @("implementation-notes.md","build-logs.txt")
-    "code-reviewer" = @("code-review-report.md")
-    "tester"        = @("test-results.md","test-coverage.md")
-}
-
-Write-Host "`n  Project: $ProjectName" -ForegroundColor White
-Write-Host "  $("-" * 30)" -ForegroundColor DarkGray
-
-$totalFound = 0; $totalExpected = 0
-
-foreach ($phase in $phaseToAgent.Keys) {
-    $phaseDir = Join-Path $base (Join-Path $ProjectName $phase)
-    $files = $phaseToAgent[$phase]
-    $total = $files.Count; $totalExpected += $total
-    $found = 0
-    foreach ($f in $files) { if (Test-Path (Join-Path $phaseDir $f)) { $found++ } }
-    $totalFound += $found
-
-    $pad = $phase.PadRight(15)
-    if (-not (Test-Path $phaseDir)) {
-        Write-Host "  ${pad}" -NoNewline; Write-Host "$([char]0x2014) not started" -ForegroundColor DarkGray
-    } elseif ($found -eq $total) {
-        Write-Host "  ${pad}" -NoNewline; Write-Host "$([char]0x2705) $found/$total" -ForegroundColor Green
-    } elseif ($found -gt 0) {
-        Write-Host "  ${pad}" -NoNewline; Write-Host "$([char]0x26A0) $found/$total" -ForegroundColor Yellow
-    } else {
-        Write-Host "  ${pad}" -NoNewline; Write-Host "$([char]0x274C) 0/$total" -ForegroundColor Red
+foreach ($agent in $agents) {
+    $agentDir = Join-Path $base (Join-Path $ProjectName $agent)
+    if (-not (Test-Path $agentDir)) { continue }
+    $files = Get-ChildItem $agentDir -Filter "*.yml" -ErrorAction SilentlyContinue
+    $count = if ($files) { $files.Count } else { 0 }
+    $totalArtifacts += $count
+    if ($count -gt 0) {
+        $names = ($files | ForEach-Object { $_.BaseName }) -join ","
+        Write-Host "$agent $count ($names)"
     }
 }
 
-Write-Host "  $("-" * 30)" -ForegroundColor DarkGray
-$pct = if ($totalExpected -gt 0) { [math]::Round(($totalFound / $totalExpected) * 100) } else { 0 }
-Write-Host "  Overall: $totalFound/$totalExpected ($pct%)" -ForegroundColor White
-
+Write-Host "total=$totalArtifacts"

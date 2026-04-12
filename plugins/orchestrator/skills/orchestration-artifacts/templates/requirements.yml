@@ -1,0 +1,49 @@
+# Template: requirements.yml
+# Agent: @researcher
+# All fields required. Use YAML literal blocks (|) for multi-line values.
+# Keep values concise: bullets over prose, no inline code, reference paths not content.
+
+project: ""
+status: draft
+updated_at: ""
+
+goal: ""
+
+functional_reqs:
+  # - id: FR-1
+  #   name: short name
+  #   desc: what it must do
+  #   priority: must|should|could
+  []
+
+non_functional_reqs:
+  # - id: NFR-1
+  #   category: performance|security|scalability|reliability|accessibility
+  #   desc: measurable requirement
+  []
+
+constraints:
+  # - type: tech|business|regulatory
+  #   desc: constraint description
+  []
+
+assumptions:
+  # - assumption text
+  []
+
+tech_stack:
+  languages: []
+  frameworks: []
+  infrastructure: []
+  rationale: ""
+
+risks:
+  # - id: R-1
+  #   desc: risk description
+  #   impact: high|medium|low
+  #   mitigation: how to mitigate
+  []
+
+out_of_scope:
+  # - item explicitly excluded
+  []

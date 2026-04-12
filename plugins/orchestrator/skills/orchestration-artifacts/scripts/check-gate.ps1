@@ -20,11 +20,11 @@
 .PARAMETER Root
     Repository root. Defaults to current directory.
 .EXAMPLE
-    .claude\skills\orchestration-artifacts\scripts\check-gate.ps1 -ProjectName "user-auth" -Phase "research"
+    ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-artifacts\scripts\check-gate.ps1 -ProjectName "user-auth" -Phase "research"
 .EXAMPLE
-    .claude\skills\orchestration-artifacts\scripts\check-gate.ps1 -ProjectName "billing" -Phase "all" -IsMigration
+    ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-artifacts\scripts\check-gate.ps1 -ProjectName "billing" -Phase "all" -IsMigration
 .EXAMPLE
-    .claude\skills\orchestration-artifacts\scripts\check-gate.ps1 -ProjectName "user-auth" -ContractID "TSK-003"
+    ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-artifacts\scripts\check-gate.ps1 -ProjectName "user-auth" -ContractID "TSK-003"
 #>
 [CmdletBinding()]
 param(
@@ -39,9 +39,8 @@ param(
     [object[]]$ExtraArgs
 )
 $ErrorActionPreference = "Stop"
-if ($ExtraArgs) {
-    Write-Host "  WARNING: Stray arguments ignored: $($ExtraArgs -join ', ')" -ForegroundColor Yellow
-}
+$ProgressPreference = "SilentlyContinue"
+if ($ExtraArgs) { Write-Host "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -Phase -ContractID -IsMigration -Root"; exit 1 }
 
 # Validate: at least one of Phase or ContractID must be provided
 if (-not $Phase -and -not $ContractID) {
@@ -49,27 +48,21 @@ if (-not $Phase -and -not $ContractID) {
     exit 1
 }
 
-$base = Join-Path $Root ".claude\orchestrator\artifacts"
-
 # ============================================================
-# CONTRACT-BASED GATE - reads criteria from YAML contract
+# CONTRACT-BASED GATE -- reads criteria from YAML contract
 # ============================================================
 if ($ContractID) {
-    $contractFile = Join-Path $Root (Join-Path ".claude\orchestrator\contracts" (Join-Path $ProjectName "$ContractID.yml"))
+    $contractFile = Join-Path "${CLAUDE_PLUGIN_ROOT}\contracts" (Join-Path $ProjectName "$ContractID.yml")
     if (-not (Test-Path $contractFile)) {
         Write-Error "Contract not found: $contractFile"
         exit 1
     }
 
     $yaml = Get-Content $contractFile -Raw
-    Write-Host ""
-    Write-Host "  Contract Gate: $ContractID ($ProjectName)" -ForegroundColor White
-    Write-Host "  $("=" * 40)" -ForegroundColor DarkGray
 
-    # Parse acceptance_criteria block  (lines under "acceptance_criteria:" that start with "  - ")
     $criteriaSection = $false
     $criteria = @()
-    foreach ($line in ($yaml -split '\r?\n')) {
+    foreach ($line in ($yaml -split "`n")) {
         if ($line -match '^acceptance_criteria:') { $criteriaSection = $true; continue }
         if ($criteriaSection) {
             if ($line -match '^\s*-\s+"?(.+?)"?\s*$') { $criteria += $Matches[1].Trim() }
@@ -80,7 +73,7 @@ if ($ContractID) {
     # Parse deliverables block
     $deliverablesSection = $false
     $deliverables = @()
-    foreach ($line in ($yaml -split '\r?\n')) {
+    foreach ($line in ($yaml -split "`n")) {
         if ($line -match '^deliverables:') { $deliverablesSection = $true; continue }
         if ($deliverablesSection) {
             if ($line -match '^\s*-\s+"?(.+?)"?\s*$') { $deliverables += $Matches[1].Trim() }
@@ -93,40 +86,28 @@ if ($ContractID) {
 
     # Check deliverable files exist
     if ($deliverables.Count -gt 0) {
-        Write-Host "`n  Deliverables:" -ForegroundColor White
         foreach ($d in $deliverables) {
-            # Strip symbol hints like "src/file.ts:symbolName"
             $filePath = ($d -split ':')[0].Trim()
             if (Test-Path $filePath) {
-                Write-Host "    [OK]      $filePath" -ForegroundColor Green
+                Write-Host "OK $filePath"
             } else {
-                Write-Host "    [MISSING] $filePath" -ForegroundColor Red
+                Write-Host "MISSING $filePath"
                 $contractFailures += "Deliverable missing: $filePath"
                 $contractPassed = $false
             }
         }
     }
 
-    # Report acceptance criteria (informational - agent self-certifies)
     if ($criteria.Count -gt 0) {
-        Write-Host "`n  Acceptance Criteria (self-certified by agent):" -ForegroundColor White
-        foreach ($c in $criteria) {
-            Write-Host "    [ ] $c" -ForegroundColor DarkYellow
-        }
+        foreach ($c in $criteria) { Write-Host "CRITERIA: $c" }
     }
 
-    Write-Host "`n  $("=" * 40)" -ForegroundColor DarkGray
     if ($contractPassed) {
-        Write-Host "  RESULT: CONTRACT GATE PASSED" -ForegroundColor Green
+        Write-Host "GATE PASSED $ContractID"
     } else {
-        Write-Host "  RESULT: CONTRACT GATE FAILED" -ForegroundColor Red
+        Write-Host "GATE FAILED $ContractID"
         $errorTrace = $contractFailures -join "; "
-        # Record failure in contract via update-contract.ps1
-        $updateScript = if ($env:CLAUDE_PLUGIN_ROOT) {
-            Join-Path $env:CLAUDE_PLUGIN_ROOT "skills\orchestration-contracts\scripts\update-contract.ps1"
-        } else {
-            Join-Path $PSScriptRoot "..\..\orchestration-contracts\scripts\update-contract.ps1"
-        }
+        $updateScript = "${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scripts\update-contract.ps1"
         if (Test-Path $updateScript) {
             & $updateScript -ProjectName $ProjectName -ContractId $ContractID `
                 -Status "Blocked" -ErrorTrace $errorTrace
@@ -134,26 +115,25 @@ if ($ContractID) {
         exit 1
     }
 
-    # If no Phase was also requested, we are done
     if (-not $Phase) { exit 0 }
-    Write-Host ""
 }
 
-function Test-FileWithSections {
-    param([string]$FilePath, [string[]]$RequiredSections)
-    $r = @{ Exists = $false; MissingSections = @() }
-    if (-not (Test-Path $FilePath)) { return $r }
-    $r.Exists = $true
-    if ($RequiredSections.Count -eq 0) { return $r }
-    $content = Get-Content $FilePath -Raw -ErrorAction SilentlyContinue
-    if (-not $content) { return $r }
-    foreach ($s in $RequiredSections) {
-        if ($content -notmatch "(?i)#.*$([regex]::Escape($s))") { $r.MissingSections += $s }
+# Detect the project's primary language/runner from config files in $Root
+function Get-ProjectRunnerHint {
+    param([string]$SearchRoot)
+    if (Test-Path (Join-Path $SearchRoot "pyproject.toml")) { return "python: ${CLAUDE_PLUGIN_ROOT}\skills\python-run\scripts\python-run.ps1 -Module pytest" }
+    if (Test-Path (Join-Path $SearchRoot "setup.py"))       { return "python: ${CLAUDE_PLUGIN_ROOT}\skills\python-run\scripts\python-run.ps1 -Module pytest" }
+    if (Test-Path (Join-Path $SearchRoot "Cargo.toml"))     { return "rust:   ${CLAUDE_PLUGIN_ROOT}\skills\cargo-run\scripts\cargo-run.ps1 -Command test" }
+    if (Test-Path (Join-Path $SearchRoot "go.mod"))         { return "go:     ${CLAUDE_PLUGIN_ROOT}\skills\go-run\scripts\go-run.ps1 -Command test" }
+    if (Test-Path (Join-Path $SearchRoot "Gemfile"))        { return "ruby:   bundle exec rspec" }
+    if (Test-Path (Join-Path $SearchRoot "package.json"))   { return "node:   ${CLAUDE_PLUGIN_ROOT}\skills\node-test\scripts\run-tests.ps1 -ProjectPath ." }
+    if (Get-ChildItem $SearchRoot -Filter "*.csproj" -Recurse -Depth 3 -ErrorAction SilentlyContinue) {
+        return "dotnet: ${CLAUDE_PLUGIN_ROOT}\skills\dotnet-test\scripts\dotnet-test.ps1 -ProjectPath ."
     }
-    return $r
+    return $null
 }
 
-# Phase -> agent directory mapping (.claude/orchestrator/artifacts/{project}/{agent}/)
+# Phase -> agent mapping
 $phaseToAgent = @{
     "research"     = "researcher"
     "architecture" = "architect"
@@ -164,55 +144,31 @@ $phaseToAgent = @{
     "testing"      = "tester"
 }
 
-$gates = [ordered]@{
-    "research"     = @{ "proposal.md"=@("Why","Goals","Scope"); "requirements.md"=@("Functional","Non-Functional"); "technical-constraints.md"=@(); "specs/scenarios.md"=@() }
-    "architecture" = @{ "architecture.md"=@("Overview","Components","Data") }
-    "ui-design"    = @{ "ui-spec.md"=@("Screen","Component"); "design-system.md"=@("Tokens"); "accessibility.md"=@("WCAG") }
-    "planning"     = @{ "design.md"=@("Architecture","Component","Data"); "implementation-spec.md"=@(); "story-breakdown.md"=@() }
-    "development"  = @{ "implementation-notes.md"=@("Build Status") }
-    "reviews"      = @{ "code-review-report.md"=@("Overall Assessment") }
-    "testing"      = @{ "test-results.md"=@("Overall Assessment","Acceptance Criteria") }
-}
-
-$migrationGates = @{
-    "research"  = @{ "specs/spec-before.md"=@() }
-    "ui-design" = @{ "migration-map.md"=@("Source","Target") }
-    "planning"  = @{ "spec-after.md"=@("Target","AST") }
-}
-
-$phasesToCheck = if ($Phase -eq "all") { $gates.Keys } else { @($Phase) }
+$validateScript = "${CLAUDE_PLUGIN_ROOT}\skills\orchestration-artifacts\scripts\validate-artifact.ps1"
+$phasesToCheck = if ($Phase -eq "all") { @("research","architecture","ui-design","planning","development","reviews","testing") } else { @($Phase) }
 $allPassed = $true
-
-Write-Host "`n  Quality Gate: $ProjectName" -ForegroundColor White
-Write-Host "  $("=" * 40)" -ForegroundColor DarkGray
 
 foreach ($p in $phasesToCheck) {
     $agentDir = $phaseToAgent[$p]
-    $phaseDir = Join-Path $base (Join-Path $ProjectName $agentDir)
-    $checks = $gates[$p].Clone()
-    if ($IsMigration -and $migrationGates.ContainsKey($p)) {
-        foreach ($k in $migrationGates[$p].Keys) { $checks[$k] = $migrationGates[$p][$k] }
+    $validationPassed = $true
+    try {
+        & $validateScript -ProjectName $ProjectName -Agent $agentDir 2>$null
+        if ($LASTEXITCODE -ne 0) { $validationPassed = $false }
+    } catch {
+        $validationPassed = $false
     }
-    $passed = 0; $failed = 0; $details = @()
-    foreach ($file in $checks.Keys) {
-        $result = Test-FileWithSections -FilePath (Join-Path $phaseDir $file) -RequiredSections $checks[$file]
-        if (-not $result.Exists) { $failed++; $details += "    [MISSING] $file" }
-        elseif ($result.MissingSections.Count -gt 0) { $failed++; $details += "    [INCOMPLETE] $file - missing: $($result.MissingSections -join ', ')" }
-        else { $passed++ }
+
+    if ($validationPassed) {
+        Write-Host "PHASE $p OK"
+    } else {
+        Write-Host "PHASE $p FAIL"
+        $allPassed = $false
+        if ($p -in @("development","testing")) {
+            $hint = Get-ProjectRunnerHint -SearchRoot $Root
+            if ($hint) { Write-Host "HINT: $hint" }
+        }
     }
-    $total = $passed + $failed
-    $icon = if ($failed -eq 0) { [char]0x2705 } else { [char]0x274C }
-    $color = if ($failed -eq 0) { "Green" } else { "Red" }
-    Write-Host "`n  $p $icon ($passed/$total)" -ForegroundColor $color
-    foreach ($d in $details) { Write-Host $d -ForegroundColor Yellow }
-    if ($failed -gt 0) { $allPassed = $false }
 }
 
-Write-Host "`n  $("=" * 40)" -ForegroundColor DarkGray
-if ($allPassed) {
-    Write-Host "  RESULT: ALL GATES PASSED" -ForegroundColor Green
-} else {
-    Write-Host "  RESULT: GATE(S) FAILED" -ForegroundColor Red
-    exit 1
-}
-
+if ($allPassed) { Write-Host "ALL GATES PASSED" }
+else { Write-Host "GATE(S) FAILED"; exit 1 }

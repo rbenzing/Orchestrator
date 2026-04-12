@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Transitions a contract's status and appends an execution history entry.
 .DESCRIPTION
@@ -6,7 +6,7 @@
     or Feedback, increments attempt_count. Appends an execution_history entry
     with the error trace so agents never lose retry context.
 .PARAMETER ProjectName
-    Project identifier matching the directory under .claude/orchestrator/contracts/.
+    Project identifier matching the directory under ${CLAUDE_PLUGIN_ROOT}/contracts/.
 .PARAMETER ContractId
     ID of the contract to update (e.g. "TSK-001").
 .PARAMETER Status
@@ -18,10 +18,10 @@
 .PARAMETER FailedRef
     File path that caused the failure, for quick reference.
 .EXAMPLE
-    .claude\skills\orchestration-contracts\scripts\update-contract.ps1 `
+    ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scripts\update-contract.ps1 `
       -ProjectName "user-auth" -ContractId "TSK-001" -Status "Closed"
 .EXAMPLE
-    .claude\skills\orchestration-contracts\scripts\update-contract.ps1 `
+    ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scripts\update-contract.ps1 `
       -ProjectName "user-auth" -ContractId "TSK-001" -Status "Blocked" `
       -ErrorTrace "check-gate failed: 3/4 tests passed" -FailedRef "src/auth/login.ts"
 #>
@@ -32,11 +32,14 @@ param(
     [Parameter(Mandatory)][ValidateSet("Open","Blocked","Review","Closed")][string]$Status,
     [string]$Notes = "",
     [string]$ErrorTrace = "",
-    [string]$FailedRef = ""
+    [string]$FailedRef = "",
+    [Parameter(ValueFromRemainingArguments)][object[]]$ExtraArgs
 )
 $ErrorActionPreference = "Stop"
+$ProgressPreference = "SilentlyContinue"
+if ($ExtraArgs) { Write-Host "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -ContractId -Status -Notes -ErrorTrace -FailedRef"; exit 1 }
 
-$contractFile = Join-Path ".claude\orchestrator\contracts" (Join-Path $ProjectName "$ContractId.yml")
+$contractFile = Join-Path "${CLAUDE_PLUGIN_ROOT}\contracts" (Join-Path $ProjectName "$ContractId.yml")
 if (-not (Test-Path $contractFile)) {
     Write-Error "Contract not found: $contractFile"
     exit 1
@@ -58,7 +61,6 @@ if ($Status -in @("Blocked")) {
         $current = [int]$match.Groups[1].Value
         $next = $current + 1
         $content = $content -replace 'attempt_count:\s*\d+', "attempt_count: $next"
-        Write-Host "  [!] attempt_count incremented to $next" -ForegroundColor Yellow
     }
 }
 
@@ -87,10 +89,4 @@ if ($ErrorTrace -or $Notes) {
 
 Set-Content -Path $contractFile -Value $content -Encoding UTF8
 
-$color = switch ($Status) { "Closed" { "Green" } "Blocked" { "Red" } "Review" { "Yellow" } default { "Cyan" } }
-Write-Host ""
-Write-Host "  [~] Contract updated: $ContractId  ->  $Status" -ForegroundColor $color
-Write-Host "      File: $contractFile" -ForegroundColor DarkGray
-if ($ErrorTrace) { Write-Host "      Error: $ErrorTrace" -ForegroundColor Yellow }
-Write-Host ""
-
+Write-Host "$ContractId -> $Status$(if ($ErrorTrace) { " error=$ErrorTrace" })"

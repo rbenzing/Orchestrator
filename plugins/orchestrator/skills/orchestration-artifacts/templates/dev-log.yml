@@ -1,0 +1,26 @@
+# Template: dev-log.yml
+# Agent: @developer
+# Updated per story implementation. Append entries, don't overwrite.
+
+project: ""
+status: draft
+updated_at: ""
+
+current_story: ""
+
+build_status: pending
+test_status: pending
+
+files_changed:
+  # - path: src/file.ts
+  #   action: created|modified|deleted
+  #   summary: one-line what changed
+  []
+
+notes:
+  # - brief implementation note
+  []
+
+blockers:
+  # - description of blocker (empty if none)
+  []

@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Create a YAML task contract for the next agent in the workflow.
 .DESCRIPTION
@@ -23,17 +23,17 @@
 .PARAMETER ModelTier
     LLM tier for the receiving agent: haiku | sonnet | opus. Default: sonnet.
 .EXAMPLE
-    .claude\skills\orchestration-handoffs\scripts\handoff.ps1 -From "Researcher" -To "Architect" -ProjectName "user-auth" -Findings "OAuth 2.0 recommended"
+    ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-handoffs\scripts\handoff.ps1 -From "Researcher" -To "Architect" -ProjectName "user-auth" -Findings "OAuth 2.0 recommended"
 .EXAMPLE
-    .claude\skills\orchestration-handoffs\scripts\handoff.ps1 -From "Tester" -To "Developer" -ProjectName "user-auth" -IsFeedback -Issues "Login fails - Critical"
+    ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-handoffs\scripts\handoff.ps1 -From "Tester" -To "Developer" -ProjectName "user-auth" -IsFeedback -Issues "Login fails - Critical"
 #>
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet("Orchestrator","Researcher","Architect","UI Designer","Planner","Developer","Developer Draft","Developer Verify","Code Reviewer","Tester","Tester Draft","Tester Verify","Planner Draft","Planner Verify")]
+    [ValidateSet("Orchestrator","Researcher","Architect","UI Designer","Planner","Developer","Code Reviewer","Tester")]
     [string]$From,
     [Parameter(Mandatory = $true)]
-    [ValidateSet("Orchestrator","Researcher","Architect","UI Designer","Planner","Developer","Developer Draft","Developer Verify","Code Reviewer","Tester","Tester Draft","Tester Verify","Planner Draft","Planner Verify")]
+    [ValidateSet("Orchestrator","Researcher","Architect","UI Designer","Planner","Developer","Code Reviewer","Tester")]
     [string]$To,
     [Parameter(Mandatory = $true)]
     [string]$ProjectName,
@@ -47,39 +47,45 @@ param(
     [object[]]$ExtraArgs
 )
 $ErrorActionPreference = "Stop"
-if ($ExtraArgs) {
-    Write-Host "  WARNING: Stray arguments ignored: $($ExtraArgs -join ', ')" -ForegroundColor Yellow
-}
+$ProgressPreference = "SilentlyContinue"
+if ($ExtraArgs) { Write-Host "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -From -To -ProjectName -ContractId -IsFeedback -Issues -ModelTier"; exit 1 }
 
 # --- Agent metadata maps ---
 $agentHandle = @{
     "Orchestrator"="@orchestrator"; "Researcher"="@researcher"; "Architect"="@architect"
-    "UI Designer"="@ui-designer"
-    "Planner"="@planner"; "Planner Draft"="@planner-draft"; "Planner Verify"="@planner-verify"
-    "Developer"="@developer"; "Developer Draft"="@developer-draft"; "Developer Verify"="@developer-verify"
-    "Code Reviewer"="@code-reviewer"
-    "Tester"="@tester"; "Tester Draft"="@tester-draft"; "Tester Verify"="@tester-verify"
+    "UI Designer"="@ui-designer"; "Planner"="@planner"; "Developer"="@developer"
+    "Code Reviewer"="@code-reviewer"; "Tester"="@tester"
 }
-$agentArtifacts = @{
-    "Researcher"=@(".claude/orchestrator/artifacts/$ProjectName/researcher/proposal.md",".claude/orchestrator/artifacts/$ProjectName/researcher/requirements.md")
-    "Architect"=@(".claude/orchestrator/artifacts/$ProjectName/architect/architecture.md")
-    "UI Designer"=@(".claude/orchestrator/artifacts/$ProjectName/ui-designer/ui-spec.md",".claude/orchestrator/artifacts/$ProjectName/ui-designer/design-system.md")
-    "Planner"=@(".claude/orchestrator/artifacts/$ProjectName/planner/story-breakdown.md",".claude/orchestrator/artifacts/$ProjectName/planner/implementation-spec.md")
-    "Planner Draft"=@(".claude/orchestrator/artifacts/$ProjectName/planner/story-breakdown.md",".claude/orchestrator/artifacts/$ProjectName/planner/implementation-spec.md")
-    "Planner Verify"=@(".claude/orchestrator/artifacts/$ProjectName/planner/story-breakdown.md",".claude/orchestrator/artifacts/$ProjectName/planner/implementation-spec.md")
-    "Developer"=@(".claude/orchestrator/artifacts/$ProjectName/developer/implementation-notes.md")
-    "Developer Draft"=@(".claude/orchestrator/artifacts/$ProjectName/developer/implementation-notes.md")
-    "Developer Verify"=@(".claude/orchestrator/artifacts/$ProjectName/developer/implementation-notes.md")
-    "Code Reviewer"=@(".claude/orchestrator/artifacts/$ProjectName/code-reviewer/code-review-report.md")
-    "Tester"=@(".claude/orchestrator/artifacts/$ProjectName/tester/test-results.md")
-    "Tester Draft"=@(".claude/orchestrator/artifacts/$ProjectName/tester/test-results.md")
-    "Tester Verify"=@(".claude/orchestrator/artifacts/$ProjectName/tester/test-results.md")
-    "Orchestrator"=@()
+
+# Resolve tier-specific handle: append -haiku or -opus suffix for non-orchestrator agents
+function Resolve-TieredHandle {
+    param([string]$BaseHandle, [string]$Tier)
+    if ($BaseHandle -eq "@orchestrator") { return $BaseHandle }
+    switch ($Tier) {
+        "haiku" { return "$BaseHandle-haiku" }
+        "opus"  { return "$BaseHandle-opus"  }
+        default { return $BaseHandle }   # sonnet = base agent, no suffix
+    }
+}
+# Dynamic artifact discovery -- scan agent dir for all .yml files
+$agentDirMap = @{
+    "Researcher"="researcher"; "Architect"="architect"; "UI Designer"="ui-designer"
+    "Planner"="planner"; "Developer"="developer"; "Code Reviewer"="code-reviewer"
+    "Tester"="tester"; "Orchestrator"="orchestrator"
+}
+function Get-AgentArtifacts($AgentName) {
+    $dir = $agentDirMap[$AgentName]
+    if (-not $dir) { return @() }
+    $artifactDir = Join-Path "${CLAUDE_PLUGIN_ROOT}\artifacts" (Join-Path $ProjectName $dir)
+    if (-not (Test-Path $artifactDir)) { return @() }
+    $files = Get-ChildItem $artifactDir -Filter "*.yml" -ErrorAction SilentlyContinue
+    if (-not $files) { return @() }
+    return @($files | ForEach-Object { $_.FullName })
 }
 
 # --- Auto-generate ContractId if not supplied ---
 if (-not $ContractId) {
-    $contractDir = Join-Path ".claude\orchestrator\contracts" $ProjectName
+    $contractDir = Join-Path "${CLAUDE_PLUGIN_ROOT}\contracts" $ProjectName
     $existing = 0
     if (Test-Path $contractDir) {
         $existing = (Get-ChildItem $contractDir -Filter "*.yml" | Measure-Object).Count
@@ -89,8 +95,8 @@ if (-not $ContractId) {
 }
 
 # --- Build contract parameters ---
-$toHandle  = $agentHandle[$To]
-$contractType = if ($IsFeedback) { "Feedback" } else { "Task" }
+$toHandle  = Resolve-TieredHandle -BaseHandle $agentHandle[$To] -Tier $ModelTier
+$contractType = if ($IsFeedback) { "Feedback" } elseif ($To -eq "Tester") { "Validation" } else { "Task" }
 
 # Build objective text
 if ($IsFeedback) {
@@ -105,16 +111,12 @@ if ($IsFeedback) {
     $ifFail    = "Return to Router with Feedback Contract"
 }
 
-# Required reads for the receiving agent
-$reads = $agentArtifacts[$From]
+# Required reads -- discover all artifacts from the sending agent
+$reads = Get-AgentArtifacts $From
 
 # --- Invoke new-contract.ps1 ---
-$newContractScript = if ($env:CLAUDE_PLUGIN_ROOT) {
-    Join-Path $env:CLAUDE_PLUGIN_ROOT "skills\orchestration-contracts\scripts\new-contract.ps1"
-} else {
-    Join-Path $PSScriptRoot "..\..\..\orchestration-contracts\scripts\new-contract.ps1"
-}
-$contractFile = & $newContractScript `
+$newContractScript = "${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scripts\new-contract.ps1"
+& $newContractScript `
     -ProjectName       $ProjectName `
     -ContractId        $ContractId `
     -Type              $contractType `
@@ -125,35 +127,7 @@ $contractFile = & $newContractScript `
     -IfPass            $ifPass `
     -IfFail            $ifFail
 
-# --- Persist a human-readable handoff summary to the sender's artifact directory ---
-$agentDir = @{
-    "Researcher"="researcher"; "Architect"="architect"; "UI Designer"="ui-designer"
-    "Planner"="planner"; "Planner Draft"="planner"; "Planner Verify"="planner"
-    "Developer"="developer"; "Developer Draft"="developer"; "Developer Verify"="developer"
-    "Code Reviewer"="code-reviewer"
-    "Tester"="tester"; "Tester Draft"="tester"; "Tester Verify"="tester"
-    "Orchestrator"="orchestrator"
-}
-$senderDir = if ($agentDir.ContainsKey($From)) { $agentDir[$From] } else { "orchestrator" }
-$artifactDir = Join-Path (Get-Location).Path ".claude\orchestrator\artifacts\$ProjectName\$senderDir"
-if (Test-Path $artifactDir) {
-    $tag  = if ($IsFeedback) { "feedback" } else { "handoff" }
-    $file = Join-Path $artifactDir "$tag-to-$($To -replace ' ','-').md"
-    $summary = if ($IsFeedback) {
-        "# Feedback to $To`n`nFrom: $From`nProject: $ProjectName`nContract: $ContractId`n`n## Issues`n" + ($Issues | ForEach-Object { "- $_" } | Out-String)
-    } else {
-        "# Handoff to $To`n`nFrom: $From`nProject: $ProjectName`nContract: $ContractId`n`n## Key Findings`n" + ($Findings | ForEach-Object { "- $_" } | Out-String)
-    }
-    $summary | Out-File -FilePath $file -Encoding utf8 -Force
-    Write-Host "  Artifact persisted: $file" -ForegroundColor DarkGray
-}
+# Handoff data lives in the YAML contract -- no duplicate .md summary needed
 
-Write-Host ""
-$color = if ($IsFeedback) { "Yellow" } else { "Cyan" }
-Write-Host "  [$contractType] $From -> $To  |  Contract: $ContractId  |  Project: $ProjectName" -ForegroundColor $color
-Write-Host "  Contract file: $contractFile" -ForegroundColor DarkGray
-Write-Host ""
-
-# Return contract ID for callers
+Write-Host "handoff $contractType $From->$To $ContractId"
 Write-Output $ContractId
-

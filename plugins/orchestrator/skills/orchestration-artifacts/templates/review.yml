@@ -1,0 +1,28 @@
+# Template: review.yml
+# Agent: @code-reviewer
+# One review per story/contract.
+
+project: ""
+status: draft
+updated_at: ""
+
+contract_id: ""
+story_id: ""
+
+verdict: pending
+
+files_reviewed:
+  # - path: src/file.ts
+  #   status: ok|issue
+  []
+
+issues:
+  # - id: I-1
+  #   file: src/file.ts
+  #   line: 42
+  #   severity: critical|major|minor|nit
+  #   desc: what is wrong
+  #   suggestion: how to fix
+  []
+
+summary: ""

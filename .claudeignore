@@ -1,12 +1,35 @@
 ﻿# Claude Context Engine Ignore List
-# Prevents the AI from reading these directories with built-in view/retrieval tools.
-# The PreToolUse hook also blocks terminal access to these paths.
+# Prevents the AI from reading these with built-in view/retrieval tools.
+# grep and find-files skills enforce these same exclusions for search operations.
+
+# Dependencies
 node_modules/
+vendor/
+packages/
+
+# Build output
+bin/
+obj/
+dist/
+build/
+out/
+.next/
+.nuxt/
+
+# Test output
+coverage/
+TestResults/
+
+# Caches
 .cache/
 .pytest_cache/
 __pycache__/
-coverage/
-dist/
-build/
+
+# IDE
+.vs/
+.idea/
+
+# Misc
+.git/
 *.log
-.claude/orchestrator/contracts/*/archive/
+.claude/contracts/*/archive/

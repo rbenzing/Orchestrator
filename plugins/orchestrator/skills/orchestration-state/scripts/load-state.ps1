@@ -9,13 +9,13 @@
     If called WITHOUT -ProjectName, discovers all projects with saved state
     and lists them so the orchestrator can pick the right one.
 .PARAMETER ProjectName
-    Project identifier (e.g. "user-auth"). Optional - omit to discover all projects.
+    Project identifier (e.g. "user-auth"). Optional -- omit to discover all projects.
 .PARAMETER Root
     Repository root. Defaults to current directory.
 .EXAMPLE
-    .claude\skills\orchestration-state\scripts\load-state.ps1 -ProjectName "user-auth"
+    ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-state\scripts\load-state.ps1 -ProjectName "user-auth"
 .EXAMPLE
-    .claude\skills\orchestration-state\scripts\load-state.ps1
+    ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-state\scripts\load-state.ps1
 #>
 [CmdletBinding()]
 param(
@@ -25,107 +25,48 @@ param(
     [object[]]$ExtraArgs
 )
 $ErrorActionPreference = "Stop"
-if ($ExtraArgs) {
-    Write-Host "  WARNING: Stray arguments ignored: $($ExtraArgs -join ', ')" -ForegroundColor Yellow
-}
+$ProgressPreference = "SilentlyContinue"
+if ($ExtraArgs) { Write-Host "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -Root"; exit 1 }
 
 # --- Discovery mode: no ProjectName given ---
-$stateRoot = Join-Path $Root ".claude\orchestrator\state"
+$stateRoot = Join-Path $Root "${CLAUDE_PLUGIN_ROOT}\state"
 if (-not $ProjectName) {
-    Write-Host ""
     if (-not (Test-Path $stateRoot)) {
-        Write-Host "  No .claude/orchestrator/state/ directory found. No projects have saved state." -ForegroundColor Yellow
-        exit 1
+        Write-Host "No state directory found"; exit 1
     }
-    $projects = Get-ChildItem -Path $stateRoot -Directory -ErrorAction SilentlyContinue
     $found = @()
-    foreach ($dir in $projects) {
-        $sf = Join-Path $dir.FullName "orchestrator-state.yml"
+    Get-ChildItem -Path $stateRoot -Directory -ErrorAction SilentlyContinue | ForEach-Object {
+        $sf = Join-Path $_.FullName "orchestrator-state.yml"
         if (Test-Path $sf) {
-            $lastWrite = (Get-Item $sf).LastWriteTime.ToString("yyyy-MM-dd HH:mm")
-            $found += [PSCustomObject]@{ Name = $dir.Name; LastSaved = $lastWrite; Path = $sf }
+            $found += [PSCustomObject]@{ Name = $_.Name; Saved = (Get-Item $sf).LastWriteTime.ToString("yyyy-MM-dd HH:mm") }
         }
     }
-    if ($found.Count -eq 0) {
-        Write-Host "  No state files found in .claude/orchestrator/state/." -ForegroundColor Yellow
-        exit 1
-    }
-    Write-Host "  Discovered $($found.Count) project(s) with saved state:" -ForegroundColor Cyan
-    Write-Host ""
-    foreach ($p in $found) {
-        Write-Host "    - $($p.Name)  (last saved: $($p.LastSaved))" -ForegroundColor Green
-    }
-    Write-Host ""
+    if ($found.Count -eq 0) { Write-Host "No state files found"; exit 1 }
+    foreach ($p in $found) { Write-Host "$($p.Name) (saved: $($p.Saved))" }
     if ($found.Count -eq 1) {
-        # Auto-load the only project
         $ProjectName = $found[0].Name
-        Write-Host "  Auto-loading only project: $ProjectName" -ForegroundColor Cyan
+        Write-Host "Auto-loading: $ProjectName"
     } else {
-        Write-Host "  Re-run with: load-state.ps1 -ProjectName ""<name>""" -ForegroundColor Yellow
-        exit 1
+        Write-Host "Re-run with -ProjectName"; exit 1
     }
 }
 
 $stateFile = Join-Path $stateRoot (Join-Path $ProjectName "orchestrator-state.yml")
 
 if (-not (Test-Path $stateFile)) {
-    Write-Host ""
-    Write-Host "  WARNING: No state file found for project '$ProjectName'" -ForegroundColor Yellow
-    Write-Host "  Expected: $stateFile" -ForegroundColor DarkGray
-    Write-Host ""
-    Write-Host "  This means either:" -ForegroundColor Yellow
-    Write-Host "    1. The project has not been initialized yet" -ForegroundColor Yellow
-    Write-Host "    2. State was never saved (save-state.ps1 was not called)" -ForegroundColor Yellow
-    Write-Host ""
-    Write-Host "  To initialize, run:" -ForegroundColor Cyan
-    Write-Host "    .claude\skills\orchestration-state\scripts\save-state.ps1 -ProjectName ""$ProjectName"" -Phase ""research"" -ActiveAgent ""Orchestrator"" -NextAction ""Begin project orchestration""" -ForegroundColor Cyan
-
-    # Check if artifacts exist to give more context
-    $artifactBase = Join-Path $Root ".claude\orchestrator\artifacts"
-    $agents = @("researcher","architect","ui-designer","planner","developer","code-reviewer","tester")
-    $foundPhases = @()
-    foreach ($agent in $agents) {
-        $agentDir = Join-Path $artifactBase (Join-Path $ProjectName $agent)
-        if (Test-Path $agentDir) {
-            $fileCount = (Get-ChildItem -Path $agentDir -File -Recurse -ErrorAction SilentlyContinue | Measure-Object).Count
-            if ($fileCount -gt 0) { $foundPhases += "$agent ($fileCount files)" }
-        }
-    }
-    if ($foundPhases.Count -gt 0) {
-        Write-Host ""
-        Write-Host "  Artifacts found for this project:" -ForegroundColor Green
-        foreach ($p in $foundPhases) { Write-Host "    - $p" -ForegroundColor Green }
-        Write-Host ""
-        Write-Host "  State file is missing but artifacts exist. Recommend saving current state." -ForegroundColor Yellow
-    }
+    Write-Host "No state for '$ProjectName'. Run save-state.ps1 first."
     exit 1
 }
 
-Write-Host ""
-Write-Host "  Loading state for: $ProjectName" -ForegroundColor Cyan
-Write-Host "  File: $stateFile" -ForegroundColor DarkGray
-Write-Host "  $("-" * 50)" -ForegroundColor DarkGray
-Write-Host ""
+# Output state content directly -- agent parses YAML
+Get-Content -Path $stateFile -Encoding UTF8 -Raw | Write-Host
 
+# Append contract-router summary
 $stateContent = Get-Content -Path $stateFile -Encoding UTF8 -Raw
-$stateContent -split "`n" | Write-Host
-
-# --- Highlight Contract-Router fields ---
-$cid = ([regex]::Match($stateContent, '(?m)^contract:[ \t]*"?([^"\r\n]+)"?')).Groups[1].Value.Trim()
-$rp  = ([regex]::Match($stateContent, '(?m)^router_phase:[ \t]*"?([^"\r\n]+)"?')).Groups[1].Value.Trim()
-
-if ($cid -or $rp) {
-    Write-Host "  --- Contract-Router State ---" -ForegroundColor Cyan
-    if ($cid) {
-        Write-Host "  Active Contract : $cid" -ForegroundColor Yellow
-        $contractFile = ".claude\orchestrator\contracts\$ProjectName\$cid.yml"
-        $exists = Test-Path $contractFile
-        Write-Host "  Contract file   : $contractFile  $(if ($exists) { '[EXISTS]' } else { '[NOT FOUND]' })" -ForegroundColor $(if ($exists) { 'Green' } else { 'Red' })
-    }
-    if ($rp) { Write-Host "  Router Phase    : $rp" -ForegroundColor White }
+$cid = ([regex]::Match($stateContent, '(?m)^active_contract_id:\s*"?([^"\r\n]+)"?')).Groups[1].Value.Trim()
+$rp  = ([regex]::Match($stateContent, '(?m)^router_phase:\s*"?([^"\r\n]+)"?')).Groups[1].Value.Trim()
+if ($cid) {
+    $contractFile = Join-Path "${CLAUDE_PLUGIN_ROOT}\contracts" (Join-Path $ProjectName "$cid.yml")
+    $exists = if (Test-Path $contractFile) { "exists" } else { "missing" }
+    Write-Host "contract=$cid ($exists) phase=$rp"
 }
-
-Write-Host ""
-Write-Host "  $("-" * 50)" -ForegroundColor DarkGray
-Write-Host "  State loaded successfully. Resume workflow from the position above." -ForegroundColor Cyan
-

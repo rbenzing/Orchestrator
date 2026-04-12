@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Persist orchestrator workflow state to disk.
 .PARAMETER ProjectName  Project identifier.
@@ -31,9 +31,10 @@ param(
     [Parameter(ValueFromRemainingArguments)][object[]]$ExtraArgs
 )
 $ErrorActionPreference = "Stop"
-if ($ExtraArgs) { Write-Host "  WARNING: Stray arguments ignored: $($ExtraArgs -join ', ')" -ForegroundColor Yellow }
+$ProgressPreference = "SilentlyContinue"
+if ($ExtraArgs) { Write-Host "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -Phase -ActiveAgent -ActiveContractID -RouterPhase -NextAction -CurrentStory -StoryStatus -StoryQueue -CompletedStories -Notes"; exit 1 }
 
-$stateDir = Join-Path ".claude\orchestrator\state" $ProjectName
+$stateDir = Join-Path "${CLAUDE_PLUGIN_ROOT}\state" $ProjectName
 if (-not (Test-Path $stateDir)) { New-Item -Path $stateDir -ItemType Directory -Force | Out-Null }
 
 function Format-YamlList([string[]]$items) {
@@ -43,13 +44,13 @@ function Format-YamlList([string[]]$items) {
 
 $stateFile = Join-Path $stateDir "orchestrator-state.yml"
 $content = @"
-project: $ProjectName
-saved: "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+project_name: $ProjectName
+saved_at: "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
 phase: $Phase
 agent: $ActiveAgent
-contract: $ActiveContractID
+active_contract_id: $ActiveContractID
 router_phase: $RouterPhase
-next: "$NextAction"
+next_action: "$NextAction"
 story: "$CurrentStory"
 story_status: $StoryStatus
 queue: $(Format-YamlList $StoryQueue)
@@ -58,6 +59,4 @@ notes: "$Notes"
 "@
 
 Set-Content -Path $stateFile -Value $content -Encoding UTF8
-Write-Host "  State saved: $stateFile" -ForegroundColor Cyan
-Write-Host "  $Phase | $ActiveAgent | $NextAction" -ForegroundColor DarkGray
-
+Write-Host "saved $ProjectName phase=$Phase agent=$ActiveAgent"
