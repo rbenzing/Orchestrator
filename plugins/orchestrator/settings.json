@@ -3,8 +3,14 @@
   "defaultMode": "allowAll",
   "permissions": {
     "allow": [
-      "Bash(.claude/orchestrator/**)",
-      "Bash(.claude\\orchestrator\\**)"
+      "Bash(.claude/orchestrator/*)",
+      "Bash(.claude\\orchestrator\\*)",
+      "Bash(powershell.exe -NoProfile -File *orchestrator*)",
+      "Bash(powershell.exe -NoProfile -File *plugins/orchestrator*)",
+      "Bash(powershell.exe -NoProfile -File *plugins\\orchestrator*)",
+      "Bash(powershell.exe -NoProfile -Command *orchestrator*)",
+      "Bash(pwsh -NoProfile -File *orchestrator*)",
+      "Bash(pwsh -NoProfile -Command *orchestrator*)"
     ],
     "deny": [
       "Bash(git push*)",

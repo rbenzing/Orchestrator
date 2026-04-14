@@ -19,16 +19,21 @@ param(
     [Parameter(Mandatory)][string]$ProjectName,
     [Parameter(Mandatory)][string]$ContractId,
     [switch]$IncludeFileContent,
+    [string]$BasePath = ".claude/orchestrator/contracts",
     [Parameter(ValueFromRemainingArguments)][object[]]$ExtraArgs
 )
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -ContractId -IncludeFileContent"; exit 1 }
+if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -ContractId -IncludeFileContent -BasePath"; exit 1 }
 
-$contractFile = Join-Path "${CLAUDE_PLUGIN_ROOT}\contracts" (Join-Path $ProjectName "$ContractId.yml")
+# Resolve relative BasePath against the current working directory (target project root).
+if (-not [System.IO.Path]::IsPathRooted($BasePath)) {
+    $BasePath = Join-Path (Get-Location).Path $BasePath
+}
+
+$contractFile = Join-Path $BasePath (Join-Path $ProjectName "$ContractId.yml")
 if (-not (Test-Path $contractFile)) {
-    Write-Error "Contract not found: $contractFile"
-    exit 1
+    Write-Output "ERROR: Contract not found: $contractFile"; exit 1
 }
 
 $yaml = Get-Content $contractFile -Raw

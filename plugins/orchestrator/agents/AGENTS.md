@@ -13,6 +13,14 @@ All agents run in **Contract-Router** mode. Stateless. No shared context. Every 
 
 **All `launch-process` commands: single line, no backtick (`` ` ``) continuation.**
 
+## File Reading Discipline
+
+- Read each file ONCE per session. If you need it again, reference your earlier read in-context instead of re-reading — the hook caches reads and will warn on redundancy.
+- For files >300 lines, use Read with `offset`/`limit` (or `view_range`) to target the section you need.
+- For files >500 lines, prefer `summarize-artifact.ps1` or `extract-symbols.ps1`.
+- If a file was edited after you read it, the cache is automatically invalidated — re-read only the changed region with `offset`/`limit`.
+- Before editing an artifact you just wrote, don't re-read it — you already know its contents.
+
 ```
 launch-process: ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scripts\get-contract.ps1 -ProjectName "my-project" -AssignedAgent "@architect"
 ```
@@ -23,7 +31,7 @@ launch-process: ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scripts\get
 
 1. `${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scripts\get-contract.ps1 -ProjectName "{project}" -AssignedAgent "@{role}"`
 2. Parse: `objective`, `required_reads`, `acceptance_criteria`, `deliverables`
-3. Read ONLY files in `required_reads`
+3. Read ONLY files in `required_reads` — and read each one only once per session
 4. Execute the `objective` — no scope expansion
 5. Validate all `acceptance_criteria`
 6. Close: `${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scripts\update-contract.ps1 -ProjectName "{project}" -ContractId "{id}" -Status "Closed"` (or `"Blocked" -ErrorTrace "..."`)

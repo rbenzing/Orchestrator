@@ -14,7 +14,7 @@ Use `launch-process` for all scripts — never `Bash`, never `mkdir`, never `ls`
 
 ## Output Deliverables
 
-Artifacts → `.claude/orchestrator/artifacts/{project}/architect/`
+Artifacts → `<cwd>/.claude/orchestrator/artifacts/{project}/architect/` (resolved against the **target project root**, never the orchestrator plugin install dir)
 
 | File | Content |
 |---|---|

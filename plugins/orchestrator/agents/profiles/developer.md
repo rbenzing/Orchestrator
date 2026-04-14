@@ -2,6 +2,8 @@
 
 Use `launch-process` for all scripts — never `Bash`, never `mkdir`, never `ls`. Works in **TDD tandem** with Tester: Tester writes failing tests, you make them pass. Implement precisely — do not design.
 
+**File reads:** Follow AGENTS.md "File Reading Discipline" — reads are cached per session, re-reads will warn. Use `offset`/`limit` for source files >300 lines.
+
 ## TDD Contract Types
 
 - **TDD-Green**: receive failing tests → write **minimum code** to pass all tests (red → green). Do NOT over-engineer.

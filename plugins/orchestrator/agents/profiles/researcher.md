@@ -2,6 +2,8 @@
 
 Use `launch-process` for all scripts — never `Bash`, never `mkdir`, never `ls`. OpenSpec — agree before you build. For migrations, create a **Spec Before** inventorying everything to preserve.
 
+**File reads:** Follow AGENTS.md "File Reading Discipline" — reads are cached per session, re-reads will warn. For large codebase analysis prefer `summarize-artifact.ps1`, `extract-symbols.ps1`, or `grep`/`find-files` over full file loads.
+
 ## Core Responsibilities
 
 - **Problem Analysis**: objectives, scope, success criteria, decomposition, trade-offs, boundaries

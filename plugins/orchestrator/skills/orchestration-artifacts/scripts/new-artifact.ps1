@@ -19,13 +19,18 @@ param(
     [ValidateSet("researcher","architect","ui-designer","planner","developer","code-reviewer","tester")]
     [string]$Agent,
     [Parameter(Mandatory)][string]$ContractId,
-    [string]$BasePath = "${CLAUDE_PLUGIN_ROOT}/artifacts",
+    [string]$BasePath = ".claude/orchestrator/artifacts",
     [switch]$Force,
     [Parameter(ValueFromRemainingArguments=$true)][object[]]$ExtraArgs
 )
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
 if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -Agent -ContractId -BasePath -Force"; exit 1 }
+
+# Resolve relative BasePath against the current working directory (target project root).
+if (-not [System.IO.Path]::IsPathRooted($BasePath)) {
+    $BasePath = Join-Path (Get-Location).Path $BasePath
+}
 
 $templateMap = @{
     "researcher"    = "requirements.yml"
@@ -42,8 +47,7 @@ $templateDir  = "${CLAUDE_PLUGIN_ROOT}\skills\orchestration-artifacts\templates"
 $templatePath = Join-Path $templateDir $templateName
 
 if (-not (Test-Path $templatePath)) {
-    Write-Error "Template not found: $templatePath"
-    exit 1
+    Write-Output "ERROR: Template not found: $templatePath"; exit 1
 }
 
 $artifactDir = Join-Path $BasePath (Join-Path $ProjectName $Agent)

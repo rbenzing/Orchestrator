@@ -3,8 +3,8 @@
     Archives Closed contracts to prevent file system and context bloat.
 .DESCRIPTION
     Moves all Closed contracts for a project into an archive subfolder
-    (${CLAUDE_PLUGIN_ROOT}/contracts/{ProjectName}/archive/{date}/) so active contract
-    directories stay small and readable.
+    (<cwd>/.claude/orchestrator/contracts/{ProjectName}/archive/{date}/) so
+    active contract directories stay small and readable.
 .PARAMETER ProjectName
     Project identifier. Use "all" to archive across all projects.
 .PARAMETER DryRun
@@ -18,13 +18,19 @@
 param(
     [Parameter(Mandatory)][string]$ProjectName,
     [switch]$DryRun,
+    [string]$BasePath = ".claude/orchestrator/contracts",
     [Parameter(ValueFromRemainingArguments)][object[]]$ExtraArgs
 )
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -DryRun"; exit 1 }
+if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -DryRun -BasePath"; exit 1 }
 
-$baseDir = "${CLAUDE_PLUGIN_ROOT}\contracts"
+# Resolve relative BasePath against the current working directory (target project root).
+if (-not [System.IO.Path]::IsPathRooted($BasePath)) {
+    $BasePath = Join-Path (Get-Location).Path $BasePath
+}
+
+$baseDir = $BasePath
 if (-not (Test-Path $baseDir)) { Write-Output "No contracts dir"; exit 0 }
 
 # Determine which projects to process

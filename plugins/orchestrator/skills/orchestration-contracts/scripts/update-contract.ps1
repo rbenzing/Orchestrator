@@ -6,7 +6,8 @@
     or Feedback, increments attempt_count. Appends an execution_history entry
     with the error trace so agents never lose retry context.
 .PARAMETER ProjectName
-    Project identifier matching the directory under ${CLAUDE_PLUGIN_ROOT}/contracts/.
+    Project identifier matching the directory under
+    <cwd>/.claude/orchestrator/contracts/.
 .PARAMETER ContractId
     ID of the contract to update (e.g. "TSK-001").
 .PARAMETER Status
@@ -33,16 +34,21 @@ param(
     [string]$Notes = "",
     [string]$ErrorTrace = "",
     [string]$FailedRef = "",
+    [string]$BasePath = ".claude/orchestrator/contracts",
     [Parameter(ValueFromRemainingArguments)][object[]]$ExtraArgs
 )
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -ContractId -Status -Notes -ErrorTrace -FailedRef"; exit 1 }
+if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -ContractId -Status -Notes -ErrorTrace -FailedRef -BasePath"; exit 1 }
 
-$contractFile = Join-Path "${CLAUDE_PLUGIN_ROOT}\contracts" (Join-Path $ProjectName "$ContractId.yml")
+# Resolve relative BasePath against the current working directory (target project root).
+if (-not [System.IO.Path]::IsPathRooted($BasePath)) {
+    $BasePath = Join-Path (Get-Location).Path $BasePath
+}
+
+$contractFile = Join-Path $BasePath (Join-Path $ProjectName "$ContractId.yml")
 if (-not (Test-Path $contractFile)) {
-    Write-Error "Contract not found: $contractFile"
-    exit 1
+    Write-Output "ERROR: Contract not found: $contractFile"; exit 1
 }
 
 $content = Get-Content $contractFile -Raw

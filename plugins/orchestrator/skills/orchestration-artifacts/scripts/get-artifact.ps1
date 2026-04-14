@@ -24,13 +24,19 @@ param(
     [string]$Agent,
     [string]$ContractId = "",
     [string]$Field = "",
+    [string]$BasePath = ".claude/orchestrator/artifacts",
     [Parameter(ValueFromRemainingArguments=$true)][object[]]$ExtraArgs
 )
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -Agent -ContractId -Field"; exit 1 }
+if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -Agent -ContractId -Field -BasePath"; exit 1 }
 
-$artifactDir = Join-Path "${CLAUDE_PLUGIN_ROOT}\artifacts" (Join-Path $ProjectName $Agent)
+# Resolve relative BasePath against the current working directory (target project root).
+if (-not [System.IO.Path]::IsPathRooted($BasePath)) {
+    $BasePath = Join-Path (Get-Location).Path $BasePath
+}
+
+$artifactDir = Join-Path $BasePath (Join-Path $ProjectName $Agent)
 
 # List mode -- no ContractId, show all artifacts in agent dir
 if (-not $ContractId) {
@@ -50,8 +56,7 @@ if (-not $ContractId) {
 # Single artifact mode
 $artifactPath = Join-Path $artifactDir "$ContractId.yml"
 if (-not (Test-Path $artifactPath)) {
-    Write-Error "Artifact not found: $artifactPath"
-    exit 1
+    Write-Output "ERROR: Artifact not found: $artifactPath"; exit 1
 }
 
 if (-not $Field) {

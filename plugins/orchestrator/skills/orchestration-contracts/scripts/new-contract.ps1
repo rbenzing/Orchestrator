@@ -2,8 +2,9 @@
 .SYNOPSIS
     Creates a new YAML contract file for a task assignment.
 .DESCRIPTION
-    Generates a structured YAML contract under ${CLAUDE_PLUGIN_ROOT}/contracts/{ProjectName}/
-    following the Contract-Router YAML schema.
+    Generates a structured YAML contract under
+    <cwd>/.claude/orchestrator/contracts/{ProjectName}/ following the
+    Contract-Router YAML schema.
 .PARAMETER ProjectName
     Project identifier (e.g. "user-auth").
 .PARAMETER ContractId
@@ -52,14 +53,27 @@ param(
     [string]$ParentContract = "",
     [string]$IfPass = "Return to Router",
     [string]$IfFail = "Return to Router with Feedback Contract",
+    [string]$BasePath = ".claude/orchestrator/contracts",
     [Parameter(ValueFromRemainingArguments = $true)][object[]]$ExtraArgs
 )
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
 
-if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -ContractId -Type -AssignedAgent -ModelTier -Objective -AcceptanceCriteria -Deliverables -RequiredReads -Dependencies -ParentContract -IfPass -IfFail"; exit 1 }
+if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -ContractId -Type -AssignedAgent -ModelTier -Objective -AcceptanceCriteria -Deliverables -RequiredReads -Dependencies -ParentContract -IfPass -IfFail -BasePath"; exit 1 }
 
-$contractDir = Join-Path "${CLAUDE_PLUGIN_ROOT}\contracts" $ProjectName
+# Resolve relative BasePath against the current working directory (target project root).
+if (-not [System.IO.Path]::IsPathRooted($BasePath)) {
+    $BasePath = Join-Path (Get-Location).Path $BasePath
+}
+
+# Refuse to write contracts under the orchestrator plugin dir.
+$normalized = $BasePath -replace '\\', '/'
+if ($normalized -match '/plugins/orchestrator/') {
+    Write-Output "ERROR: refusing to write contracts under the orchestrator plugin dir ($BasePath)."
+    exit 1
+}
+
+$contractDir = Join-Path $BasePath $ProjectName
 if (-not (Test-Path $contractDir)) {
     New-Item -Path $contractDir -ItemType Directory -Force | Out-Null
 }

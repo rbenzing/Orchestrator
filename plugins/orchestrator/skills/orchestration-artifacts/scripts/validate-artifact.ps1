@@ -19,11 +19,17 @@ param(
     [ValidateSet("researcher","architect","ui-designer","planner","developer","code-reviewer","tester")]
     [string]$Agent,
     [string]$ContractId = "",
+    [string]$BasePath = ".claude/orchestrator/artifacts",
     [Parameter(ValueFromRemainingArguments=$true)][object[]]$ExtraArgs
 )
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -Agent -ContractId"; exit 1 }
+if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -Agent -ContractId -BasePath"; exit 1 }
+
+# Resolve relative BasePath against the current working directory (target project root).
+if (-not [System.IO.Path]::IsPathRooted($BasePath)) {
+    $BasePath = Join-Path (Get-Location).Path $BasePath
+}
 
 $requiredFields = @{
     "researcher"    = @("goal","functional_reqs","non_functional_reqs","constraints","tech_stack")
@@ -35,7 +41,7 @@ $requiredFields = @{
     "tester"        = @("verdict","test_run","acceptance_criteria","summary")
 }
 
-$artifactDir = Join-Path "${CLAUDE_PLUGIN_ROOT}\artifacts" (Join-Path $ProjectName $Agent)
+$artifactDir = Join-Path $BasePath (Join-Path $ProjectName $Agent)
 
 # Build list of files to validate
 if ($ContractId) {

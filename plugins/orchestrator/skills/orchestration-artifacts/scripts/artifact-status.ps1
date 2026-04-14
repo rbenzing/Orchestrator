@@ -16,14 +16,20 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$ProjectName,
     [string]$Root = (Get-Location).Path,
+    [string]$BasePath = ".claude/orchestrator/artifacts",
     [Parameter(ValueFromRemainingArguments = $true)]
     [object[]]$ExtraArgs
 )
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -Root"; exit 1 }
+if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -Root -BasePath"; exit 1 }
 
-$base = Join-Path $Root "${CLAUDE_PLUGIN_ROOT}\artifacts"
+# Resolve relative BasePath against -Root (target project root).
+if (-not [System.IO.Path]::IsPathRooted($BasePath)) {
+    $base = Join-Path $Root $BasePath
+} else {
+    $base = $BasePath
+}
 $agents = @("researcher","architect","ui-designer","planner","developer","code-reviewer","tester")
 $totalArtifacts = 0
 

@@ -3,8 +3,8 @@
     Reads and displays the active contract for a given project and agent.
 .DESCRIPTION
     Finds the most recent Open contract assigned to the specified agent
-    under ${CLAUDE_PLUGIN_ROOT}/contracts/{ProjectName}/. Outputs the YAML content
-    to stdout so the agent can parse its objective and required_reads.
+    under <cwd>/.claude/orchestrator/contracts/{ProjectName}/. Outputs the YAML
+    content to stdout so the agent can parse its objective and required_reads.
 .PARAMETER ProjectName
     Project identifier.
 .PARAMETER ContractId
@@ -27,13 +27,19 @@ param(
     [string]$ContractId = "",
     [string]$AssignedAgent = "",
     [switch]$Raw,
+    [string]$BasePath = ".claude/orchestrator/contracts",
     [Parameter(ValueFromRemainingArguments)][object[]]$ExtraArgs
 )
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -ContractId -AssignedAgent -Raw"; exit 1 }
+if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -ContractId -AssignedAgent -Raw -BasePath"; exit 1 }
 
-$contractDir = Join-Path "${CLAUDE_PLUGIN_ROOT}\contracts" $ProjectName
+# Resolve relative BasePath against the current working directory (target project root).
+if (-not [System.IO.Path]::IsPathRooted($BasePath)) {
+    $BasePath = Join-Path (Get-Location).Path $BasePath
+}
+
+$contractDir = Join-Path $BasePath $ProjectName
 if (-not (Test-Path $contractDir)) {
     Write-Output "No contracts for $ProjectName"; exit 0
 }
@@ -41,8 +47,7 @@ if (-not (Test-Path $contractDir)) {
 if ($ContractId) {
     $contractFile = Join-Path $contractDir "$ContractId.yml"
     if (-not (Test-Path $contractFile)) {
-        Write-Error "Contract not found: $contractFile"
-        exit 1
+        Write-Output "ERROR: Contract not found: $contractFile"; exit 1
     }
     $files = @(Get-Item $contractFile)
 } else {

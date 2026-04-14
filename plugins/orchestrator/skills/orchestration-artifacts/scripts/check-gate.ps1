@@ -30,27 +30,35 @@ param(
     [string]$Phase = "",
     [string]$ContractID = "",
     [string]$Root = (Get-Location).Path,
+    [string]$ContractBase = ".claude/orchestrator/contracts",
+    [string]$ArtifactBase = ".claude/orchestrator/artifacts",
     [Parameter(ValueFromRemainingArguments = $true)]
     [object[]]$ExtraArgs
 )
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -Phase -ContractID -Root"; exit 1 }
+if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -Phase -ContractID -Root -ContractBase -ArtifactBase"; exit 1 }
+
+# Resolve relative base paths against the target project root.
+if (-not [System.IO.Path]::IsPathRooted($ContractBase)) {
+    $ContractBase = Join-Path $Root $ContractBase
+}
+if (-not [System.IO.Path]::IsPathRooted($ArtifactBase)) {
+    $ArtifactBase = Join-Path $Root $ArtifactBase
+}
 
 # Validate: at least one of Phase or ContractID must be provided
 if (-not $Phase -and -not $ContractID) {
-    Write-Error "You must provide either -Phase or -ContractID (or both)."
-    exit 1
+    Write-Output "ERROR: You must provide either -Phase or -ContractID (or both)."; exit 1
 }
 
 # ============================================================
 # CONTRACT-BASED GATE -- reads criteria from YAML contract
 # ============================================================
 if ($ContractID) {
-    $contractFile = Join-Path "${CLAUDE_PLUGIN_ROOT}\contracts" (Join-Path $ProjectName "$ContractID.yml")
+    $contractFile = Join-Path $ContractBase (Join-Path $ProjectName "$ContractID.yml")
     if (-not (Test-Path $contractFile)) {
-        Write-Error "Contract not found: $contractFile"
-        exit 1
+        Write-Output "ERROR: Contract not found: $contractFile"; exit 1
     }
 
     $yaml = Get-Content $contractFile -Raw
@@ -105,7 +113,7 @@ if ($ContractID) {
         $updateScript = "${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scripts\update-contract.ps1"
         if (Test-Path $updateScript) {
             & $updateScript -ProjectName $ProjectName -ContractId $ContractID `
-                -Status "Blocked" -ErrorTrace $errorTrace
+                -Status "Blocked" -ErrorTrace $errorTrace -BasePath $ContractBase
         }
         exit 1
     }
@@ -147,7 +155,7 @@ foreach ($p in $phasesToCheck) {
     $agentDir = $phaseToAgent[$p]
     $validationPassed = $true
     try {
-        & $validateScript -ProjectName $ProjectName -Agent $agentDir 2>$null
+        & $validateScript -ProjectName $ProjectName -Agent $agentDir -BasePath $ArtifactBase 2>$null
         if ($LASTEXITCODE -ne 0) { $validationPassed = $false }
     } catch {
         $validationPassed = $false

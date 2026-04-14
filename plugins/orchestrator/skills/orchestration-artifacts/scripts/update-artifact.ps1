@@ -26,16 +26,21 @@ param(
     [Parameter(Mandatory)][string]$Field,
     [Parameter(Mandatory)][string]$Value,
     [string]$Status = "active",
+    [string]$BasePath = ".claude/orchestrator/artifacts",
     [Parameter(ValueFromRemainingArguments=$true)][object[]]$ExtraArgs
 )
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -Agent -ContractId -Field -Value -Status"; exit 1 }
+if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -Agent -ContractId -Field -Value -Status -BasePath"; exit 1 }
 
-$artifactPath = Join-Path "${CLAUDE_PLUGIN_ROOT}\artifacts" (Join-Path $ProjectName (Join-Path $Agent "$ContractId.yml"))
+# Resolve relative BasePath against the current working directory (target project root).
+if (-not [System.IO.Path]::IsPathRooted($BasePath)) {
+    $BasePath = Join-Path (Get-Location).Path $BasePath
+}
+
+$artifactPath = Join-Path $BasePath (Join-Path $ProjectName (Join-Path $Agent "$ContractId.yml"))
 if (-not (Test-Path $artifactPath)) {
-    Write-Error "Artifact not found: $artifactPath -- run new-artifact.ps1 first"
-    exit 1
+    Write-Output "ERROR: Artifact not found: $artifactPath -- run new-artifact.ps1 first"; exit 1
 }
 
 $lines = Get-Content $artifactPath
@@ -104,8 +109,7 @@ foreach ($line in $lines) {
 }
 
 if (-not $replaced) {
-    Write-Error "Field '$Field' not found in $artifactPath"
-    exit 1
+    Write-Output "ERROR: Field '$Field' not found in $artifactPath"; exit 1
 }
 
 Set-Content -Path $artifactPath -Value ($output -join "`n") -Encoding UTF8

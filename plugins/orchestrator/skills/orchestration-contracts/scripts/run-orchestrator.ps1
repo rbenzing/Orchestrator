@@ -2,7 +2,7 @@
 .SYNOPSIS
     Master orchestration loop -- scans Open contracts and dispatches the next agent.
 .DESCRIPTION
-    Scans ${CLAUDE_PLUGIN_ROOT}/contracts/{ProjectName}/ for Open contracts whose dependencies
+    Scans <cwd>/.claude/orchestrator/contracts/{ProjectName}/ for Open contracts whose dependencies
     are all Closed. Outputs a prioritized dispatch queue so the Orchestrator knows
     exactly which agent to invoke next. After dispatch, updates state and runs
     cleanup-workspace.ps1 as a post-task hook.
@@ -32,13 +32,19 @@ param(
     [switch]$Dispatch,
     [switch]$PostTask,
     [string]$CompletedContractID = "",
+    [string]$BasePath = ".claude/orchestrator/contracts",
     [Parameter(ValueFromRemainingArguments)][object[]]$ExtraArgs
 )
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -Dispatch -PostTask -CompletedContractID"; exit 1 }
+if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -Dispatch -PostTask -CompletedContractID -BasePath"; exit 1 }
 
-$baseDir   = "${CLAUDE_PLUGIN_ROOT}\contracts"
+# Resolve relative BasePath against the current working directory (target project root).
+if (-not [System.IO.Path]::IsPathRooted($BasePath)) {
+    $BasePath = Join-Path (Get-Location).Path $BasePath
+}
+
+$baseDir = $BasePath
 
 # -- Helper: read YAML field (simple regex, no external module needed) -------
 function Get-YamlField {
@@ -197,7 +203,7 @@ if ($PostTask) {
         $archiveScript = "${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scripts\archive-contracts.ps1"
         if (Test-Path $archiveScript) {
             $proj = if ($ProjectName -eq "all") { "all" } else { $ProjectName }
-            & $archiveScript -ProjectName $proj
+            & $archiveScript -ProjectName $proj -BasePath $BasePath
         }
 
         $saveStateScript = "${CLAUDE_PLUGIN_ROOT}\skills\orchestration-state\scripts\save-state.ps1"

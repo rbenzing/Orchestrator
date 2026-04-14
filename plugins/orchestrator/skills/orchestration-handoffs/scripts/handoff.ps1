@@ -43,12 +43,22 @@ param(
     [string[]]$Issues = @(),
     [ValidateSet("haiku","sonnet","opus")]
     [string]$ModelTier = "sonnet",
+    [string]$ArtifactBase = ".claude/orchestrator/artifacts",
+    [string]$ContractBase = ".claude/orchestrator/contracts",
     [Parameter(ValueFromRemainingArguments = $true)]
     [object[]]$ExtraArgs
 )
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -From -To -ProjectName -ContractId -IsFeedback -Issues -ModelTier"; exit 1 }
+if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -From -To -ProjectName -ContractId -IsFeedback -Issues -ModelTier -ArtifactBase -ContractBase"; exit 1 }
+
+# Resolve relative base paths against the current working directory (target project root).
+if (-not [System.IO.Path]::IsPathRooted($ArtifactBase)) {
+    $ArtifactBase = Join-Path (Get-Location).Path $ArtifactBase
+}
+if (-not [System.IO.Path]::IsPathRooted($ContractBase)) {
+    $ContractBase = Join-Path (Get-Location).Path $ContractBase
+}
 
 # --- Agent metadata maps ---
 $agentHandle = @{
@@ -76,7 +86,7 @@ $agentDirMap = @{
 function Get-AgentArtifactList($AgentName) {
     $dir = $agentDirMap[$AgentName]
     if (-not $dir) { return @() }
-    $artifactDir = Join-Path "${CLAUDE_PLUGIN_ROOT}\artifacts" (Join-Path $ProjectName $dir)
+    $artifactDir = Join-Path $ArtifactBase (Join-Path $ProjectName $dir)
     if (-not (Test-Path $artifactDir)) { return @() }
     $files = Get-ChildItem $artifactDir -Filter "*.yml" -ErrorAction SilentlyContinue
     if (-not $files) { return @() }
@@ -85,7 +95,7 @@ function Get-AgentArtifactList($AgentName) {
 
 # --- Auto-generate ContractId if not supplied ---
 if (-not $ContractId) {
-    $contractDir = Join-Path "${CLAUDE_PLUGIN_ROOT}\contracts" $ProjectName
+    $contractDir = Join-Path $ContractBase $ProjectName
     $existing = 0
     if (Test-Path $contractDir) {
         $existing = (Get-ChildItem $contractDir -Filter "*.yml" | Measure-Object).Count
@@ -125,7 +135,8 @@ $newContractScript = "${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scrip
     -Objective         $objective `
     -RequiredReads     $reads `
     -IfPass            $ifPass `
-    -IfFail            $ifFail
+    -IfFail            $ifFail `
+    -BasePath          $ContractBase
 
 # Handoff data lives in the YAML contract -- no duplicate .md summary needed
 

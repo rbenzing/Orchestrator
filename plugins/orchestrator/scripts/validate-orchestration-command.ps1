@@ -147,6 +147,6 @@ try {
 }
 catch {
     # On unexpected errors, allow execution (fail-open) to avoid blocking the agent
-    Write-Error "Hook validation error: $_" 2>&1 | Out-Null
+    try { [Console]::Error.WriteLine("Hook validation error: $_") } catch { }
     exit 0
 }

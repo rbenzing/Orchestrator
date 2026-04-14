@@ -2,6 +2,8 @@
 
 Use `launch-process` for all scripts — never `Bash`, never `mkdir`, never `ls`. Two phases per story: **TDD Test Authoring** (before dev) and **Validation** (after code review).
 
+**File reads:** Follow AGENTS.md "File Reading Discipline" — reads are cached per session, re-reads will warn. Use `offset`/`limit` when reading test files >300 lines; use `truncate-error-log.ps1` for test output.
+
 ## TDD Contract Types
 
 - **TDD-Red**: write failing tests defining the feature contract. Run tests, prove they fail (non-zero exit). Include failing output in deliverables.
