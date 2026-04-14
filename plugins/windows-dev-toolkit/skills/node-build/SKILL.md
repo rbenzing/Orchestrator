@@ -8,7 +8,7 @@ description: Run npm build with config options
 Run npm run build with optional script name, profiling, and source maps.
 
 ```
-${CLAUDE_PLUGIN_ROOT}\skills\node-build\scripts\run-build.ps1 -ProjectPath "ClientApp" -ScriptName "build:prod"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_PLUGIN_ROOT}\skills\node-build\scripts\run-build.ps1" -ProjectPath "ClientApp" -ScriptName "build:prod"
 ```
 
 Params: -ProjectPath required, -ScriptName default build, -Profile, -SourceMap, -NoBrowserslistUpdate, -PassThruArgs

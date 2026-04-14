@@ -8,7 +8,7 @@ description: Format .NET code and verify style rules
 Format .NET code. Can verify without changes for CI gating.
 
 ```
-${CLAUDE_PLUGIN_ROOT}\skills\dotnet-format\scripts\dotnet-format.ps1 -ProjectPath "." -VerifyNoChanges -Severity "warn"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_PLUGIN_ROOT}\skills\dotnet-format\scripts\dotnet-format.ps1" -ProjectPath "." -VerifyNoChanges -Severity "warn"
 ```
 
 Params: -ProjectPath required, -VerifyNoChanges, -Severity, -Diagnostics, -PassThruArgs

@@ -8,8 +8,8 @@ description: Search file contents by regex pattern
 Search file contents by regex. Git-aware, excludes .git/node_modules/bin/obj.
 
 ```
-${CLAUDE_PLUGIN_ROOT}\skills\grep\scripts\grep.ps1 -Pattern "TODO|FIXME"
-${CLAUDE_PLUGIN_ROOT}\skills\grep\scripts\grep.ps1 -Pattern "class\s+\w+" -Include "*.cs" -Context 2
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_PLUGIN_ROOT}\skills\grep\scripts\grep.ps1" -Pattern "TODO|FIXME"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_PLUGIN_ROOT}\skills\grep\scripts\grep.ps1" -Pattern "class\s+\w+" -Include "*.cs" -Context 2
 ```
 
 Params: -Pattern required, -Path, -Include, -Context, -CaseSensitive, -MaxResults

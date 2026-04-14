@@ -8,8 +8,8 @@ description: Install Python packages via pip wrapper
 Install Python packages via pip. Supports requirements files and upgrade mode.
 
 ```
-${CLAUDE_PLUGIN_ROOT}\skills\pip-install\scripts\pip-install.ps1 -Packages "flask","requests"
-${CLAUDE_PLUGIN_ROOT}\skills\pip-install\scripts\pip-install.ps1 -RequirementsFile "requirements.txt"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_PLUGIN_ROOT}\skills\pip-install\scripts\pip-install.ps1" -Packages "flask","requests"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_PLUGIN_ROOT}\skills\pip-install\scripts\pip-install.ps1" -RequirementsFile "requirements.txt"
 ```
 
 Params: -Packages OR -RequirementsFile one required, -ProjectPath, -Upgrade, -PassThruArgs

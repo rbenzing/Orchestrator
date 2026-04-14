@@ -8,7 +8,7 @@ description: Move files or directories safely on Windows
 Move files or directories with safety guards. Blocks writes to protected directories.
 
 ```
-${CLAUDE_PLUGIN_ROOT}\skills\move-item\scripts\move-item.ps1 -Source "old-name.ts" -Destination "new-name.ts"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_PLUGIN_ROOT}\skills\move-item\scripts\move-item.ps1" -Source "old-name.ts" -Destination "new-name.ts"
 ```
 
 Params: -Source required, -Destination required, -Force

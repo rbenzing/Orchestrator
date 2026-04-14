@@ -8,7 +8,7 @@ description: Run Go build/test/vet/fmt commands
 Run Go commands: build, test, run, mod, fmt, vet, get.
 
 ```
-${CLAUDE_PLUGIN_ROOT}\skills\go-run\scripts\go-run.ps1 -Command "test" -PassThruArgs "./..."
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_PLUGIN_ROOT}\skills\go-run\scripts\go-run.ps1" -Command "test" -PassThruArgs "./..."
 ```
 
 Params: -Command required (build|test|run|mod|fmt|vet|get), -ProjectPath, -PassThruArgs

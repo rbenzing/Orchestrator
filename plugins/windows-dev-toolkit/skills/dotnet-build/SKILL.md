@@ -8,7 +8,7 @@ description: Build .NET project or solution
 Build a .NET project or solution with configuration options.
 
 ```
-${CLAUDE_PLUGIN_ROOT}\skills\dotnet-build\scripts\dotnet-build.ps1 -ProjectPath "src\MyApi" -Configuration "Release"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_PLUGIN_ROOT}\skills\dotnet-build\scripts\dotnet-build.ps1" -ProjectPath "src\MyApi" -Configuration "Release"
 ```
 
 Params: -ProjectPath required, -Configuration, -Verbosity, -NoRestore, -PassThruArgs

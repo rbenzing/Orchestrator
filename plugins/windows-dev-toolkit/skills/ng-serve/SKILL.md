@@ -8,7 +8,7 @@ description: Start Angular dev server on Windows
 Start Angular dev server. Handles NODE_OPTIONS and legacy OpenSSL.
 
 ```
-${CLAUDE_PLUGIN_ROOT}\skills\ng-serve\scripts\run-serve.ps1 -ProjectPath "ClientApp" -LegacyOpenSSL -Port 4200
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_PLUGIN_ROOT}\skills\ng-serve\scripts\run-serve.ps1" -ProjectPath "ClientApp" -LegacyOpenSSL -Port 4200
 ```
 
 Params: -ProjectPath required, -LegacyOpenSSL, -Port, -Open, -Configuration, -PassThruArgs

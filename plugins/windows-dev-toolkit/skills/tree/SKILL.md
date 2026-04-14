@@ -8,7 +8,7 @@ description: Show directory tree with depth control
 Display directory tree with configurable depth and file visibility.
 
 ```
-${CLAUDE_PLUGIN_ROOT}\skills\tree\scripts\tree.ps1 -Path "src" -Depth 4 -ShowFiles
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_PLUGIN_ROOT}\skills\tree\scripts\tree.ps1" -Path "src" -Depth 4 -ShowFiles
 ```
 
 Params: -Path, -Depth, -ShowFiles

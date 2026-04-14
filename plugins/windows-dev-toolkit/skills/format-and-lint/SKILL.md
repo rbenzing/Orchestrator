@@ -8,8 +8,8 @@ description: Auto-detect and format/lint project code
 Auto-detect project type and run formatter/linter. Supports: prettier, eslint, dotnet format, ruff, black.
 
 ```
-${CLAUDE_PLUGIN_ROOT}\skills\format-and-lint\scripts\format-and-lint.ps1
-${CLAUDE_PLUGIN_ROOT}\skills\format-and-lint\scripts\format-and-lint.ps1 -Fix:$false -Paths "src/auth"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_PLUGIN_ROOT}\skills\format-and-lint\scripts\format-and-lint.ps1"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_PLUGIN_ROOT}\skills\format-and-lint\scripts\format-and-lint.ps1" -Fix:$false -Paths "src/auth"
 ```
 
 Params: -Fix default true, -Paths, -Root

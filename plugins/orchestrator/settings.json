@@ -8,8 +8,14 @@
       "Bash(powershell.exe -NoProfile -File *orchestrator*)",
       "Bash(powershell.exe -NoProfile -File *plugins/orchestrator*)",
       "Bash(powershell.exe -NoProfile -File *plugins\\orchestrator*)",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File *orchestrator*)",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File *plugins/orchestrator*)",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File *plugins\\orchestrator*)",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File *windows-dev-toolkit*)",
       "Bash(powershell.exe -NoProfile -Command *orchestrator*)",
       "Bash(pwsh -NoProfile -File *orchestrator*)",
+      "Bash(pwsh -NoProfile -ExecutionPolicy Bypass -File *orchestrator*)",
+      "Bash(pwsh -NoProfile -ExecutionPolicy Bypass -File *windows-dev-toolkit*)",
       "Bash(pwsh -NoProfile -Command *orchestrator*)"
     ],
     "deny": [

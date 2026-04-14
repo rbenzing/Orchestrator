@@ -8,7 +8,7 @@ description: Run Angular Karma tests headless on Windows
 Run Angular Karma tests. Handles NODE_OPTIONS, legacy OpenSSL, ChromeHeadless.
 
 ```
-${CLAUDE_PLUGIN_ROOT}\skills\ng-test\scripts\run-tests.ps1 -ProjectPath "ClientApp" -LegacyOpenSSL -Headless -NoWatch
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_PLUGIN_ROOT}\skills\ng-test\scripts\run-tests.ps1" -ProjectPath "ClientApp" -LegacyOpenSSL -Headless -NoWatch
 ```
 
 Params: -ProjectPath required, -LegacyOpenSSL, -Headless, -NoWatch, -Include, -CodeCoverage, -PassThruArgs

@@ -8,7 +8,7 @@ description: Copy files or directories safely on Windows
 Copy files or directories with safety guards. Blocks writes to protected directories.
 
 ```
-${CLAUDE_PLUGIN_ROOT}\skills\copy-item\scripts\copy-item.ps1 -Source "template.json" -Destination "config.json" -Recurse
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_PLUGIN_ROOT}\skills\copy-item\scripts\copy-item.ps1" -Source "template.json" -Destination "config.json" -Recurse
 ```
 
 Params: -Source required, -Destination required, -Recurse, -Force

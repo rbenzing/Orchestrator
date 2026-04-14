@@ -8,8 +8,8 @@ description: Find files by name or regex pattern
 Find files by name pattern or regex. Git-aware, excludes .git/node_modules/bin/obj.
 
 ```
-${CLAUDE_PLUGIN_ROOT}\skills\find-files\scripts\find-files.ps1 -Name "*.test.ts"
-${CLAUDE_PLUGIN_ROOT}\skills\find-files\scripts\find-files.ps1 -Name "Controller" -Regex
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_PLUGIN_ROOT}\skills\find-files\scripts\find-files.ps1" -Name "*.test.ts"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_PLUGIN_ROOT}\skills\find-files\scripts\find-files.ps1" -Name "Controller" -Regex
 ```
 
 Params: -Name required, -Path, -Regex, -DirectoriesOnly, -MaxResults

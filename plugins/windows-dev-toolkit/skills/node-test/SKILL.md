@@ -8,8 +8,8 @@ description: Run Node.js tests via npm test wrapper
 Run Node.js tests (jest/vitest/mocha) via npm test. Handles cwd, watch mode, coverage.
 
 ```
-${CLAUDE_PLUGIN_ROOT}\skills\node-test\scripts\run-tests.ps1 -ProjectPath "ClientApp"
-${CLAUDE_PLUGIN_ROOT}\skills\node-test\scripts\run-tests.ps1 -ProjectPath "src\app" -TestPathPattern "components/charts" -Coverage
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_PLUGIN_ROOT}\skills\node-test\scripts\run-tests.ps1" -ProjectPath "ClientApp"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_PLUGIN_ROOT}\skills\node-test\scripts\run-tests.ps1" -ProjectPath "src\app" -TestPathPattern "components/charts" -Coverage
 ```
 
 Params: -ProjectPath required, -TestPathPattern, -TestNamePattern, -NoWatch, -ForceExit, -Coverage, -PassThruArgs

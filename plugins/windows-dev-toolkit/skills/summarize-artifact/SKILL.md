@@ -8,7 +8,7 @@ description: Compact summary of large files for agents
 Extract headings, bullets, key:value pairs from large files. Skips prose and code. Use before loading full artifact.
 
 ```
-${CLAUDE_PLUGIN_ROOT}\skills\summarize-artifact\scripts\summarize-artifact.ps1 -Path ".claude\artifacts\{project}\architect\architecture.yml"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_PLUGIN_ROOT}\skills\summarize-artifact\scripts\summarize-artifact.ps1" -Path ".claude\artifacts\{project}\architect\architecture.yml"
 ```
 
 Params: -Path required, -MaxLines default 60, -IncludeBody (include 3 body lines per heading)

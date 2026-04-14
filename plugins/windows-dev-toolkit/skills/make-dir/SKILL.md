@@ -8,7 +8,7 @@ description: Create directories safely on Windows
 Create directories with safety guards. Blocks writes to protected directories.
 
 ```
-${CLAUDE_PLUGIN_ROOT}\skills\make-dir\scripts\make-dir.ps1 -Path "src\components"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_PLUGIN_ROOT}\skills\make-dir\scripts\make-dir.ps1" -Path "src\components"
 ```
 
 Params: -Path required (accepts array)

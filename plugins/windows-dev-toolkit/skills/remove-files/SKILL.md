@@ -8,7 +8,7 @@ description: Safely remove files with dry-run default
 Safely remove files or directories. Dry-run by default. Blocks .git, .claude, node_modules, system dirs, parent traversal.
 
 ```
-${CLAUDE_PLUGIN_ROOT}\skills\remove-files\scripts\remove-files.ps1 -Path "dist","coverage" -Recurse -Force
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_PLUGIN_ROOT}\skills\remove-files\scripts\remove-files.ps1" -Path "dist","coverage" -Recurse -Force
 ```
 
 Params: -Path required (accepts array), -Recurse, -Force, -Quiet

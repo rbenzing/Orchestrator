@@ -8,7 +8,7 @@ description: Restore NuGet packages for .NET project
 Restore NuGet packages for a .NET project or solution.
 
 ```
-${CLAUDE_PLUGIN_ROOT}\skills\dotnet-restore\scripts\dotnet-restore.ps1 -ProjectPath "."
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_PLUGIN_ROOT}\skills\dotnet-restore\scripts\dotnet-restore.ps1" -ProjectPath "."
 ```
 
 Params: -ProjectPath required, -Verbosity, -PassThruArgs

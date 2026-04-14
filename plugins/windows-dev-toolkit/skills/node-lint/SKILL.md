@@ -8,7 +8,7 @@ description: Run ESLint via npm run lint wrapper
 Run ESLint via npm run lint. Verifies lint script exists in package.json before running.
 
 ```
-${CLAUDE_PLUGIN_ROOT}\skills\node-lint\scripts\run-lint.ps1 -ProjectPath "ClientApp" -Fix
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_PLUGIN_ROOT}\skills\node-lint\scripts\run-lint.ps1" -ProjectPath "ClientApp" -Fix
 ```
 
 Params: -ProjectPath required, -Fix, -Quiet, -MaxWarnings, -Files, -Format, -PassThruArgs

@@ -8,8 +8,8 @@ description: Delete temp/cache dirs after task close
 Delete cache and temp directories. Called by orchestrator as post-task hook. Cleans: .pytest_cache, node_modules/.cache, coverage/, dist/, build/, large logs >1MB.
 
 ```
-${CLAUDE_PLUGIN_ROOT}\skills\cleanup-workspace\scripts\cleanup-workspace.ps1
-${CLAUDE_PLUGIN_ROOT}\skills\cleanup-workspace\scripts\cleanup-workspace.ps1 -Root "C:\Src\my-project" -DryRun
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_PLUGIN_ROOT}\skills\cleanup-workspace\scripts\cleanup-workspace.ps1"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_PLUGIN_ROOT}\skills\cleanup-workspace\scripts\cleanup-workspace.ps1" -Root "C:\Src\my-project" -DryRun
 ```
 
 Params: -Root, -DryRun
