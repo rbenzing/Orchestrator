@@ -22,6 +22,7 @@ ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scripts\new-contract.ps1 `
 ```
 Types: Project | Story | Task | TDD-Red | TDD-Green | TDD-Refactor | Feedback | Validation
 ModelTier: haiku lint/typos | sonnet standard | opus complex/retry
+Effort: low draft/fast | medium verify/standard | high retry/complex | max final-escalation(opus-only)
 
 ### update-contract.ps1 -- Transition status
 ```powershell

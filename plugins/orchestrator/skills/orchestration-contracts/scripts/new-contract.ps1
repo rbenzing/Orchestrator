@@ -15,6 +15,8 @@
     The agent this contract is assigned to (e.g. "@developer").
 .PARAMETER ModelTier
     LLM tier: haiku | sonnet | opus. Default: sonnet.
+.PARAMETER Effort
+    Reasoning effort: low | medium | high | max. Default: medium.
 .PARAMETER Objective
     1-2 sentence description of the contract goal.
 .PARAMETER Deliverables
@@ -45,6 +47,7 @@ param(
     [Parameter(Mandatory)][ValidateSet("Project","Story","Task","TDD-Red","TDD-Green","TDD-Refactor","Feedback","Validation")][string]$Type,
     [Parameter(Mandatory)][string]$AssignedAgent,
     [ValidateSet("haiku","sonnet","opus")][string]$ModelTier = "sonnet",
+    [ValidateSet("low","medium","high","max")][string]$Effort = "medium",
     [Parameter(Mandatory)][string]$Objective,
     [string[]]$Deliverables = @(),
     [string[]]$AcceptanceCriteria = @(),
@@ -59,7 +62,7 @@ param(
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
 
-if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -ContractId -Type -AssignedAgent -ModelTier -Objective -AcceptanceCriteria -Deliverables -RequiredReads -Dependencies -ParentContract -IfPass -IfFail -BasePath"; exit 1 }
+if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -ProjectName -ContractId -Type -AssignedAgent -ModelTier -Effort -Objective -AcceptanceCriteria -Deliverables -RequiredReads -Dependencies -ParentContract -IfPass -IfFail -BasePath"; exit 1 }
 
 # Resolve relative BasePath against the current working directory (target project root).
 if (-not [System.IO.Path]::IsPathRooted($BasePath)) {
@@ -103,6 +106,7 @@ parent_contract: $parentLine
 type: "$Type"
 assigned_agent: "$AssignedAgent"
 model_tier: "$ModelTier"
+effort: "$Effort"
 status: "Open"
 dependencies:
 $depsYaml
@@ -131,5 +135,5 @@ next_routing:
 "@
 
 Set-Content -Path $contractFile -Value $yaml -Encoding UTF8
-Write-Output "+$ContractId $AssignedAgent [$ModelTier] $Type"
+Write-Output "+$ContractId $AssignedAgent [$ModelTier/$Effort] $Type"
 Write-Output $contractFile

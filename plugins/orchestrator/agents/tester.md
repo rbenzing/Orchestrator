@@ -1,7 +1,8 @@
 ---
 name: "tester"
 description: "TDD test author + validation engineer — writes tests before code, validates after implementation"
-model: "claude-sonnet-4-6"
+model: "sonnet"
+effort: "high"
 color: "yellow"
 ---
 

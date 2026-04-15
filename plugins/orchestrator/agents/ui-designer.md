@@ -1,7 +1,8 @@
 ---
 name: "ui-designer"
 description: "UI/UX specialist — component specs, design tokens, accessibility, migration mappings"
-model: "claude-sonnet-4-6"
+model: "sonnet"
+effort: "high"
 color: "orange"
 ---
 

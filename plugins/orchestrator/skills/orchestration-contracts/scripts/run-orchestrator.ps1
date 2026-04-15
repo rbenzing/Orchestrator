@@ -104,6 +104,7 @@ foreach ($proj in $projects) {
         $depsAreMet  = ($deps.Count -eq 0) -or ($deps | Where-Object { $_ -notin $closedIds }).Count -eq 0
         $agent       = Get-YamlField $yaml "assigned_agent"
         $tier        = Get-YamlField $yaml "model_tier"
+        $effort      = Get-YamlField $yaml "effort"
         $attempt     = Get-YamlField $yaml "attempt_count"
         $maxAttempts = Get-YamlField $yaml "max_attempts"
         $objective   = (Get-YamlField $yaml "objective") -replace '\|',''
@@ -113,6 +114,7 @@ foreach ($proj in $projects) {
             ID         = $f.BaseName
             Agent      = $agent
             Tier       = $tier
+            Effort     = $effort
             Status     = $status
             DepsAreMet = $depsAreMet
             Attempt    = $attempt
@@ -149,13 +151,13 @@ if ($readyContracts.Count -eq 0 -and $blockedContracts.Count -eq 0 -and $waiting
 
 Write-Output "READY($($readyContracts.Count)) WAITING($($waitingContracts.Count)) BLOCKED($($blockedContracts.Count))"
 foreach ($c in $readyContracts) {
-    Write-Output "READY $($c.ID) $($c.Agent) [$($c.Tier)] attempt=$($c.Attempt)/$($c.MaxAttempts)"
+    Write-Output "READY $($c.ID) $($c.Agent) [$($c.Tier)/$($c.Effort)] attempt=$($c.Attempt)/$($c.MaxAttempts)"
 }
 foreach ($c in $waitingContracts) {
     Write-Output "WAIT $($c.ID) $($c.Agent) deps-unmet"
 }
 foreach ($c in $blockedContracts) {
-    Write-Output "BLOCKED $($c.ID) $($c.Agent) attempt=$($c.Attempt)/$($c.MaxAttempts)"
+    Write-Output "BLOCKED $($c.ID) $($c.Agent) [$($c.Tier)/$($c.Effort)] attempt=$($c.Attempt)/$($c.MaxAttempts)"
 }
 
 # -- Dispatch: mark first ready contract as active in state ------------------

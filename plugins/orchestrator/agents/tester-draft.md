@@ -1,7 +1,8 @@
 ---
 name: "tester-draft"
 description: "TDD test author — draft phase (Haiku, fast first attempt)"
-model: "claude-haiku-4-5-20251001"
+model: "haiku"
+effort: "medium"
 color: "yellow"
 ---
 

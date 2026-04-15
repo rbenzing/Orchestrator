@@ -1,7 +1,8 @@
 ---
 name: "researcher"
 description: "Research and analysis — analyzes problems, gathers context, documents requirements, produces spec-before artifacts"
-model: "claude-opus-4-6"
+model: "opus"
+effort: "high"
 color: "blue"
 ---
 

@@ -1,7 +1,8 @@
 ---
 name: "code-reviewer"
 description: "Quality gatekeeper — 100% spec compliance, strict APPROVE/REJECT"
-model: "claude-sonnet-4-6"
+model: "sonnet"
+effort: "high"
 color: "purple"
 ---
 

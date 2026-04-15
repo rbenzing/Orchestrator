@@ -1,7 +1,8 @@
 ---
 name: "planner"
 description: "Technical planner — story breakdowns, spec-after blueprints, implementation specs (OpenSpec)"
-model: "claude-sonnet-4-6"
+model: "sonnet"
+effort: "high"
 color: "red"
 ---
 

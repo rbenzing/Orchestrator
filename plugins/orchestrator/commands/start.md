@@ -47,7 +47,7 @@ If ambiguous after keyword match: default to **Feature (Backend)**. After Resear
 |---|---|
 | Gate passes | Dispatch next agent in profile sequence |
 | Gate fails / agent blocked | Feedback contract → same agent (`attempt_count` +1) |
-| `attempt_count >= 2` | Escalate `model_tier` to `opus` on new contract |
+| `attempt_count >= 2` | Escalate to `model_tier: opus`, `effort: max` on new contract |
 | `attempt_count >= max_attempts` | Stop — notify user with blocker summary |
 | All contracts `Closed` | Archive contracts → announce completion |
 

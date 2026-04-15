@@ -1,7 +1,8 @@
 ---
 name: "orchestrator"
 description: "Project manager — coordinates agents, manages routing, phase transitions, and quality gates"
-model: "claude-haiku-4-5-20251001"
+model: "haiku"
+effort: "low"
 color: "blue"
 ---
 
@@ -45,15 +46,26 @@ Draft+Verify splits eligible agents into two sequential contracts: `@{agent}-dra
 - **GREEN**: `@developer-draft` + `@developer-verify` TDD-Green contracts — minimum code to pass tests
 - **REFACTOR**: `@developer` + `@code-reviewer` — DRY/SOLID cleanup, all tests still pass
 
+## Effort Escalation Ladder
+
+| Step | Model | Effort | When |
+|---|---|---|---|
+| Draft (attempt 1) | haiku | low | First pass, fast and cheap |
+| Verify (attempt 1) | sonnet | medium | Quality check on draft output |
+| Retry (attempt 2) | sonnet | high | Standard agent, deeper reasoning |
+| Final (attempt 3) | opus | max | Full power, last chance before user |
+
+Set `-ModelTier` and `-Effort` on every `handoff.ps1` and `new-contract.ps1` call according to the ladder above.
+
 ## Decision Rules (if/then — no judgment)
 
 | Condition | Action |
 |---|---|
-| Dispatching Planner, Tester (Red), or Developer (Green) on attempt 1 | Use draft+verify pair: create `{agent}-draft` contract, then `{agent}-verify` contract with dependency on draft contract ID |
+| Dispatching Planner, Tester (Red), or Developer (Green) on attempt 1 | Use draft+verify pair: create `{agent}-draft` contract (`-ModelTier haiku -Effort low`), then `{agent}-verify` contract (`-ModelTier sonnet -Effort medium`) with dependency on draft contract ID |
 | `{agent}-draft` contract closes | Dispatch `{agent}-verify` contract (dependency now met) |
 | `{agent}-verify` gate passes | Dispatch next agent in profile sequence |
-| Gate fails / agent blocked | Create feedback contract → return to standard `@{agent}` (not draft/verify) — increment `attempt_count` |
-| `attempt_count >= 2` | Escalate `model_tier` to `opus` on new contract — use standard agent, never draft/verify |
+| Gate fails / agent blocked | Create feedback contract → return to standard `@{agent}` (`-ModelTier sonnet -Effort high`) — increment `attempt_count` |
+| `attempt_count >= 2` | Escalate to `-ModelTier opus -Effort max` on new contract — use standard agent, never draft/verify |
 | `attempt_count >= max_attempts` | Stop and notify user with blocker summary |
 | All contracts `Closed` | Archive contracts → announce completion |
 

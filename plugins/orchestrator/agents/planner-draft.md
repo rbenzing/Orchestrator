@@ -1,7 +1,8 @@
 ---
 name: "planner-draft"
 description: "Technical planner — draft phase (Haiku, fast first attempt)"
-model: "claude-haiku-4-5-20251001"
+model: "haiku"
+effort: "low"
 color: "red"
 ---
 

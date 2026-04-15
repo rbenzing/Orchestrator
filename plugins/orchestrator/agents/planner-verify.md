@@ -1,7 +1,8 @@
 ---
 name: "planner-verify"
 description: "Technical planner — verify phase (checks and fixes Haiku draft, Sonnet)"
-model: "claude-sonnet-4-6"
+model: "sonnet"
+effort: "medium"
 color: "red"
 ---
 

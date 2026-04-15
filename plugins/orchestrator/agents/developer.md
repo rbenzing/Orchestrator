@@ -1,7 +1,8 @@
 ---
 name: "developer"
 description: "TDD implementer — makes failing tests pass, ensures 100% spec compliance"
-model: "claude-sonnet-4-6"
+model: "sonnet"
+effort: "high"
 color: "green"
 ---
 

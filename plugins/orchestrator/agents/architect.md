@@ -1,7 +1,8 @@
 ---
 name: "architect"
 description: "System architect — translates research into scalable, secure technical architecture"
-model: "claude-sonnet-4-6"
+model: "sonnet"
+effort: "high"
 color: "pink"
 ---
 

@@ -22,6 +22,8 @@
     Issues for feedback contracts. Format: "Description - Severity"
 .PARAMETER ModelTier
     LLM tier for the receiving agent: haiku | sonnet | opus. Default: sonnet.
+.PARAMETER Effort
+    Reasoning effort for the receiving agent: low | medium | high | max. Default: medium.
 .EXAMPLE
     ${CLAUDE_PLUGIN_ROOT}\skills\orchestration-handoffs\scripts\handoff.ps1 -From "Researcher" -To "Architect" -ProjectName "user-auth" -Findings "OAuth 2.0 recommended"
 .EXAMPLE
@@ -43,6 +45,8 @@ param(
     [string[]]$Issues = @(),
     [ValidateSet("haiku","sonnet","opus")]
     [string]$ModelTier = "sonnet",
+    [ValidateSet("low","medium","high","max")]
+    [string]$Effort = "medium",
     [string]$ArtifactBase = ".claude/orchestrator/artifacts",
     [string]$ContractBase = ".claude/orchestrator/contracts",
     [Parameter(ValueFromRemainingArguments = $true)]
@@ -50,7 +54,7 @@ param(
 )
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -From -To -ProjectName -ContractId -IsFeedback -Issues -ModelTier -ArtifactBase -ContractBase"; exit 1 }
+if ($ExtraArgs) { Write-Output "ERROR: unknown params: $($ExtraArgs -join ' '). Valid: -From -To -ProjectName -ContractId -IsFeedback -Issues -ModelTier -Effort -ArtifactBase -ContractBase"; exit 1 }
 
 # Resolve relative base paths against the current working directory (target project root).
 if (-not [System.IO.Path]::IsPathRooted($ArtifactBase)) {
@@ -132,6 +136,7 @@ $newContractScript = "${CLAUDE_PLUGIN_ROOT}\skills\orchestration-contracts\scrip
     -Type              $contractType `
     -AssignedAgent     $toHandle `
     -ModelTier         $ModelTier `
+    -Effort            $Effort `
     -Objective         $objective `
     -RequiredReads     $reads `
     -IfPass            $ifPass `

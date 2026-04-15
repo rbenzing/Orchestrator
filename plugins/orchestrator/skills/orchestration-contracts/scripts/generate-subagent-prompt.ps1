@@ -74,6 +74,7 @@ function Get-MultilineField {
 $id = Get-Field $yaml "id"
 $agent = Get-Field $yaml "assigned_agent"
 $tier = Get-Field $yaml "model_tier"
+$effort = Get-Field $yaml "effort"
 $objective = Get-MultilineField $yaml "objective"
 $reads = Get-ListField $yaml "required_reads"
 $deliverables = Get-ListField $yaml "deliverables"
@@ -81,7 +82,7 @@ $criteria = Get-ListField $yaml "acceptance_criteria"
 
 # Build minimal prompt
 $prompt = @()
-$prompt += "CONTRACT: $id | Agent: $agent | Model: $tier"
+$prompt += "CONTRACT: $id | Agent: $agent | Model: $tier | Effort: $effort"
 $prompt += ""
 $prompt += "OBJECTIVE: $objective"
 $prompt += ""
